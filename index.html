@@ -1,0 +1,711 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Recruiting Agent — your AI networking agent</title>
+    <meta
+      name="description"
+      content="A desktop agent that finds the right professionals on LinkedIn, verifies their email, writes a personal introduction and sends it from your own Gmail. Built for NYU students."
+    />
+    <meta property="og:title" content="Recruiting Agent" />
+    <meta
+      property="og:description"
+      content="Tell it where you want to work. It finds the right people and does the outreach."
+    />
+    <meta property="og:type" content="website" />
+    <link rel="icon" href="icon.png" />
+    <style>
+      /* Tokens mirrored from the app (app/src/renderer/src/theme.css) so the
+         site and the product are visibly one thing. */
+      :root {
+        --bg: #f7f7f4;
+        --surface: #ffffff;
+        --surface-2: #fbfbf9;
+        --ink: #16161d;
+        --ink-2: #55555f;
+        --ink-3: #8b8b96;
+        --border: #e7e7e1;
+        --border-strong: #d8d8d0;
+        --accent: #4f5df0;
+        --accent-soft: #eef0fe;
+        --accent-ink: #3a45c4;
+        --success: #178a5b;
+        --warn: #b07d1e;
+        --warn-soft: #fdf4e0;
+        --font-sans: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Inter,
+          Roboto, sans-serif;
+        --font-mono: 'SF Mono', ui-monospace, Menlo, Consolas, monospace;
+        --radius-md: 12px;
+        --radius-lg: 18px;
+        --shadow-sm: 0 1px 2px rgba(22, 22, 29, 0.05);
+        --shadow-md: 0 6px 24px rgba(22, 22, 29, 0.07);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+      html {
+        scroll-behavior: smooth;
+      }
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--ink);
+        font-family: var(--font-sans);
+        font-size: 16px;
+        line-height: 1.6;
+        -webkit-font-smoothing: antialiased;
+      }
+      h1,
+      h2,
+      h3 {
+        margin: 0;
+        font-weight: 650;
+        letter-spacing: -0.025em;
+        text-wrap: balance;
+      }
+      p,
+      li {
+        text-wrap: pretty;
+      }
+      a {
+        color: var(--accent-ink);
+      }
+      :focus-visible {
+        outline: 2px solid var(--accent);
+        outline-offset: 3px;
+        border-radius: 8px;
+      }
+
+      .wrap {
+        width: 100%;
+        max-width: 940px;
+        margin: 0 auto;
+        padding: 0 24px;
+      }
+
+      /* ---------------- Hero ---------------- */
+
+      .hero {
+        text-align: center;
+        padding: 78px 0 66px;
+      }
+      .hero h1 {
+        font-size: clamp(34px, 6vw, 52px);
+        line-height: 1.05;
+        margin-top: 26px;
+        letter-spacing: -0.03em;
+      }
+      .hero-sub {
+        margin: 18px auto 0;
+        max-width: 34ch;
+        font-size: clamp(16px, 2.4vw, 19px);
+        color: var(--ink-2);
+      }
+
+      /* The orb — the same object as the app icon and the in-app agent.
+         Pure CSS so the page stays a single file with no assets. */
+      .orb {
+        position: relative;
+        width: 104px;
+        height: 104px;
+        margin: 0 auto;
+      }
+      .orb::before {
+        content: '';
+        position: absolute;
+        inset: -26%;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(79, 93, 240, 0.3), rgba(79, 93, 240, 0) 65%);
+        filter: blur(5px);
+      }
+      .orb-core {
+        position: absolute;
+        inset: 0;
+        border-radius: 50%;
+        background:
+          radial-gradient(circle at 32% 26%, rgba(255, 255, 255, 0.92), rgba(255, 255, 255, 0) 44%),
+          radial-gradient(circle at 70% 74%, rgba(139, 110, 255, 0.55), rgba(139, 110, 255, 0) 58%),
+          radial-gradient(circle at 24% 72%, rgba(79, 93, 240, 0.6), rgba(79, 93, 240, 0) 60%),
+          linear-gradient(135deg, #b6bdff 0%, #4f5df0 58%, #3a45c4 100%);
+        box-shadow:
+          0 11px 34px rgba(79, 93, 240, 0.35),
+          inset 0 1px 6px rgba(255, 255, 255, 0.5);
+        animation: breathe 7.9s ease-in-out infinite;
+      }
+      @keyframes breathe {
+        0%,
+        100% {
+          transform: scale(1);
+        }
+        50% {
+          transform: scale(1.02);
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .orb-core {
+          animation: none;
+        }
+      }
+
+      /* ---------------- Download ---------------- */
+
+      .dl {
+        margin-top: 40px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 12px;
+      }
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        border: none;
+        border-radius: 999px;
+        padding: 16px 40px;
+        font-family: inherit;
+        font-size: 17px;
+        font-weight: 600;
+        text-decoration: none;
+        background: var(--ink);
+        color: #fff;
+        box-shadow: var(--shadow-sm);
+        transition:
+          background 0.15s ease,
+          transform 0.1s ease;
+        cursor: pointer;
+      }
+      .btn:hover {
+        background: #2a2a33;
+      }
+      .btn:active {
+        transform: scale(0.985);
+      }
+      .dl-meta {
+        font-size: 13.5px;
+        color: var(--ink-3);
+      }
+      .dl-alt {
+        font-size: 13.5px;
+        color: var(--ink-3);
+        background: none;
+        border: none;
+        font-family: inherit;
+        text-decoration: underline;
+        text-underline-offset: 3px;
+        cursor: pointer;
+        padding: 2px 4px;
+      }
+      .dl-alt:hover {
+        color: var(--ink-2);
+      }
+
+      /* ---------------- Sections ---------------- */
+
+      section {
+        padding: 60px 0;
+        border-top: 1px solid var(--border);
+      }
+      .sec-label {
+        font-size: 12px;
+        font-weight: 650;
+        letter-spacing: 0.09em;
+        text-transform: uppercase;
+        color: var(--ink-3);
+        margin-bottom: 14px;
+      }
+      section h2 {
+        font-size: clamp(24px, 3.4vw, 30px);
+        margin-bottom: 12px;
+      }
+      .lede {
+        margin: 0 0 34px;
+        color: var(--ink-2);
+        max-width: 62ch;
+      }
+
+      .steps {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+        gap: 18px;
+        margin: 0;
+        padding: 0;
+        list-style: none;
+        counter-reset: step;
+      }
+      .step {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        padding: 22px 22px 24px;
+        box-shadow: var(--shadow-sm);
+      }
+      .step-n {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 26px;
+        height: 26px;
+        border-radius: 50%;
+        background: var(--accent-soft);
+        color: var(--accent-ink);
+        font-size: 13px;
+        font-weight: 700;
+        margin-bottom: 12px;
+      }
+      .step h3 {
+        font-size: 16.5px;
+        margin-bottom: 6px;
+      }
+      .step p {
+        margin: 0;
+        font-size: 14.5px;
+        color: var(--ink-2);
+      }
+
+      .shot {
+        width: 100%;
+        border-radius: var(--radius-lg);
+        border: 1px solid var(--border);
+        box-shadow: var(--shadow-md);
+        display: block;
+      }
+
+      .facts {
+        margin: 0;
+        padding: 0;
+        list-style: none;
+        display: grid;
+        gap: 14px;
+      }
+      .fact {
+        display: flex;
+        gap: 12px;
+        align-items: flex-start;
+      }
+      .tick {
+        flex: none;
+        margin-top: 3px;
+        width: 19px;
+        height: 19px;
+        border-radius: 50%;
+        background: var(--accent-soft);
+        color: var(--accent-ink);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 11px;
+        font-weight: 800;
+      }
+      .fact b {
+        font-weight: 620;
+      }
+      .fact span {
+        color: var(--ink-2);
+      }
+
+      /* ---------------- Install ---------------- */
+
+      .install {
+        counter-reset: inst;
+        margin: 0;
+        padding: 0;
+        list-style: none;
+        display: grid;
+        gap: 22px;
+      }
+      .install > li {
+        display: grid;
+        /* minmax(0, 1fr), not 1fr: a `1fr` track keeps min-width:auto, so the
+           non-wrapping xattr command inside would widen the track and push the
+           whole page sideways on a phone. */
+        grid-template-columns: 30px minmax(0, 1fr);
+        gap: 14px;
+        align-items: start;
+      }
+      .install > li::before {
+        counter-increment: inst;
+        content: counter(inst);
+        width: 26px;
+        height: 26px;
+        border-radius: 50%;
+        background: var(--ink);
+        color: #fff;
+        font-size: 13px;
+        font-weight: 700;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        margin-top: 1px;
+      }
+      .install h3 {
+        font-size: 16.5px;
+        margin-bottom: 4px;
+      }
+      .install p {
+        margin: 0;
+        color: var(--ink-2);
+        font-size: 14.5px;
+      }
+
+      .note {
+        margin-top: 12px;
+        background: var(--warn-soft);
+        border-radius: var(--radius-md);
+        padding: 14px 16px;
+        font-size: 14px;
+        color: #6d4f12;
+      }
+      .cmd {
+        margin-top: 10px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        background: var(--ink);
+        border-radius: var(--radius-md);
+        padding: 11px 12px 11px 16px;
+        overflow: hidden;
+      }
+      .cmd code {
+        font-family: var(--font-mono);
+        font-size: 13px;
+        color: #f0f0f4;
+        white-space: nowrap;
+        overflow-x: auto;
+        flex: 1;
+        /* Without this the flex item's default `min-width: auto` refuses to
+           shrink below the command's width and pushes the whole page sideways
+           on a phone. The command scrolls inside its own box instead. */
+        min-width: 0;
+      }
+      .copy {
+        flex: none;
+        border: 1px solid rgba(255, 255, 255, 0.22);
+        background: rgba(255, 255, 255, 0.08);
+        color: #fff;
+        font-family: inherit;
+        font-size: 12.5px;
+        font-weight: 600;
+        border-radius: 7px;
+        padding: 6px 12px;
+        cursor: pointer;
+      }
+      .copy:hover {
+        background: rgba(255, 255, 255, 0.16);
+      }
+
+      footer {
+        border-top: 1px solid var(--border);
+        padding: 34px 0 48px;
+        font-size: 13.5px;
+        color: var(--ink-3);
+        text-align: center;
+      }
+      footer a {
+        color: var(--ink-2);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <header class="hero">
+        <div class="orb" aria-hidden="true"><div class="orb-core"></div></div>
+        <h1>Your AI recruiting agent</h1>
+        <p class="hero-sub">
+          Tell it where you want to work. It finds the right people and does the outreach.
+        </p>
+
+        <div class="dl">
+          <a class="btn" id="dl-btn" href="https://github.com/FutureWarren/recruiting-agent/releases/latest">
+            Download for Mac
+          </a>
+          <div class="dl-meta" id="dl-meta">macOS · free · no account needed</div>
+          <button class="dl-alt" id="dl-alt" hidden></button>
+        </div>
+      </header>
+    </div>
+
+    <div class="wrap">
+      <section>
+        <div class="sec-label">What it does</div>
+        <h2>It networks for you, in your own browser</h2>
+        <p class="lede">
+          You give it a goal — the field, the kind of firm, how many people. It works through that
+          list one person at a time, in a Chrome window you can watch.
+        </p>
+        <ol class="steps">
+          <li class="step">
+            <div class="step-n">1</div>
+            <h3>Finds the right people</h3>
+            <p>
+              Searches LinkedIn for professionals matching your goal and reads each profile to judge
+              whether they are actually a fit.
+            </p>
+          </li>
+          <li class="step">
+            <div class="step-n">2</div>
+            <h3>Verifies their email</h3>
+            <p>
+              Looks up a real, verified work email. Anyone it cannot find a verified address for is
+              skipped rather than guessed at.
+            </p>
+          </li>
+          <li class="step">
+            <div class="step-n">3</div>
+            <h3>Writes and sends the intro</h3>
+            <p>
+              Writes a short introduction grounded in your résumé and their background, then sends
+              it from your own Gmail.
+            </p>
+          </li>
+        </ol>
+      </section>
+
+      <section>
+        <div class="sec-label">While it runs</div>
+        <h2>You can see everything it is doing</h2>
+        <p class="lede">
+          It names the person it is working on right now and shows exactly how far through the list
+          it is. Nothing happens off-screen.
+        </p>
+        <img
+          class="shot"
+          src="dashboard.png"
+          alt="The agent dashboard, showing the orb, the person currently being worked on, and a live activity feed"
+          loading="lazy"
+        />
+      </section>
+
+      <section>
+        <div class="sec-label">Your accounts</div>
+        <h2>It never sees your passwords</h2>
+        <p class="lede">
+          The agent asks for LinkedIn and Gmail, so it is worth being precise about what that
+          actually means.
+        </p>
+        <ul class="facts">
+          <li class="fact">
+            <span class="tick" aria-hidden="true">✓</span>
+            <span
+              ><b>Passwords are never stored, or even seen.</b> You log in yourself, once, in a real
+              browser window. The app only keeps the resulting session — the same thing your browser
+              keeps when you tick "remember me".</span
+            >
+          </li>
+          <li class="fact">
+            <span class="tick" aria-hidden="true">✓</span>
+            <span
+              ><b>Everything stays on your Mac.</b> Your résumé, your contacts and your sessions are
+              stored locally. No account to create, nothing uploaded.</span
+            >
+          </li>
+          <li class="fact">
+            <span class="tick" aria-hidden="true">✓</span>
+            <span
+              ><b>The browser is visible on purpose.</b> You watch it search, read profiles and send
+              — and you can stop it at any point.</span
+            >
+          </li>
+          <li class="fact">
+            <span class="tick" aria-hidden="true">✓</span>
+            <span
+              ><b>Nobody is emailed twice.</b> Everyone contacted is remembered across campaigns, so
+              a new campaign will never write to the same person again.</span
+            >
+          </li>
+        </ul>
+      </section>
+
+      <section id="install">
+        <div class="sec-label">Setup</div>
+        <h2>About two minutes</h2>
+        <ol class="install">
+          <li>
+            <div>
+              <h3>Download and install</h3>
+              <p>Open the <code>.dmg</code> and drag <b>Recruiting Agent</b> into Applications.</p>
+            </div>
+          </li>
+          <li>
+            <div>
+              <h3>Open it once</h3>
+              <p>
+                If it opens normally, you are done — skip to the next step.
+              </p>
+              <div class="note">
+                If macOS says the app is <b>damaged</b> or <b>can't be opened</b>, that is expected
+                on this beta: it is not yet notarized by Apple. Open <b>Terminal</b> and paste this
+                once, then open the app again.
+                <div class="cmd">
+                  <code id="xattr">xattr -cr "/Applications/Recruiting Agent.app"</code>
+                  <button class="copy" id="copy-btn" type="button">Copy</button>
+                </div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div>
+              <h3>Install Google Chrome</h3>
+              <p>
+                The agent drives its own separate Chrome window, kept apart from your everyday
+                browsing.
+                <a href="https://www.google.com/chrome" rel="noopener">Get Chrome</a>
+              </p>
+            </div>
+          </li>
+          <li>
+            <div>
+              <h3>Set up your agent</h3>
+              <p>
+                Add your name, school and résumé, describe who you want to reach, then connect
+                LinkedIn and Gmail and press start.
+              </p>
+            </div>
+          </li>
+        </ol>
+      </section>
+
+      <section>
+        <div class="sec-label">Requirements</div>
+        <h2>What you need</h2>
+        <ul class="facts">
+          <li class="fact">
+            <span class="tick" aria-hidden="true">✓</span>
+            <span>A Mac — Apple Silicon or Intel, macOS 11 or later</span>
+          </li>
+          <li class="fact">
+            <span class="tick" aria-hidden="true">✓</span>
+            <span>Google Chrome installed</span>
+          </li>
+          <li class="fact">
+            <span class="tick" aria-hidden="true">✓</span>
+            <span>A LinkedIn account and a Gmail account you can log into</span>
+          </li>
+        </ul>
+      </section>
+    </div>
+
+    <footer>
+      <div class="wrap">
+        Built for NYU students ·
+        <a href="https://github.com/FutureWarren/recruiting-agent" rel="noopener">GitHub</a> ·
+        <a href="https://github.com/FutureWarren/recruiting-agent/releases" rel="noopener">All releases</a>
+      </div>
+    </footer>
+
+    <script>
+      // The PUBLIC repo that carries the downloads. Deliberately not the
+      // source repo: that one is private, and its release assets and API are
+      // unreachable without a token.
+      const REPO = 'FutureWarren/recruiting-agent'
+      const RELEASES = `https://github.com/${REPO}/releases/latest`
+
+      /**
+       * Which Mac is this? Wrong-architecture downloads are the single most
+       * likely way a student ends up with an app that will not open, so this
+       * deliberately returns null rather than guessing: unknown shows both.
+       */
+      async function detectArch() {
+        // Chromium exposes the real architecture through high-entropy UA hints.
+        try {
+          const uad = navigator.userAgentData
+          if (uad && uad.getHighEntropyValues) {
+            const v = await uad.getHighEntropyValues(['architecture'])
+            if (v.architecture === 'arm') return 'arm64'
+            if (v.architecture === 'x86') return 'x64'
+          }
+        } catch (e) {
+          /* fall through */
+        }
+        // Safari and Firefox do not, but the WebGL renderer names the GPU, and
+        // every Apple-silicon Mac reports an Apple GPU while Intel Macs report
+        // an Intel/AMD one.
+        try {
+          const gl = document.createElement('canvas').getContext('webgl')
+          const dbg = gl && gl.getExtension('WEBGL_debug_renderer_info')
+          const r = dbg ? String(gl.getParameter(dbg.UNMASKED_RENDERER_WEBGL)) : ''
+          if (/apple/i.test(r)) return 'arm64'
+          if (/intel|radeon|amd|nvidia/i.test(r)) return 'x64'
+        } catch (e) {
+          /* fall through */
+        }
+        return null
+      }
+
+      /** Pick the .dmg for an architecture out of a release's asset list. */
+      function dmgFor(assets, arch) {
+        const dmgs = assets.filter((a) => a.name.endsWith('.dmg'))
+        // electron-builder names the Apple-silicon build "…-arm64.dmg" and the
+        // Intel one with no arch suffix at all.
+        return arch === 'arm64'
+          ? dmgs.find((a) => /arm64/.test(a.name))
+          : dmgs.find((a) => !/arm64/.test(a.name))
+      }
+
+      const LABEL = { arm64: 'Apple Silicon', x64: 'Intel' }
+
+      async function init() {
+        const btn = document.getElementById('dl-btn')
+        const meta = document.getElementById('dl-meta')
+        const alt = document.getElementById('dl-alt')
+
+        let release
+        try {
+          const res = await fetch(`https://api.github.com/repos/${REPO}/releases/latest`)
+          if (!res.ok) throw new Error(String(res.status))
+          release = await res.json()
+        } catch (e) {
+          // Rate-limited or offline: the Releases page always works, so the
+          // button keeps its default href and we say nothing misleading.
+          meta.textContent = 'macOS · free · no account needed'
+          return
+        }
+
+        const version = (release.tag_name || '').replace(/^v/, '')
+        const assets = release.assets || []
+        let arch = await detectArch()
+        const known = arch !== null
+        if (!arch) arch = 'arm64'
+
+        function show(a) {
+          const asset = dmgFor(assets, a)
+          if (!asset) return
+          const other = a === 'arm64' ? 'x64' : 'arm64'
+          const mb = Math.round(asset.size / 1048576)
+          btn.href = asset.browser_download_url
+          btn.textContent = `Download for ${LABEL[a]}`
+          meta.textContent = `Version ${version} · ${mb} MB · macOS`
+          if (dmgFor(assets, other)) {
+            alt.hidden = false
+            alt.textContent = known
+              ? `Not your Mac? Get the ${LABEL[other]} version`
+              : `I have an ${LABEL[other]} Mac`
+            alt.onclick = () => show(other)
+          }
+        }
+
+        show(arch)
+
+        // When detection failed, say so rather than quietly presenting a guess
+        // as fact.
+        if (!known) meta.textContent = `Version ${version} · macOS · choose your Mac below`
+      }
+
+      init()
+
+      document.getElementById('copy-btn').addEventListener('click', async (e) => {
+        const btn = e.currentTarget
+        try {
+          await navigator.clipboard.writeText(document.getElementById('xattr').textContent)
+          btn.textContent = 'Copied'
+          setTimeout(() => (btn.textContent = 'Copy'), 1600)
+        } catch (err) {
+          btn.textContent = 'Select it'
+        }
+      })
+    </script>
+  </body>
+</html>
