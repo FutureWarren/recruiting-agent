@@ -723,9 +723,17 @@
       function assetFor(assets, os, arch) {
         const ext = os === 'win' ? '.exe' : '.dmg'
         const forOs = assets.filter((a) => a.name.toLowerCase().endsWith(ext))
-        return arch === 'arm64'
-          ? forOs.find((a) => /arm64/i.test(a.name))
-          : forOs.find((a) => !/arm64/i.test(a.name))
+        if (forOs.length === 0) return undefined
+        const wanted =
+          arch === 'arm64'
+            ? forOs.find((a) => /arm64/i.test(a.name))
+            : forOs.find((a) => !/arm64/i.test(a.name))
+        if (wanted) return wanted
+        // One build for this system and no arch in its name is the universal
+        // installer — which is what the Windows release actually is. Without
+        // this, asking for arm64 found nothing and a Windows-on-ARM student
+        // was told there was no Windows build at all.
+        return forOs.length === 1 ? forOs[0] : undefined
       }
 
       const OS_LABEL = { mac: 'Mac', win: 'Windows' }
@@ -789,7 +797,11 @@
           // an app that will not open; then the other platform.
           alts.textContent = ''
           const otherArch = targetArch === 'arm64' ? 'x64' : 'arm64'
-          if (assetFor(assets, targetOs, otherArch)) {
+          const otherArchAsset = assetFor(assets, targetOs, otherArch)
+          // Only when it is genuinely a DIFFERENT file. A universal installer
+          // answers for both architectures, and offering it twice under two
+          // names would just be a link that does nothing.
+          if (otherArchAsset && otherArchAsset.name !== asset.name) {
             addAlt(
               targetOs === 'mac'
                 ? `I have an ${ARCH_LABEL.mac[otherArch]} Mac`

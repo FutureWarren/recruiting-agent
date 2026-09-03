@@ -36,6 +36,27 @@ const RELEASE = {
   ]
 }
 
+/**
+ * The real v0.1.19 release, as GitHub actually returned it.
+ *
+ * It matters because it is not shaped like the synthetic one: electron-builder
+ * emitted a SINGLE universal Windows installer with no architecture in its
+ * name, so the first version of the arch matching found nothing for
+ * Windows-on-ARM and told that student there was no Windows build.
+ */
+const REAL_RELEASE = {
+  tag_name: 'v0.1.19',
+  assets: [
+    { name: 'latest-mac.yml', size: 856, browser_download_url: 'https://x/latest-mac.yml' },
+    { name: 'latest.yml', size: 364, browser_download_url: 'https://x/latest.yml' },
+    { name: 'Recruiting-Agent-0.1.19-arm64.dmg', size: 122197241, browser_download_url: 'https://x/mac-arm64.dmg' },
+    { name: 'Recruiting-Agent-0.1.19.dmg', size: 127015753, browser_download_url: 'https://x/mac-x64.dmg' },
+    { name: 'Recruiting-Agent-Setup-0.1.19.exe', size: 215300785, browser_download_url: 'https://x/win-universal.exe' },
+    { name: 'Recruiting-Agent-Setup-0.1.19.exe.blockmap', size: 219207, browser_download_url: 'https://x/win.blockmap' },
+    { name: 'Recruiting-Agent-0.1.19-arm64-mac.zip', size: 117165125, browser_download_url: 'https://x/mac-arm64.zip' }
+  ]
+}
+
 const UA = {
   windows:
     'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
@@ -43,6 +64,8 @@ const UA = {
     'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
   iphone:
     'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1',
+  windowsArm:
+    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
   linux:
     'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36'
 }
@@ -68,16 +91,35 @@ const base = live
 
 const browser = await chromium.launch({
   ...(exe ? { executablePath: exe } : {}),
+  // --live has to leave the machine, and some environments only reach the
+  // internet through a proxy. Ignored when there is none.
+  ...(live && process.env.HTTPS_PROXY ? { proxy: { server: process.env.HTTPS_PROXY } } : {}),
   args: ['--no-sandbox']
 })
 
-async function visit(userAgent) {
-  const context = await browser.newContext({ userAgent })
+async function visit(userAgent, release = RELEASE, arch) {
+  const context = await browser.newContext({
+    userAgent,
+    // The proxy above terminates TLS with its own certificate.
+    ...(live ? { ignoreHTTPSErrors: true } : {})
+  })
   const page = await context.newPage()
   // The release is stubbed so this tests the page, not GitHub's rate limit.
   await page.route('**/api.github.com/**', (route) =>
-    route.fulfill({ contentType: 'application/json', body: JSON.stringify(RELEASE) })
+    route.fulfill({ contentType: 'application/json', body: JSON.stringify(release) })
   )
+  // Force the reported architecture when a case is about one.
+  if (arch) {
+    await page.addInitScript((a) => {
+      Object.defineProperty(navigator, 'userAgentData', {
+        configurable: true,
+        get: () => ({
+          platform: /Win/.test(navigator.userAgent) ? 'Windows' : 'macOS',
+          getHighEntropyValues: async () => ({ architecture: a })
+        })
+      })
+    }, arch)
+  }
   await page.goto(base)
   await page.waitForFunction(
     () => document.getElementById('dl-meta').textContent !== 'Mac and Windows · free · no account needed',
@@ -125,6 +167,19 @@ check('hands out no file by default', other.href, (h) => !/\.(dmg|exe)$/.test(h)
 check('asks which system', other.meta, (m) => /choose your system/i.test(m))
 check('offers both', other.alts.join(' | '), (a) => /Mac/i.test(a) && /Windows/i.test(a))
 check('shows both sets of steps', other.macSteps && other.winSteps, true)
+
+// The real release: one universal Windows installer, no arch in the name.
+const realWin = await visit(UA.windows, REAL_RELEASE, 'x86')
+console.log('\nWindows, against the real v0.1.19 release:')
+check('offers the real installer', realWin.href, (h) => h.endsWith('.exe'))
+check('no pointless second architecture link', realWin.alts.join(' | '), (a) => !/ARM Windows/i.test(a))
+
+const realWinArm = await visit(UA.windowsArm, REAL_RELEASE, 'arm')
+console.log('\nWindows on ARM, against the real v0.1.19 release:')
+// This is the case that was broken: asking for arm64 found no arch-suffixed
+// build and the student was told there was no Windows build at all.
+check('still gets the universal installer', realWinArm.href, (h) => h.endsWith('.exe'))
+check('is not told the build is missing', realWinArm.meta, (m) => !/no Windows build/i.test(m))
 
 await browser.close()
 if (server) server.close()
