@@ -1,0 +1,31 @@
+name: Check the download page
+
+# The page is the only funnel every user passes through, and the way it broke
+# was invisible from a Mac: it served the .dmg to everybody, so a Windows
+# student got a file Windows offers to open in Notepad. Nothing looked wrong
+# unless you visited AS a Windows machine, which is what this does.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  platforms:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - run: npm install --no-audit --no-fund
+
+      - run: npx playwright install --with-deps chromium
+
+      # Against the file in this commit, so a bad change fails before it
+      # deploys rather than after students have seen it.
+      - name: Every platform gets the right installer
+        run: npm test

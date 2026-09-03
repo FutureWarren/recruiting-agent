@@ -202,6 +202,25 @@
       .dl-alt:hover {
         color: var(--ink-2);
       }
+      .os-tag {
+        display: inline-block;
+        margin-left: 8px;
+        padding: 1px 8px;
+        border-radius: 999px;
+        background: var(--surface-2);
+        border: 1px solid var(--border);
+        font-size: 11.5px;
+        font-weight: 600;
+        color: var(--ink-3);
+        vertical-align: middle;
+      }
+      .dl-alts {
+        display: flex;
+        gap: 18px;
+        justify-content: center;
+        flex-wrap: wrap;
+        margin-top: 2px;
+      }
 
       /* ---------------- Sections ---------------- */
 
@@ -419,11 +438,16 @@
         </p>
 
         <div class="dl">
+          <!-- The default is the releases page, not a file. Before the script
+               runs — or if GitHub's API is rate-limited, or JavaScript is off —
+               this must not hand a Windows visitor a .dmg, which is exactly
+               what it used to do. A page listing every build is right on every
+               platform; a wrong file is a lost user. -->
           <a class="btn" id="dl-btn" href="https://github.com/FutureWarren/recruiting-agent/releases/latest">
-            Download for Mac
+            Download
           </a>
-          <div class="dl-meta" id="dl-meta">macOS · free · no account needed</div>
-          <button class="dl-alt" id="dl-alt" hidden></button>
+          <div class="dl-meta" id="dl-meta">Mac and Windows · free · no account needed</div>
+          <div class="dl-alts" id="dl-alts"></div>
         </div>
       </header>
     </div>
@@ -498,8 +522,8 @@
           <li class="fact">
             <span class="tick" aria-hidden="true">✓</span>
             <span
-              ><b>Everything stays on your Mac.</b> Your résumé, your contacts and your sessions are
-              stored locally. No account to create, nothing uploaded.</span
+              ><b>Everything stays on your own computer.</b> Your résumé, your contacts and your
+              sessions are stored locally. Nothing is uploaded.</span
             >
           </li>
           <li class="fact">
@@ -522,10 +546,13 @@
       <section id="install">
         <div class="sec-label">Setup</div>
         <h2>About two minutes</h2>
-        <ol class="install">
+        <!-- Two first steps, one per platform. The script shows the one that
+             matches; with no script, or an unrecognised system, both are
+             visible and labelled, which is honest rather than clever. -->
+        <ol class="install os-mac" id="install-mac">
           <li>
             <div>
-              <h3>Download and install</h3>
+              <h3>Download and install <span class="os-tag">macOS</span></h3>
               <p>Open the <code>.dmg</code> and drag <b>Recruiting Agent</b> into Applications.</p>
             </div>
           </li>
@@ -546,7 +573,27 @@
               </div>
             </div>
           </li>
+        </ol>
+
+        <ol class="install os-win" id="install-win">
           <li>
+            <div>
+              <h3>Download and install <span class="os-tag">Windows</span></h3>
+              <p>
+                Run the <code>.exe</code> installer. It installs for you only, so Windows will not
+                ask for an administrator password.
+              </p>
+              <div class="note">
+                Windows will say <b>“Windows protected your PC”</b> and call the publisher unknown.
+                That is expected on this beta: the app is not code-signed yet. Click
+                <b>More info</b>, then <b>Run anyway</b>.
+              </div>
+            </div>
+          </li>
+        </ol>
+
+        <ol class="install" start="2">
+          <li value="3">
             <div>
               <h3>Install Google Chrome</h3>
               <p>
@@ -574,7 +621,9 @@
         <ul class="facts">
           <li class="fact">
             <span class="tick" aria-hidden="true">✓</span>
-            <span>A Mac — Apple Silicon or Intel, macOS 11 or later</span>
+            <span>
+              A Mac (Apple Silicon or Intel, macOS 11 or later) or a Windows 10 / 11 PC
+            </span>
           </li>
           <li class="fact">
             <span class="tick" aria-hidden="true">✓</span>
@@ -601,12 +650,38 @@
       // source repo: that one is private, and its release assets and API are
       // unreachable without a token.
       const REPO = 'FutureWarren/recruiting-agent'
-      const RELEASES = `https://github.com/${REPO}/releases/latest`
 
       /**
-       * Which Mac is this? Wrong-architecture downloads are the single most
-       * likely way a student ends up with an app that will not open, so this
-       * deliberately returns null rather than guessing: unknown shows both.
+       * Which system is this?
+       *
+       * A Windows student who clicked Download used to get a .dmg — a file
+       * Windows offers to open in Notepad. That is not a bad download, it is a
+       * lost user, and it happened because this page only ever knew about
+       * Macs. So the platform is decided before anything else, and anything
+       * this cannot recognise (a phone, a Linux box, a stripped user agent)
+       * gets BOTH downloads rather than a guess.
+       */
+      function detectOS() {
+        const ua = navigator.userAgent || ''
+        // A phone cannot run either build. Say so instead of offering one.
+        if (/Android|iPhone|iPad|iPod/i.test(ua)) return 'mobile'
+        try {
+          const p = (navigator.userAgentData && navigator.userAgentData.platform) || ''
+          if (/windows/i.test(p)) return 'win'
+          if (/macos|mac os/i.test(p)) return 'mac'
+        } catch (e) {
+          /* fall through to the user agent string */
+        }
+        if (/Windows|Win64|Win32|WOW64/i.test(ua)) return 'win'
+        // Checked after Windows on purpose: only a Mac says Macintosh.
+        if (/Macintosh|Mac OS X/i.test(ua)) return 'mac'
+        return null
+      }
+
+      /**
+       * Which processor? Wrong-architecture downloads are the other way a
+       * student ends up with an app that will not open, so this returns null
+       * rather than guessing, and null means "offer both".
        */
       async function detectArch() {
         // Chromium exposes the real architecture through high-entropy UA hints.
@@ -622,7 +697,8 @@
         }
         // Safari and Firefox do not, but the WebGL renderer names the GPU, and
         // every Apple-silicon Mac reports an Apple GPU while Intel Macs report
-        // an Intel/AMD one.
+        // an Intel/AMD one. Only meaningful on a Mac; Windows on ARM is rare
+        // enough that x64 is the right default when this cannot tell.
         try {
           const gl = document.createElement('canvas').getContext('webgl')
           const dbg = gl && gl.getExtension('WEBGL_debug_renderer_info')
@@ -635,22 +711,47 @@
         return null
       }
 
-      /** Pick the .dmg for an architecture out of a release's asset list. */
-      function dmgFor(assets, arch) {
-        const dmgs = assets.filter((a) => a.name.endsWith('.dmg'))
-        // electron-builder names the Apple-silicon build "…-arm64.dmg" and the
-        // Intel one with no arch suffix at all.
+      /**
+       * The installer for one system out of a release's assets.
+       *
+       * electron-builder suffixes the Apple-silicon and Windows-on-ARM builds
+       * with "arm64" and leaves the Intel/x64 ones unsuffixed, so the absence
+       * of the suffix is what identifies x64. Returns undefined when a release
+       * simply does not carry that build, and every caller treats that as
+       * "do not offer it" rather than showing a broken link.
+       */
+      function assetFor(assets, os, arch) {
+        const ext = os === 'win' ? '.exe' : '.dmg'
+        const forOs = assets.filter((a) => a.name.toLowerCase().endsWith(ext))
         return arch === 'arm64'
-          ? dmgs.find((a) => /arm64/.test(a.name))
-          : dmgs.find((a) => !/arm64/.test(a.name))
+          ? forOs.find((a) => /arm64/i.test(a.name))
+          : forOs.find((a) => !/arm64/i.test(a.name))
       }
 
-      const LABEL = { arm64: 'Apple Silicon', x64: 'Intel' }
+      const OS_LABEL = { mac: 'Mac', win: 'Windows' }
+      const ARCH_LABEL = { mac: { arm64: 'Apple Silicon', x64: 'Intel' }, win: { arm64: 'ARM', x64: '' } }
+
+      /** Show the install steps for one system, or both when unsure. */
+      function showInstructionsFor(os) {
+        const mac = document.getElementById('install-mac')
+        const win = document.getElementById('install-win')
+        if (!mac || !win) return
+        mac.hidden = os === 'win'
+        win.hidden = os === 'mac'
+      }
 
       async function init() {
         const btn = document.getElementById('dl-btn')
         const meta = document.getElementById('dl-meta')
-        const alt = document.getElementById('dl-alt')
+        const alts = document.getElementById('dl-alts')
+
+        const os = detectOS()
+        showInstructionsFor(os === 'mobile' ? null : os)
+
+        if (os === 'mobile') {
+          meta.textContent = 'A desktop app — open this page on your Mac or Windows laptop'
+          return
+        }
 
         let release
         try {
@@ -658,40 +759,84 @@
           if (!res.ok) throw new Error(String(res.status))
           release = await res.json()
         } catch (e) {
-          // Rate-limited or offline: the Releases page always works, so the
-          // button keeps its default href and we say nothing misleading.
-          meta.textContent = 'macOS · free · no account needed'
+          // Rate-limited or offline. The button already points at the releases
+          // page, which is correct on every platform, so say nothing that
+          // could send somebody to the wrong file.
+          meta.textContent = 'Mac and Windows · free · no account needed'
           return
         }
 
         const version = (release.tag_name || '').replace(/^v/, '')
         const assets = release.assets || []
-        let arch = await detectArch()
-        const known = arch !== null
-        if (!arch) arch = 'arm64'
+        const detectedArch = await detectArch()
 
-        function show(a) {
-          const asset = dmgFor(assets, a)
-          if (!asset) return
-          const other = a === 'arm64' ? 'x64' : 'arm64'
+        /** Draw the page as if this is the student's system. */
+        function show(targetOs, targetArch) {
+          const asset = assetFor(assets, targetOs, targetArch)
+          if (!asset) return false
+
+          const archName = ARCH_LABEL[targetOs][targetArch]
           const mb = Math.round(asset.size / 1048576)
           btn.href = asset.browser_download_url
-          btn.textContent = `Download for ${LABEL[a]}`
-          meta.textContent = `Version ${version} · ${mb} MB · macOS`
-          if (dmgFor(assets, other)) {
-            alt.hidden = false
-            alt.textContent = known
-              ? `Not your Mac? Get the ${LABEL[other]} version`
-              : `I have an ${LABEL[other]} Mac`
-            alt.onclick = () => show(other)
+          btn.textContent = archName
+            ? `Download for ${OS_LABEL[targetOs]} (${archName})`
+            : `Download for ${OS_LABEL[targetOs]}`
+          meta.textContent = `Version ${version} · ${mb} MB · ${OS_LABEL[targetOs]}`
+          showInstructionsFor(targetOs)
+
+          // Everything this student might have instead, as plain links. The
+          // other architecture first, because a Mac user on the wrong one gets
+          // an app that will not open; then the other platform.
+          alts.textContent = ''
+          const otherArch = targetArch === 'arm64' ? 'x64' : 'arm64'
+          if (assetFor(assets, targetOs, otherArch)) {
+            addAlt(
+              targetOs === 'mac'
+                ? `I have an ${ARCH_LABEL.mac[otherArch]} Mac`
+                : `I have an ARM Windows PC`,
+              () => show(targetOs, otherArch)
+            )
           }
+          const otherOs = targetOs === 'mac' ? 'win' : 'mac'
+          if (assetFor(assets, otherOs, 'x64') || assetFor(assets, otherOs, 'arm64')) {
+            addAlt(`I am on ${OS_LABEL[otherOs]}`, () =>
+              show(otherOs, assetFor(assets, otherOs, detectedArch || 'x64') ? detectedArch || 'x64' : 'x64')
+            )
+          }
+          return true
         }
 
-        show(arch)
+        function addAlt(label, onClick) {
+          const b = document.createElement('button')
+          b.type = 'button'
+          b.className = 'dl-alt'
+          b.textContent = label
+          b.onclick = onClick
+          alts.appendChild(b)
+        }
 
-        // When detection failed, say so rather than quietly presenting a guess
-        // as fact.
-        if (!known) meta.textContent = `Version ${version} · macOS · choose your Mac below`
+        // An unrecognised system is not a Mac by default any more. Offer both,
+        // and let the student say which they are on.
+        if (!os) {
+          meta.textContent = `Version ${version} · choose your system`
+          addAlt('Download for Mac', () => show('mac', detectedArch || 'arm64'))
+          addAlt('Download for Windows', () => show('win', detectedArch || 'x64'))
+          return
+        }
+
+        const arch = detectedArch || (os === 'mac' ? 'arm64' : 'x64')
+        if (!show(os, arch)) {
+          // This release carries no build for this system — a half-published
+          // release, or a platform we have not shipped yet. The releases page
+          // is the honest answer.
+          meta.textContent = `Version ${version} · no ${OS_LABEL[os]} build in this release yet`
+          return
+        }
+        // Detection failed and this is a guess: say which, rather than
+        // presenting it as fact.
+        if (!detectedArch && os === 'mac') {
+          meta.textContent = `Version ${version} · macOS · check this is the right Mac below`
+        }
       }
 
       init()
