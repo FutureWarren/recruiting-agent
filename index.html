@@ -3,43 +3,46 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#f7f7f2" />
-    <title>Orbit — AI networking for ambitious students</title>
+    <meta name="theme-color" content="#f5f5f0" />
+    <title>Orbit — AI networking that works beside you</title>
     <meta
       name="description"
-      content="Orbit finds the right professionals, verifies their work email, and writes personal outreach grounded in your background — all from a browser you control."
+      content="Orbit researches the right professionals, verifies work email, and writes thoughtful outreach grounded in your background — in a browser you can watch and stop."
     />
     <meta property="og:title" content="Orbit — your AI networking agent" />
     <meta
       property="og:description"
-      content="Build a thoughtful networking pipeline without spending every night searching LinkedIn."
+      content="Turn your background into a visible, thoughtful networking pipeline."
     />
     <meta property="og:type" content="website" />
-    <link rel="icon" href="icon.png" />
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='21' fill='none' stroke='%2317171c' stroke-width='6'/%3E%3Ccircle cx='32' cy='10' r='7' fill='%235c5cf2'/%3E%3C/svg%3E"
+    />
     <style>
       :root {
-        --bg: #f7f7f2;
-        --bg-deep: #efefe8;
-        --surface: #ffffff;
-        --surface-soft: rgba(255, 255, 255, 0.68);
-        --ink: #17171c;
-        --ink-2: #5f5f68;
-        --ink-3: #8b8b93;
-        --border: rgba(23, 23, 28, 0.1);
-        --border-strong: rgba(23, 23, 28, 0.17);
-        --accent: #5a5ff4;
-        --accent-dark: #4044c9;
-        --accent-soft: #eeeeff;
-        --success: #16845b;
-        --success-soft: #e8f7f0;
-        --warn-soft: #fff6df;
+        color-scheme: light;
+        --bg: #f5f5f0;
+        --surface: #fbfbf8;
+        --paper: #ffffff;
+        --ink: #15151a;
+        --ink-2: #56565f;
+        --ink-3: #8c8c94;
+        --line: rgba(21, 21, 26, 0.1);
+        --line-strong: rgba(21, 21, 26, 0.17);
+        --signal: #5c5cf2;
+        --signal-ink: #4646c8;
+        --signal-soft: #ececfb;
+        --success: #197953;
+        --success-soft: #e8f4ee;
+        --danger: #b8463b;
+        --dark: #17171c;
+        --dark-2: #222229;
         --font: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Inter, sans-serif;
         --mono: "SF Mono", ui-monospace, Menlo, Consolas, monospace;
-        --r-sm: 12px;
-        --r-md: 18px;
-        --r-lg: 28px;
-        --shadow-sm: 0 1px 2px rgba(23, 23, 28, 0.04), 0 8px 24px rgba(23, 23, 28, 0.04);
-        --shadow-lg: 0 26px 80px rgba(48, 48, 74, 0.12), 0 2px 10px rgba(23, 23, 28, 0.04);
+        --shell: min(1180px, calc(100% - 56px));
+        --ease: cubic-bezier(.22, 1, .36, 1);
+        --shadow: 0 24px 80px rgba(25, 25, 35, 0.10);
       }
 
       * { box-sizing: border-box; }
@@ -48,8 +51,10 @@
         margin: 0;
         overflow-x: hidden;
         background:
-          radial-gradient(circle at 50% -180px, rgba(128, 132, 255, 0.2), transparent 450px),
+          linear-gradient(rgba(21,21,26,.028) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(21,21,26,.028) 1px, transparent 1px),
           var(--bg);
+        background-size: 64px 64px;
         color: var(--ink);
         font-family: var(--font);
         font-size: 16px;
@@ -58,431 +63,990 @@
       }
       a { color: inherit; }
       button, input { font: inherit; }
+      button, a { -webkit-tap-highlight-color: transparent; }
       h1, h2, h3, p { margin-top: 0; }
-      h1, h2, h3 { letter-spacing: -0.035em; text-wrap: balance; }
+      h1, h2, h3 { letter-spacing: -.04em; text-wrap: balance; }
       p { text-wrap: pretty; }
-      :focus-visible { outline: 3px solid rgba(90, 95, 244, 0.35); outline-offset: 3px; }
+      :focus-visible { outline: 2px solid var(--signal); outline-offset: 4px; }
 
-      .shell { width: min(1160px, calc(100% - 48px)); margin: 0 auto; }
-      .nav {
+      .shell { width: var(--shell); margin-inline: auto; }
+      .rule { border-top: 1px solid var(--line); }
+      .kicker {
+        color: var(--signal-ink);
+        font: 700 11px/1 var(--font);
+        letter-spacing: .12em;
+        text-transform: uppercase;
+      }
+      .micro {
+        color: var(--ink-3);
+        font-size: 12px;
+      }
+
+      .orbit-mark {
+        position: relative;
+        display: inline-block;
+        width: 28px;
+        height: 28px;
+        flex: none;
+        color: currentColor;
+      }
+      .orbit-mark::before {
+        content: "";
+        position: absolute;
+        inset: 3px;
+        border: 2.5px solid currentColor;
+        border-radius: 50%;
+      }
+      .orbit-mark::after {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 50%;
+        width: 7px;
+        height: 7px;
+        margin-left: -3.5px;
+        border-radius: 50%;
+        background: var(--signal);
+        box-shadow: 0 0 0 3px rgba(92,92,242,.08);
+      }
+
+      .nav-wrap {
         position: sticky;
-        top: 12px;
-        z-index: 20;
+        top: 0;
+        z-index: 40;
+        padding-top: 12px;
+        pointer-events: none;
+      }
+      .nav {
+        width: var(--shell);
+        height: 60px;
+        margin: 0 auto;
+        padding: 0 10px 0 17px;
         display: flex;
         align-items: center;
         justify-content: space-between;
-        height: 62px;
-        margin-top: 12px;
-        padding: 0 10px 0 18px;
-        border: 1px solid rgba(255, 255, 255, 0.8);
-        border-radius: 18px;
-        background: rgba(247, 247, 242, 0.82);
-        box-shadow: 0 10px 40px rgba(23, 23, 28, 0.06);
-        backdrop-filter: blur(18px);
+        border: 1px solid rgba(255,255,255,.72);
+        background: rgba(245,245,240,.84);
+        backdrop-filter: blur(20px) saturate(1.15);
+        box-shadow: 0 10px 32px rgba(24,24,32,.05);
+        pointer-events: auto;
       }
-      .brand { display: inline-flex; align-items: center; gap: 10px; text-decoration: none; font-weight: 720; }
-      .brand-mark { width: 27px; height: 27px; position: relative; }
-      .brand-mark::before {
-        content: "";
-        position: absolute;
-        inset: 1px;
-        border-radius: 50%;
-        background:
-          radial-gradient(circle at 31% 25%, rgba(255,255,255,.94), transparent 39%),
-          linear-gradient(145deg, #b8bdff, var(--accent) 56%, #393ebc);
-        box-shadow: 0 5px 13px rgba(90,95,244,.32);
+      .brand {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        color: var(--ink);
+        text-decoration: none;
+        font-size: 15px;
+        font-weight: 720;
+        letter-spacing: -.025em;
       }
+      .brand .orbit-mark { width: 25px; height: 25px; }
+      .brand .orbit-mark::before { inset: 2.5px; border-width: 2.35px; }
+      .brand .orbit-mark::after { width: 6.5px; height: 6.5px; margin-left: -3.25px; }
+
       .nav-links { display: flex; align-items: center; gap: 28px; }
-      .nav-links a { color: var(--ink-2); font-size: 13.5px; font-weight: 550; text-decoration: none; }
-      .nav-links a:hover { color: var(--ink); }
-      .nav-download { padding: 10px 17px; border-radius: 12px; background: var(--ink); color: #fff !important; }
+      .nav-links > a {
+        color: var(--ink-2);
+        font-size: 12.5px;
+        font-weight: 570;
+        text-decoration: none;
+        transition: color .18s ease;
+      }
+      .nav-links > a:hover { color: var(--ink); }
+      .nav-links .nav-download {
+        padding: 10px 16px;
+        border-radius: 9px;
+        background: var(--ink);
+        color: #fff;
+      }
 
       .hero {
         display: grid;
-        grid-template-columns: minmax(0, .9fr) minmax(480px, 1.1fr);
+        grid-template-columns: minmax(0, .86fr) minmax(520px, 1.14fr);
         align-items: center;
-        gap: 68px;
-        min-height: 710px;
-        padding: 92px 0 84px;
+        gap: 76px;
+        min-height: 760px;
+        padding: 104px 0 92px;
       }
-      .eyebrow {
-        display: inline-flex;
+      .hero h1 {
+        max-width: 680px;
+        margin: 17px 0 25px;
+        font-size: clamp(52px, 6vw, 82px);
+        font-weight: 650;
+        line-height: .94;
+        letter-spacing: -.058em;
+      }
+      .hero-copy > p {
+        max-width: 540px;
+        margin-bottom: 0;
+        color: var(--ink-2);
+        font-size: 18px;
+        line-height: 1.62;
+      }
+      .actions {
+        display: flex;
+        flex-wrap: wrap;
         align-items: center;
-        gap: 8px;
-        margin-bottom: 22px;
-        color: var(--accent-dark);
-        font-size: 12px;
-        font-weight: 750;
-        letter-spacing: .1em;
-        text-transform: uppercase;
+        gap: 10px;
+        margin-top: 32px;
       }
-      .eyebrow::before { content: ""; width: 18px; height: 1px; background: currentColor; }
-      .hero h1 { max-width: 650px; margin-bottom: 22px; font-size: clamp(46px, 6.3vw, 77px); line-height: .97; font-weight: 670; }
-      .hero-copy > p { max-width: 560px; margin-bottom: 0; color: var(--ink-2); font-size: 19px; line-height: 1.55; }
-      .actions { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; margin-top: 34px; }
       .btn {
         display: inline-flex;
-        min-height: 52px;
+        min-height: 50px;
         align-items: center;
         justify-content: center;
         gap: 9px;
-        border: 1px solid transparent;
-        border-radius: 14px;
-        padding: 0 22px;
+        padding: 0 20px;
+        border: 1px solid var(--ink);
+        border-radius: 10px;
         background: var(--ink);
-        color: #fff;
+        color: white;
+        font-size: 13.5px;
         font-weight: 650;
         text-decoration: none;
-        cursor: pointer;
-        transition: transform .18s ease, box-shadow .18s ease, background .18s ease;
+        transition: transform .2s var(--ease), box-shadow .2s ease, background .2s ease;
       }
-      .btn:hover { transform: translateY(-2px); box-shadow: 0 12px 24px rgba(23,23,28,.13); background: #2a2a32; }
-      .btn-secondary { border-color: var(--border); background: rgba(255,255,255,.58); color: var(--ink); }
-      .btn-secondary:hover { background: #fff; }
-      .arrow { font-size: 18px; line-height: 1; }
-      .dl-meta { margin-top: 12px; color: var(--ink-3); font-size: 12.5px; }
-      .dl-alts { display: flex; gap: 14px; min-height: 24px; margin-top: 4px; }
-      .dl-alt { border: 0; padding: 0; background: none; color: var(--ink-3); font-size: 12px; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+      .btn:hover {
+        transform: translateY(-2px);
+        background: #27272e;
+        box-shadow: 0 12px 28px rgba(21,21,26,.14);
+      }
+      .btn-secondary {
+        border-color: var(--line-strong);
+        background: rgba(255,255,255,.45);
+        color: var(--ink);
+      }
+      .btn-secondary:hover { background: white; }
+      .arrow { font-size: 17px; }
+      .download-info { margin-top: 12px; }
+      .dl-meta { color: var(--ink-3); font-size: 11.5px; }
+      .dl-alts { display: flex; gap: 14px; min-height: 22px; margin-top: 5px; }
+      .dl-alt {
+        border: 0;
+        padding: 0;
+        background: none;
+        color: var(--ink-3);
+        font-size: 11px;
+        text-decoration: underline;
+        text-underline-offset: 3px;
+        cursor: pointer;
+      }
       .dl-alt:hover { color: var(--ink); }
 
-      .product-stage { position: relative; min-height: 520px; }
-      .product-stage::before {
+      /* Hero CG stage ----------------------------------------------------- */
+      .cg-stage {
+        position: relative;
+        min-height: 560px;
+        perspective: 1200px;
+      }
+      .cg-stage::before {
         content: "";
         position: absolute;
-        inset: 13% 2% 4% 0;
+        inset: 8% 0 0 3%;
         border-radius: 50%;
-        background: rgba(117, 122, 255, .22);
-        filter: blur(90px);
+        background: rgba(92,92,242,.09);
+        filter: blur(80px);
       }
-      .window {
+      .cg-shell {
+        position: absolute;
+        inset: 18px 0 28px;
+        overflow: hidden;
+        border: 1px solid rgba(255,255,255,.75);
+        background:
+          linear-gradient(rgba(255,255,255,.56), rgba(255,255,255,.56)),
+          linear-gradient(rgba(21,21,26,.04) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(21,21,26,.04) 1px, transparent 1px);
+        background-size: auto, 42px 42px, 42px 42px;
+        box-shadow: var(--shadow);
+        transform: rotateY(-4deg) rotateX(2deg);
+        transform-origin: center center;
+      }
+      .cg-shell::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        background: linear-gradient(115deg, rgba(255,255,255,.52), transparent 32%, transparent 67%, rgba(255,255,255,.25));
+      }
+      .cg-top {
+        position: relative;
+        z-index: 2;
+        display: flex;
+        height: 45px;
+        align-items: center;
+        gap: 7px;
+        padding: 0 15px;
+        border-bottom: 1px solid var(--line);
+        background: rgba(250,250,247,.78);
+      }
+      .cg-dot { width: 7px; height: 7px; border-radius: 50%; background: #d2d2cd; }
+      .cg-title { margin: 0 auto; transform: translateX(-18px); color: var(--ink-3); font-size: 10px; }
+      .cg-canvas {
+        position: relative;
+        height: calc(100% - 45px);
+        min-height: 460px;
+      }
+      .cg-label {
+        position: absolute;
+        left: 22px;
+        top: 18px;
+        color: var(--ink-3);
+        font: 650 9px/1 var(--mono);
+        letter-spacing: .09em;
+        text-transform: uppercase;
+      }
+      .cg-orbit {
+        position: absolute;
+        left: 50%;
+        top: 47%;
+        width: 178px;
+        height: 178px;
+        margin: -89px 0 0 -89px;
+      }
+      .cg-ring {
+        position: absolute;
+        inset: 15px;
+        border: 10px solid var(--ink);
+        border-radius: 50%;
+        box-shadow:
+          0 0 0 1px rgba(255,255,255,.65) inset,
+          0 18px 45px rgba(21,21,26,.08);
+      }
+      .cg-ring::after {
+        content: "";
+        position: absolute;
+        inset: -18px;
+        border: 1px solid rgba(92,92,242,.18);
+        border-radius: 50%;
+      }
+      .cg-satellite-wrap {
+        position: absolute;
+        inset: 0;
+        animation: orbit-spin 6.8s linear infinite;
+      }
+      .cg-satellite {
+        position: absolute;
+        left: 50%;
+        top: 1px;
+        width: 22px;
+        height: 22px;
+        margin-left: -11px;
+        border-radius: 50%;
+        background: var(--signal);
+        box-shadow: 0 0 0 6px rgba(92,92,242,.08), 0 8px 18px rgba(92,92,242,.28);
+      }
+      .cg-center {
+        position: absolute;
+        inset: 0;
+        display: grid;
+        place-items: center;
+        text-align: center;
+      }
+      .cg-center strong { display: block; font-size: 14px; letter-spacing: -.02em; }
+      .cg-center span { display: block; margin-top: 4px; color: var(--ink-3); font-size: 9px; }
+
+      .beam {
+        position: absolute;
+        left: 50%;
+        top: 47%;
+        width: 1px;
+        height: 230px;
+        transform-origin: top;
+        background: linear-gradient(var(--signal), rgba(92,92,242,0));
+        opacity: .25;
+      }
+      .beam-a { transform: rotate(62deg); }
+      .beam-b { transform: rotate(174deg); }
+      .beam-c { transform: rotate(292deg); }
+
+      .cg-card {
+        position: absolute;
+        z-index: 2;
+        width: 190px;
+        padding: 13px 14px;
+        border: 1px solid rgba(21,21,26,.11);
+        border-radius: 11px;
+        background: rgba(255,255,255,.88);
+        box-shadow: 0 13px 28px rgba(29,29,42,.08);
+        backdrop-filter: blur(10px);
+      }
+      .cg-card small {
+        display: block;
+        color: var(--ink-3);
+        font: 650 8px/1 var(--mono);
+        letter-spacing: .08em;
+        text-transform: uppercase;
+      }
+      .cg-card b { display: block; margin-top: 7px; font-size: 11.5px; letter-spacing: -.01em; }
+      .cg-card p { margin: 4px 0 0; color: var(--ink-3); font-size: 9px; line-height: 1.4; }
+      .cg-profile { left: 28px; top: 84px; animation: cg-profile 11s var(--ease) infinite; }
+      .cg-email { right: 26px; top: 78px; animation: cg-email 11s var(--ease) infinite; }
+      .cg-draft { right: 32px; bottom: 34px; width: 226px; animation: cg-draft 11s var(--ease) infinite; }
+      .cg-match {
+        display: inline-flex;
+        margin-top: 9px;
+        padding: 4px 7px;
+        border-radius: 999px;
+        background: var(--signal-soft);
+        color: var(--signal-ink);
+        font-size: 8px;
+        font-weight: 700;
+      }
+      .cg-verified {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        margin-top: 9px;
+        color: var(--success);
+        font-size: 8.5px;
+        font-weight: 700;
+      }
+      .cg-verified::before {
+        content: "✓";
+        display: grid;
+        place-items: center;
+        width: 13px;
+        height: 13px;
+        border-radius: 50%;
+        background: var(--success-soft);
+      }
+      .draft-line { height: 5px; margin-top: 8px; border-radius: 3px; background: #e8e8e3; }
+      .draft-line:nth-of-type(2) { width: 86%; }
+      .draft-line:nth-of-type(3) { width: 68%; }
+      .cg-live {
+        position: absolute;
+        left: 24px;
+        bottom: 22px;
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        color: var(--ink-3);
+        font: 600 9px/1 var(--mono);
+      }
+      .cg-live i {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: var(--success);
+        box-shadow: 0 0 0 5px rgba(25,121,83,.08);
+      }
+
+      @keyframes orbit-spin { to { transform: rotate(360deg); } }
+      @keyframes cg-profile {
+        0%, 8% { opacity: 0; transform: translate(-12px,8px) scale(.97); }
+        16%, 88% { opacity: 1; transform: none; }
+        96%,100% { opacity: 0; transform: translateY(-5px); }
+      }
+      @keyframes cg-email {
+        0%, 26% { opacity: 0; transform: translate(10px,8px) scale(.97); }
+        36%, 88% { opacity: 1; transform: none; }
+        96%,100% { opacity: 0; }
+      }
+      @keyframes cg-draft {
+        0%, 48% { opacity: 0; transform: translate(8px,12px) scale(.97); }
+        58%, 88% { opacity: 1; transform: none; }
+        96%,100% { opacity: 0; }
+      }
+
+      .principles {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        border-top: 1px solid var(--line);
+        border-bottom: 1px solid var(--line);
+      }
+      .principle { padding: 24px 0; color: var(--ink-2); font-size: 12.5px; font-weight: 570; }
+      .principle + .principle { padding-left: 28px; border-left: 1px solid var(--line); }
+      .principle b { display: block; margin-bottom: 3px; color: var(--ink); font-size: 12px; }
+
+      section { padding: 118px 0; }
+      .section-head {
+        display: grid;
+        grid-template-columns: .9fr 1.1fr;
+        align-items: end;
+        gap: 80px;
+        margin-bottom: 50px;
+      }
+      .section-head h2 {
+        max-width: 560px;
+        margin: 11px 0 0;
+        font-size: clamp(38px, 4.8vw, 60px);
+        font-weight: 630;
+        line-height: 1;
+      }
+      .section-head > p { max-width: 560px; margin: 0; color: var(--ink-2); font-size: 16px; }
+
+      .timeline {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        border-top: 1px solid var(--line);
+        border-bottom: 1px solid var(--line);
+      }
+      .timeline article { min-height: 270px; padding: 24px 30px 30px 0; }
+      .timeline article + article { padding-left: 30px; border-left: 1px solid var(--line); }
+      .timeline-index { color: var(--signal-ink); font: 650 10px/1 var(--mono); }
+      .timeline h3 { margin: 94px 0 8px; font-size: 18px; font-weight: 650; }
+      .timeline p { margin: 0; color: var(--ink-2); font-size: 13px; }
+
+      .context-grid {
+        display: grid;
+        grid-template-columns: 1.05fr .95fr;
+        gap: 16px;
+      }
+      .context-panel {
+        border: 1px solid var(--line);
+        background: rgba(255,255,255,.55);
+      }
+      .context-main { padding: 34px; }
+      .context-top { display: flex; align-items: center; justify-content: space-between; gap: 20px; }
+      .context-top h3 { margin: 8px 0 0; font-size: 28px; font-weight: 640; }
+      .profile-row {
+        display: grid;
+        grid-template-columns: 52px 1fr auto;
+        gap: 14px;
+        align-items: center;
+        margin-top: 28px;
+        padding: 16px 0;
+        border-top: 1px solid var(--line);
+        border-bottom: 1px solid var(--line);
+      }
+      .avatar {
+        display: grid;
+        place-items: center;
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        background: var(--signal-soft);
+        color: var(--signal-ink);
+        font-weight: 740;
+      }
+      .profile-row strong { display: block; font-size: 13px; }
+      .profile-row span { display: block; margin-top: 2px; color: var(--ink-3); font-size: 10px; }
+      .ready {
+        padding: 5px 8px;
+        border-radius: 999px;
+        background: var(--success-soft);
+        color: var(--success);
+        font-size: 9px;
+        font-weight: 720;
+      }
+      .context-facts { display: grid; grid-template-columns: repeat(2, 1fr); }
+      .context-fact { min-height: 126px; padding: 20px 0 0; }
+      .context-fact:nth-child(even) { padding-left: 24px; border-left: 1px solid var(--line); }
+      .context-fact small { color: var(--ink-3); font: 650 9px/1 var(--mono); text-transform: uppercase; letter-spacing: .08em; }
+      .chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
+      .chip { padding: 5px 8px; border: 1px solid var(--line); border-radius: 999px; background: rgba(255,255,255,.7); color: var(--ink-2); font-size: 9.5px; }
+
+      .message-panel {
         position: relative;
         overflow: hidden;
-        border: 1px solid rgba(255,255,255,.9);
-        border-radius: 26px;
-        background: rgba(255,255,255,.9);
-        box-shadow: var(--shadow-lg);
-        transform: rotate(1deg);
+        padding: 34px;
+        background: var(--dark);
+        color: white;
       }
-      .window-bar { display: flex; align-items: center; gap: 6px; height: 44px; padding: 0 16px; border-bottom: 1px solid var(--border); background: rgba(250,250,248,.9); }
-      .dot { width: 8px; height: 8px; border-radius: 50%; background: #d8d8d2; }
-      .window-title { margin-left: auto; margin-right: auto; color: var(--ink-3); font-size: 11px; transform: translateX(-14px); }
-      .app { display: grid; grid-template-columns: 152px 1fr; min-height: 430px; }
-      .sidebar { padding: 20px 14px; border-right: 1px solid var(--border); background: #fafaf8; }
-      .app-brand { display: flex; align-items: center; gap: 8px; margin: 0 7px 24px; font-size: 13px; font-weight: 700; }
-      .app-brand .brand-mark { width: 21px; height: 21px; }
-      .side-item { display: flex; gap: 9px; align-items: center; margin: 3px 0; padding: 9px 10px; border-radius: 9px; color: var(--ink-3); font-size: 11.5px; }
-      .side-item.active { background: #eeeee9; color: var(--ink); font-weight: 650; }
-      .side-icon { width: 14px; height: 14px; border: 1.4px solid currentColor; border-radius: 4px; opacity: .8; }
-      .app-main { padding: 30px; }
-      .app-kicker { color: var(--ink-3); font-size: 10px; font-weight: 700; letter-spacing: .09em; text-transform: uppercase; }
-      .app-title { margin: 5px 0 19px; font-size: 24px; font-weight: 680; }
-      .profile-card { display: grid; grid-template-columns: 52px 1fr auto; gap: 13px; align-items: center; padding: 16px; border: 1px solid var(--border); border-radius: 15px; background: #fff; box-shadow: var(--shadow-sm); }
-      .avatar { display: grid; place-items: center; width: 52px; height: 52px; border-radius: 16px; background: var(--accent-soft); color: var(--accent-dark); font-weight: 760; }
-      .profile-name { font-size: 13.5px; font-weight: 700; }
-      .profile-detail { margin-top: 2px; color: var(--ink-3); font-size: 10.5px; }
-      .ready { padding: 5px 9px; border-radius: 999px; background: var(--success-soft); color: var(--success); font-size: 9px; font-weight: 750; }
-      .knowledge { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 12px; }
-      .knowledge-card { min-height: 82px; padding: 13px; border: 1px solid var(--border); border-radius: 13px; background: #fbfbf9; }
-      .knowledge-label { color: var(--ink-3); font-size: 9px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; }
-      .chips { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 9px; }
-      .chip { padding: 4px 7px; border-radius: 999px; background: #fff; border: 1px solid var(--border); color: var(--ink-2); font-size: 8.5px; }
-      .orbit-card { position: absolute; right: -28px; bottom: -4px; width: 245px; padding: 16px; border: 1px solid rgba(255,255,255,.9); border-radius: 18px; background: rgba(255,255,255,.92); box-shadow: 0 24px 60px rgba(43,45,80,.18); transform: rotate(-2.5deg); }
-      .orbit-head { display: flex; align-items: center; gap: 9px; font-size: 11px; font-weight: 680; }
-      .mini-orb { width: 26px; height: 26px; border-radius: 50%; background: radial-gradient(circle at 31% 25%, #fff, transparent 40%), linear-gradient(145deg,#b9beff,#595ff4 60%,#393ebc); box-shadow: 0 6px 15px rgba(90,95,244,.3); }
-      .orbit-status { margin-left: auto; color: var(--success); font-size: 9px; }
-      .activity { display: grid; gap: 8px; margin-top: 13px; }
-      .activity-row { display: grid; grid-template-columns: 7px 1fr auto; gap: 7px; align-items: center; color: var(--ink-2); font-size: 8.5px; }
-      .activity-row i { width: 5px; height: 5px; border-radius: 50%; background: var(--accent); }
-      .activity-row time { color: var(--ink-3); }
+      .message-panel::before {
+        content: "";
+        position: absolute;
+        width: 260px;
+        height: 260px;
+        right: -120px;
+        top: -130px;
+        border: 1px solid rgba(92,92,242,.55);
+        border-radius: 50%;
+      }
+      .message-panel::after {
+        content: "";
+        position: absolute;
+        width: 11px;
+        height: 11px;
+        right: 80px;
+        top: 37px;
+        border-radius: 50%;
+        background: var(--signal);
+        box-shadow: 0 0 24px rgba(92,92,242,.8);
+      }
+      .message-panel h3 { position: relative; z-index: 1; margin: 72px 0 20px; font-size: 28px; font-weight: 620; }
+      .email {
+        position: relative;
+        z-index: 1;
+        padding: 19px 20px;
+        border: 1px solid rgba(255,255,255,.13);
+        background: rgba(255,255,255,.045);
+        color: #c9c9d0;
+        font-size: 12.5px;
+        line-height: 1.72;
+      }
+      .email strong { color: white; }
 
-      .trust { display: grid; grid-template-columns: repeat(3, 1fr); border: 1px solid var(--border); border-radius: 20px; background: rgba(255,255,255,.48); }
-      .trust-item { display: flex; align-items: center; justify-content: center; gap: 10px; padding: 19px; color: var(--ink-2); font-size: 13px; font-weight: 570; }
-      .trust-item + .trust-item { border-left: 1px solid var(--border); }
-      .trust-icon { display: grid; place-items: center; width: 23px; height: 23px; border-radius: 50%; background: var(--accent-soft); color: var(--accent-dark); font-size: 11px; font-weight: 800; }
+      .live-flow {
+        display: grid;
+        grid-template-columns: 1fr auto 1fr auto 1fr;
+        align-items: stretch;
+        border-top: 1px solid var(--line);
+        border-bottom: 1px solid var(--line);
+      }
+      .flow-node { padding: 28px 26px; }
+      .flow-node small { color: var(--ink-3); font: 650 9px/1 var(--mono); letter-spacing: .08em; text-transform: uppercase; }
+      .flow-node strong { display: block; margin-top: 12px; font-size: 15px; }
+      .flow-node p { margin: 6px 0 0; color: var(--ink-2); font-size: 12px; }
+      .flow-arrow { display: grid; place-items: center; width: 54px; color: var(--signal-ink); font-size: 20px; border-left: 1px solid var(--line); border-right: 1px solid var(--line); }
 
-      section { padding: 120px 0; }
-      .section-head { display: grid; grid-template-columns: .8fr 1.2fr; gap: 80px; align-items: end; margin-bottom: 52px; }
-      .section-head h2 { margin: 0; font-size: clamp(34px, 4.7vw, 55px); line-height: 1.02; font-weight: 650; }
-      .section-head p { max-width: 560px; margin: 0; color: var(--ink-2); font-size: 17px; }
-      .label { margin-bottom: 15px; color: var(--accent-dark); font-size: 11px; font-weight: 760; letter-spacing: .12em; text-transform: uppercase; }
-
-      .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin: 0; padding: 0; list-style: none; counter-reset: steps; }
-      .step { min-height: 270px; padding: 28px; border: 1px solid var(--border); border-radius: 22px; background: rgba(255,255,255,.62); }
-      .step::before { counter-increment: steps; content: "0" counter(steps); display: block; margin-bottom: 62px; color: var(--accent-dark); font-family: var(--mono); font-size: 11px; }
-      .step h3 { margin-bottom: 9px; font-size: 19px; font-weight: 670; }
-      .step p { margin: 0; color: var(--ink-2); font-size: 14px; }
-
-      .profile-story { display: grid; grid-template-columns: .92fr 1.08fr; gap: 18px; }
-      .story-panel { padding: 42px; border: 1px solid var(--border); border-radius: var(--r-lg); background: var(--surface); box-shadow: var(--shadow-sm); }
-      .story-panel h3 { margin-bottom: 12px; font-size: 27px; font-weight: 660; }
-      .story-panel > p { color: var(--ink-2); }
-      .fact-list { display: grid; gap: 10px; margin-top: 28px; }
-      .fact-row { display: flex; align-items: center; gap: 11px; padding: 12px 13px; border-radius: 12px; background: #f8f8f5; font-size: 13px; }
-      .fact-row span:first-child { color: var(--accent-dark); }
-      .message { position: relative; overflow: hidden; background: #191922; color: #fff; }
-      .message::after { content: ""; position: absolute; width: 280px; height: 280px; right: -120px; top: -120px; border-radius: 50%; background: rgba(90,95,244,.28); filter: blur(45px); }
-      .message-top { position: relative; z-index: 1; display: flex; justify-content: space-between; color: #aaaab5; font-size: 11px; }
-      .message h3 { position: relative; z-index: 1; margin: 42px 0 22px; max-width: 430px; font-size: 26px; }
-      .email { position: relative; z-index: 1; padding: 21px; border: 1px solid rgba(255,255,255,.12); border-radius: 16px; background: rgba(255,255,255,.06); color: #d6d6dc; font-size: 13px; line-height: 1.7; }
-      .email strong { color: #fff; }
-
-      .proof { padding-top: 60px; }
-      .screenshot-wrap { padding: 10px; border: 1px solid rgba(255,255,255,.9); border-radius: 28px; background: rgba(255,255,255,.48); box-shadow: var(--shadow-lg); }
-      .screenshot-wrap img { display: block; width: 100%; border-radius: 20px; }
-      .proof-caption { display: flex; justify-content: space-between; gap: 30px; margin-top: 22px; color: var(--ink-3); font-size: 12.5px; }
-
-      .security { display: grid; grid-template-columns: .82fr 1.18fr; gap: 80px; align-items: start; }
-      .security h2 { margin-bottom: 20px; font-size: clamp(36px, 4.7vw, 55px); line-height: 1.02; font-weight: 650; }
+      .security {
+        display: grid;
+        grid-template-columns: .82fr 1.18fr;
+        gap: 80px;
+        align-items: start;
+      }
+      .security h2 { margin: 11px 0 18px; font-size: clamp(38px, 4.8vw, 60px); line-height: 1; font-weight: 630; }
       .security > div:first-child p { color: var(--ink-2); }
-      .facts { display: grid; gap: 12px; margin: 0; padding: 0; list-style: none; }
-      .fact { display: grid; grid-template-columns: 33px 1fr; gap: 15px; padding: 22px; border: 1px solid var(--border); border-radius: 18px; background: rgba(255,255,255,.55); }
-      .tick { display: grid; place-items: center; width: 27px; height: 27px; border-radius: 50%; background: var(--success-soft); color: var(--success); font-size: 12px; font-weight: 800; }
-      .fact b { display: block; margin-bottom: 3px; font-size: 14px; }
-      .fact p { margin: 0; color: var(--ink-2); font-size: 13px; }
+      .security-list { margin: 0; padding: 0; list-style: none; border-top: 1px solid var(--line); }
+      .security-list li {
+        display: grid;
+        grid-template-columns: 28px 1fr;
+        gap: 16px;
+        padding: 21px 0;
+        border-bottom: 1px solid var(--line);
+      }
+      .check {
+        display: grid;
+        place-items: center;
+        width: 23px;
+        height: 23px;
+        border-radius: 50%;
+        background: var(--success-soft);
+        color: var(--success);
+        font-size: 10px;
+        font-weight: 800;
+      }
+      .security-list b { display: block; font-size: 13px; }
+      .security-list p { margin: 4px 0 0; color: var(--ink-2); font-size: 12px; }
 
-      .install-shell { padding: 52px; border-radius: 30px; background: #191922; color: #fff; }
-      .install-head { display: flex; align-items: end; justify-content: space-between; gap: 30px; margin-bottom: 42px; }
-      .install-head h2 { margin: 0; font-size: clamp(35px, 4.3vw, 50px); line-height: 1; }
-      .install-head p { max-width: 390px; margin: 0; color: #aaaab5; font-size: 14px; }
-      .install { display: grid; gap: 10px; margin: 0; padding: 0; list-style: none; counter-reset: install; }
-      .install > li { display: grid; grid-template-columns: 34px minmax(0, 1fr); gap: 15px; padding: 18px 0; border-top: 1px solid rgba(255,255,255,.1); }
-      .install > li::before { counter-increment: install; content: counter(install); display: grid; place-items: center; width: 28px; height: 28px; border: 1px solid rgba(255,255,255,.18); border-radius: 50%; color: #c8c8d2; font-size: 11px; }
-      .install h3 { margin: 2px 0 5px; font-size: 15px; letter-spacing: -.01em; }
-      .install p { margin: 0; color: #aaaab5; font-size: 13px; }
-      .os-tag { margin-left: 6px; padding: 3px 7px; border-radius: 999px; background: rgba(255,255,255,.1); color: #c7c7cf; font-size: 9px; letter-spacing: .06em; text-transform: uppercase; }
-      .note { margin-top: 11px; padding: 12px 14px; border-radius: 10px; background: rgba(255,194,77,.09); color: #d9c18e; font-size: 12px; }
-      .cmd { display: flex; align-items: center; gap: 10px; margin-top: 10px; padding: 9px 10px 9px 12px; border: 1px solid rgba(255,255,255,.12); border-radius: 9px; background: #101016; overflow: hidden; }
-      .cmd code { min-width: 0; flex: 1; overflow-x: auto; color: #ececf0; font-family: var(--mono); font-size: 11px; white-space: nowrap; }
-      .copy { flex: none; border: 1px solid rgba(255,255,255,.15); border-radius: 7px; padding: 5px 10px; background: rgba(255,255,255,.08); color: #fff; cursor: pointer; font-size: 10px; }
-      .install a { color: #c9caff; }
+      .install-shell {
+        padding: 52px;
+        background: var(--dark);
+        color: white;
+      }
+      .install-head { display: grid; grid-template-columns: 1.1fr .9fr; gap: 60px; align-items: end; margin-bottom: 38px; }
+      .install-head h2 { margin: 0; font-size: clamp(38px, 4.4vw, 55px); line-height: 1; font-weight: 620; }
+      .install-head p { margin: 0; color: #a8a8b1; font-size: 13px; }
+      .install { margin: 0; padding: 0; list-style: none; counter-reset: install; }
+      .install > li {
+        display: grid;
+        grid-template-columns: 34px 1fr;
+        gap: 15px;
+        padding: 18px 0;
+        border-top: 1px solid rgba(255,255,255,.11);
+      }
+      .install > li::before {
+        counter-increment: install;
+        content: counter(install);
+        display: grid;
+        place-items: center;
+        width: 26px;
+        height: 26px;
+        border: 1px solid rgba(255,255,255,.2);
+        border-radius: 50%;
+        color: #c8c8cf;
+        font-size: 10px;
+      }
+      .install h3 { margin: 1px 0 4px; font-size: 13.5px; letter-spacing: -.01em; }
+      .install p { margin: 0; color: #aaaab3; font-size: 12px; }
+      .install a { color: #c8c8ff; }
+      .os-tag { margin-left: 5px; color: #8f8f99; font: 650 8px/1 var(--mono); text-transform: uppercase; letter-spacing: .06em; }
+      .cmd {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-top: 9px;
+        padding: 9px 10px 9px 12px;
+        border: 1px solid rgba(255,255,255,.12);
+        background: #101014;
+        overflow: hidden;
+      }
+      .cmd code { min-width: 0; flex: 1; overflow-x: auto; color: #ededf0; font: 10.5px/1.4 var(--mono); white-space: nowrap; }
+      .copy {
+        flex: none;
+        border: 1px solid rgba(255,255,255,.15);
+        border-radius: 6px;
+        padding: 5px 9px;
+        background: rgba(255,255,255,.07);
+        color: white;
+        font-size: 9.5px;
+        cursor: pointer;
+      }
 
-      .final { padding: 92px 0 108px; text-align: center; }
-      .final-orb { position: relative; width: 78px; height: 78px; margin: 0 auto 26px; border-radius: 50%; background: radial-gradient(circle at 31% 25%, #fff, transparent 40%), linear-gradient(145deg,#b9beff,#595ff4 60%,#393ebc); box-shadow: 0 15px 40px rgba(90,95,244,.33); }
-      .final h2 { max-width: 760px; margin: 0 auto 17px; font-size: clamp(37px, 5.2vw, 62px); line-height: 1; font-weight: 650; }
-      .final p { max-width: 540px; margin: 0 auto; color: var(--ink-2); }
+      .final {
+        position: relative;
+        overflow: hidden;
+        padding: 105px 0 112px;
+        text-align: center;
+      }
+      .final-mark { margin: 0 auto 28px; width: 76px; height: 76px; }
+      .final-mark::before { inset: 8px; border-width: 6px; }
+      .final-mark::after { width: 18px; height: 18px; margin-left: -9px; }
+      .final h2 {
+        max-width: 780px;
+        margin: 0 auto 16px;
+        font-size: clamp(42px, 5.4vw, 66px);
+        font-weight: 620;
+        line-height: .98;
+      }
+      .final p { max-width: 520px; margin: 0 auto; color: var(--ink-2); }
       .final .actions { justify-content: center; }
 
-      footer { padding: 26px 0 45px; border-top: 1px solid var(--border); color: var(--ink-3); font-size: 12px; }
+      footer {
+        padding: 28px 0 42px;
+        border-top: 1px solid var(--line);
+        color: var(--ink-3);
+        font-size: 11px;
+      }
       .footer-inner { display: flex; justify-content: space-between; gap: 20px; }
-      .footer-links { display: flex; gap: 20px; }
+      .footer-links { display: flex; gap: 18px; }
       .footer-links a { text-decoration: none; }
       .footer-links a:hover { color: var(--ink); }
 
-      @media (prefers-reduced-motion: no-preference) {
-        .final-orb, .brand-mark::before { animation: breathe 7s ease-in-out infinite; }
-        @keyframes breathe { 50% { transform: scale(1.035); } }
+      @media (prefers-reduced-motion: reduce) {
+        *, *::before, *::after {
+          scroll-behavior: auto !important;
+          animation-duration: .001ms !important;
+          animation-iteration-count: 1 !important;
+          transition-duration: .001ms !important;
+        }
       }
-      @media (max-width: 900px) {
-        .hero { grid-template-columns: 1fr; min-height: auto; padding-top: 86px; }
+      @media (max-width: 980px) {
+        .hero { grid-template-columns: 1fr; min-height: auto; gap: 58px; padding-top: 88px; }
         .hero-copy { text-align: center; }
-        .hero-copy > p { margin-left: auto; margin-right: auto; }
+        .hero-copy > p { margin-inline: auto; }
         .actions, .dl-alts { justify-content: center; }
-        .product-stage { width: min(620px, 100%); margin: 0 auto; }
-        .section-head, .security { grid-template-columns: 1fr; gap: 26px; }
-        .profile-story { grid-template-columns: 1fr; }
+        .cg-stage { width: min(650px, 100%); margin: 0 auto; }
+        .section-head, .security, .install-head { grid-template-columns: 1fr; gap: 24px; }
+        .context-grid { grid-template-columns: 1fr; }
       }
-      @media (max-width: 700px) {
-        .shell { width: min(100% - 28px, 1160px); }
-        .nav { top: 8px; height: 56px; margin-top: 8px; padding-left: 14px; }
+      @media (max-width: 720px) {
+        :root { --shell: min(100% - 28px, 1180px); }
+        body { background-size: 48px 48px; }
+        .nav-wrap { padding-top: 8px; }
+        .nav { height: 55px; padding-left: 13px; }
         .nav-links > a:not(.nav-download) { display: none; }
-        .nav-download { padding: 8px 13px; }
-        .hero { gap: 44px; padding: 68px 0 62px; }
-        .hero h1 { font-size: clamp(43px, 14vw, 64px); }
-        .hero-copy > p { font-size: 17px; }
+        .nav-links .nav-download { padding: 8px 12px; }
+        .hero { padding: 70px 0 58px; }
+        .hero h1 { font-size: clamp(46px, 14vw, 66px); }
+        .hero-copy > p { font-size: 16px; }
         .actions { align-items: stretch; flex-direction: column; }
         .btn { width: 100%; }
-        .product-stage { min-height: 390px; }
-        .window { border-radius: 20px; transform: none; }
-        .app { grid-template-columns: 1fr; min-height: 340px; }
-        .sidebar { display: none; }
-        .app-main { padding: 22px 18px; }
-        .knowledge { grid-template-columns: 1fr; }
-        .knowledge-card:last-child { display: none; }
-        .orbit-card { right: -6px; bottom: -30px; width: 210px; }
-        .trust { grid-template-columns: 1fr; }
-        .trust-item { justify-content: flex-start; }
-        .trust-item + .trust-item { border-left: 0; border-top: 1px solid var(--border); }
+        .cg-stage { min-height: 440px; }
+        .cg-shell { inset: 0; transform: none; }
+        .cg-canvas { min-height: 395px; }
+        .cg-orbit { width: 140px; height: 140px; margin: -70px 0 0 -70px; }
+        .cg-ring { inset: 12px; border-width: 8px; }
+        .cg-satellite { width: 18px; height: 18px; margin-left: -9px; }
+        .cg-profile { left: 13px; top: 61px; width: 155px; }
+        .cg-email { right: 12px; top: 62px; width: 150px; }
+        .cg-draft { right: 13px; bottom: 23px; width: 185px; }
+        .principles { grid-template-columns: 1fr; }
+        .principle { padding: 18px 0; }
+        .principle + .principle { padding-left: 0; border-left: 0; border-top: 1px solid var(--line); }
         section { padding: 82px 0; }
-        .section-head { margin-bottom: 32px; }
-        .steps { grid-template-columns: 1fr; }
-        .step { min-height: 0; }
-        .step::before { margin-bottom: 30px; }
-        .story-panel { padding: 26px 22px; }
-        .proof { padding-top: 30px; }
-        .proof-caption { display: block; }
-        .install-shell { padding: 32px 22px; border-radius: 22px; }
-        .install-head { display: block; }
-        .install-head p { margin-top: 15px; }
+        .section-head { margin-bottom: 34px; }
+        .timeline { grid-template-columns: 1fr; }
+        .timeline article { min-height: 0; padding: 22px 0; }
+        .timeline article + article { padding-left: 0; border-left: 0; border-top: 1px solid var(--line); }
+        .timeline h3 { margin-top: 32px; }
+        .context-main, .message-panel { padding: 25px 21px; }
+        .context-facts { grid-template-columns: 1fr; }
+        .context-fact:nth-child(even) { padding-left: 0; border-left: 0; border-top: 1px solid var(--line); }
+        .live-flow { grid-template-columns: 1fr; }
+        .flow-arrow { width: auto; min-height: 46px; border: 0; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); transform: rotate(90deg); }
+        .install-shell { padding: 34px 22px; }
         .footer-inner { display: block; }
-        .footer-links { margin-top: 12px; }
+        .footer-links { margin-top: 12px; flex-wrap: wrap; }
       }
     </style>
   </head>
+
   <body>
-    <nav class="nav shell" aria-label="Primary navigation">
-      <a class="brand" href="#top" aria-label="Orbit home"><span class="brand-mark" aria-hidden="true"></span>Orbit</a>
-      <div class="nav-links">
-        <a href="#how">How it works</a>
-        <a href="#profile">Your profile</a>
-        <a href="#security">Security</a>
-        <a class="nav-download" href="#download">Download</a>
-      </div>
-    </nav>
+    <div class="nav-wrap">
+      <nav class="nav" aria-label="Primary navigation">
+        <a class="brand" href="#top" aria-label="Orbit home">
+          <span class="orbit-mark" aria-hidden="true"></span><span>Orbit</span>
+        </a>
+        <div class="nav-links">
+          <a href="#how">How it works</a>
+          <a href="#profile">Your context</a>
+          <a href="#security">Security</a>
+          <a class="nav-download" href="#download">Download</a>
+        </div>
+      </nav>
+    </div>
 
     <main id="top">
       <div class="shell">
         <header class="hero">
           <div class="hero-copy">
-            <div class="eyebrow">Built for ambitious students</div>
-            <h1>Turn your background into warm introductions.</h1>
+            <div class="kicker">AI networking agent</div>
+            <h1>Meet the right people without living on LinkedIn.</h1>
             <p>
-              Orbit finds the right professionals, verifies their work email, and writes thoughtful
-              outreach grounded in who you actually are — while you stay in control.
+              Orbit researches professionals, verifies work email, and writes thoughtful outreach
+              grounded in your actual background. You see the work happen and stay in control.
             </p>
             <div class="actions">
               <a class="btn" id="dl-btn" href="https://github.com/FutureWarren/recruiting-agent/releases/latest">
                 Download Orbit <span class="arrow" aria-hidden="true">↘</span>
               </a>
-              <a class="btn btn-secondary" href="#how">See how it works</a>
+              <a class="btn btn-secondary" href="#how">See the system</a>
             </div>
-            <div class="dl-meta" id="dl-meta">Mac and Windows · free to start · about two minutes to set up</div>
-            <div class="dl-alts" id="dl-alts"></div>
+            <div class="download-info">
+              <div class="dl-meta" id="dl-meta">Mac and Windows · free · no account needed</div>
+              <div class="dl-alts" id="dl-alts"></div>
+            </div>
           </div>
 
-          <div class="product-stage" aria-label="Orbit profile preview">
-            <div class="window">
-              <div class="window-bar"><i class="dot"></i><i class="dot"></i><i class="dot"></i><span class="window-title">Orbit</span></div>
-              <div class="app">
-                <aside class="sidebar">
-                  <div class="app-brand"><span class="brand-mark"></span>Orbit</div>
-                  <div class="side-item active"><i class="side-icon"></i>Your profile</div>
-                  <div class="side-item"><i class="side-icon"></i>Campaigns</div>
-                  <div class="side-item"><i class="side-icon"></i>Connections</div>
-                  <div class="side-item"><i class="side-icon"></i>Settings</div>
-                </aside>
-                <div class="app-main">
-                  <div class="app-kicker">Your profile</div>
-                  <div class="app-title">What Orbit knows about you</div>
-                  <div class="profile-card">
-                    <div class="avatar">FW</div>
-                    <div><div class="profile-name">Future Wei</div><div class="profile-detail">NYU Stern · Class of 2027</div></div>
-                    <div class="ready">Ready</div>
-                  </div>
-                  <div class="knowledge">
-                    <div class="knowledge-card"><div class="knowledge-label">Experience</div><div class="chips"><span class="chip">Growth equity</span><span class="chip">Financial modeling</span><span class="chip">Founder</span></div></div>
-                    <div class="knowledge-card"><div class="knowledge-label">Recruiting for</div><div class="chips"><span class="chip">Investment Banking</span><span class="chip">New York</span></div></div>
+          <div class="cg-stage" aria-label="Animation showing Orbit researching a professional, verifying email, and drafting outreach">
+            <div class="cg-shell">
+              <div class="cg-top">
+                <i class="cg-dot"></i><i class="cg-dot"></i><i class="cg-dot"></i>
+                <span class="cg-title">Orbit · live workspace</span>
+              </div>
+              <div class="cg-canvas">
+                <div class="cg-label">NETWORKING PIPELINE / LIVE</div>
+
+                <div class="beam beam-a"></div>
+                <div class="beam beam-b"></div>
+                <div class="beam beam-c"></div>
+
+                <div class="cg-orbit">
+                  <div class="cg-ring"></div>
+                  <div class="cg-satellite-wrap"><i class="cg-satellite"></i></div>
+                  <div class="cg-center">
+                    <div><strong>Orbit</strong><span>working beside you</span></div>
                   </div>
                 </div>
-              </div>
-            </div>
-            <div class="orbit-card">
-              <div class="orbit-head"><span class="mini-orb"></span>Orbit is working <span class="orbit-status">● live</span></div>
-              <div class="activity">
-                <div class="activity-row"><i></i><span>Found Sarah Chen · Greenhill</span><time>now</time></div>
-                <div class="activity-row"><i></i><span>Work email verified</span><time>now</time></div>
-                <div class="activity-row"><i></i><span>Drafting a personal note</span><time>now</time></div>
+
+                <div class="cg-card cg-profile">
+                  <small>01 · Research</small>
+                  <b>Sarah Chen</b>
+                  <p>Analyst · Greenhill · New York</p>
+                  <span class="cg-match">91% fit</span>
+                </div>
+
+                <div class="cg-card cg-email">
+                  <small>02 · Verify</small>
+                  <b>s.chen@greenhill.com</b>
+                  <p>Professional address found</p>
+                  <span class="cg-verified">verified</span>
+                </div>
+
+                <div class="cg-card cg-draft">
+                  <small>03 · Compose</small>
+                  <b>Grounded in your NYU + finance context</b>
+                  <div class="draft-line"></div>
+                  <div class="draft-line"></div>
+                  <div class="draft-line"></div>
+                </div>
+
+                <div class="cg-live"><i></i> visible browser · interruptible</div>
               </div>
             </div>
           </div>
         </header>
 
-        <div class="trust" aria-label="Product principles">
-          <div class="trust-item"><span class="trust-icon">✓</span>Runs on your computer</div>
-          <div class="trust-item"><span class="trust-icon">◎</span>You see every browser action</div>
-          <div class="trust-item"><span class="trust-icon">⌁</span>Never stores your passwords</div>
+        <div class="principles">
+          <div class="principle"><b>Local first</b>Runs on your own computer.</div>
+          <div class="principle"><b>Visible by design</b>You can watch every browser action.</div>
+          <div class="principle"><b>Human control</b>Pause, edit, or stop whenever you want.</div>
         </div>
       </div>
 
       <section id="how">
         <div class="shell">
           <div class="section-head">
-            <div><div class="label">How Orbit works</div><h2>A networking pipeline, not another spreadsheet.</h2></div>
-            <p>Give Orbit a goal and a little context. It handles the repetitive work one person at a time, leaving you with a visible trail of every decision and action.</p>
+            <div>
+              <div class="kicker">How Orbit works</div>
+              <h2>One quiet system from target to introduction.</h2>
+            </div>
+            <p>
+              Tell Orbit who you want to meet. It handles the repetitive research one person at a
+              time, keeps a visible trail of what it did, and never needs you to maintain another spreadsheet.
+            </p>
           </div>
-          <ol class="steps">
-            <li class="step"><h3>Set a precise target</h3><p>Choose the fields, firms, roles, location, and number of professionals you want to reach.</p></li>
-            <li class="step"><h3>Let Orbit research</h3><p>It evaluates real LinkedIn profiles and skips people who are not a meaningful fit.</p></li>
-            <li class="step"><h3>Send a human note</h3><p>Orbit verifies the email, writes from your background, and sends through your own Gmail.</p></li>
-          </ol>
+
+          <div class="timeline">
+            <article>
+              <div class="timeline-index">01 / TARGET</div>
+              <h3>Define the people that matter.</h3>
+              <p>Choose fields, firms, roles, locations, and how many professionals you want to reach.</p>
+            </article>
+            <article>
+              <div class="timeline-index">02 / RESEARCH</div>
+              <h3>Orbit evaluates real profiles.</h3>
+              <p>It researches LinkedIn one profile at a time and skips people who are not a meaningful fit.</p>
+            </article>
+            <article>
+              <div class="timeline-index">03 / INTRODUCE</div>
+              <h3>Send a note with a reason to reply.</h3>
+              <p>Orbit verifies the work email, writes from your background, and sends through your own Gmail.</p>
+            </article>
+          </div>
         </div>
       </section>
 
       <section id="profile">
         <div class="shell">
           <div class="section-head">
-            <div><div class="label">Your Orbit profile</div><h2>Personal starts with context.</h2></div>
-            <p>Your profile is the source of truth for every introduction. Orbit turns your résumé and goals into a clear, editable picture of your experience — so every note sounds specific without inventing anything.</p>
+            <div>
+              <div class="kicker">Your Orbit context</div>
+              <h2>Personal outreach starts with a source of truth.</h2>
+            </div>
+            <p>
+              Orbit turns your résumé and goals into editable context. It knows what is safe to use,
+              what matters for a specific person, and what it should never invent.
+            </p>
           </div>
-          <div class="profile-story">
-            <div class="story-panel">
-              <h3>Review what Orbit learned.</h3>
-              <p>Confirm the details that matter before a campaign begins. Update your recruiting interests once and future outreach stays aligned.</p>
-              <div class="fact-list">
-                <div class="fact-row"><span>✓</span>Education and graduation year</div>
-                <div class="fact-row"><span>✓</span>Experience, interests, and relevant skills</div>
-                <div class="fact-row"><span>✓</span>Preferred voice and outreach goals</div>
+
+          <div class="context-grid">
+            <div class="context-panel context-main">
+              <div class="context-top">
+                <div>
+                  <div class="kicker">Profile memory</div>
+                  <h3>What Orbit knows about you</h3>
+                </div>
+                <span class="ready">Ready</span>
+              </div>
+
+              <div class="profile-row">
+                <div class="avatar">FW</div>
+                <div><strong>Future Wei</strong><span>NYU Stern · Class of 2027</span></div>
+                <span class="micro">editable</span>
+              </div>
+
+              <div class="context-facts">
+                <div class="context-fact">
+                  <small>Experience</small>
+                  <div class="chips"><span class="chip">M&A</span><span class="chip">Growth equity</span><span class="chip">Financial modeling</span></div>
+                </div>
+                <div class="context-fact">
+                  <small>Recruiting for</small>
+                  <div class="chips"><span class="chip">Investment Banking</span><span class="chip">New York</span><span class="chip">Boutiques</span></div>
+                </div>
               </div>
             </div>
-            <div class="story-panel message">
-              <div class="message-top"><span>PERSONALIZED BY ORBIT</span><span>Ready to send</span></div>
+
+            <div class="context-panel message-panel">
+              <div class="kicker" style="color:#aaaaff">Grounded draft</div>
               <h3>Your story becomes the reason to reply.</h3>
-              <div class="email"><strong>Hi Sarah —</strong><br /><br />I’m a junior at NYU exploring boutique investment banking. Your move from Stern into Greenhill’s industrials team stood out, especially after my own experience building operating models for founder-led businesses…</div>
+              <div class="email">
+                <strong>Hi Sarah —</strong><br><br>
+                I’m a junior at NYU exploring boutique investment banking. Your move from Stern into
+                Greenhill’s industrials team stood out, especially after my own experience building
+                operating models for founder-led businesses…
+              </div>
             </div>
           </div>
         </div>
       </section>
 
-      <section class="proof">
+      <section>
         <div class="shell">
           <div class="section-head">
-            <div><div class="label">Visible by design</div><h2>Watch the work happen.</h2></div>
-            <p>Orbit shows who it is researching, why they qualify, where each prospect sits in the pipeline, and what has already been sent.</p>
+            <div>
+              <div class="kicker">Visible by design</div>
+              <h2>You always know what Orbit is doing next.</h2>
+            </div>
+            <p>
+              Research, qualification, email verification, and sending are distinct states. That makes
+              the agent understandable instead of magical — and easy to interrupt when you want to step in.
+            </p>
           </div>
-          <div class="screenshot-wrap"><img src="dashboard.png" alt="Orbit campaign dashboard showing the current prospect, pipeline progress, and a live activity feed" loading="lazy" /></div>
-          <div class="proof-caption"><span>Every browser action stays visible and interruptible.</span><span>Prospects are remembered across campaigns, so nobody gets emailed twice.</span></div>
+
+          <div class="live-flow" aria-label="Orbit workflow">
+            <div class="flow-node"><small>Current prospect</small><strong>Sarah Chen</strong><p>Profile opened · fit being evaluated</p></div>
+            <div class="flow-arrow">→</div>
+            <div class="flow-node"><small>Verification</small><strong>Work email found</strong><p>Apollo match checked before drafting</p></div>
+            <div class="flow-arrow">→</div>
+            <div class="flow-node"><small>Outreach</small><strong>Personal note ready</strong><p>Sent from your Gmail, under your name</p></div>
+          </div>
         </div>
       </section>
 
       <section id="security">
         <div class="shell security">
-          <div><div class="label">Your accounts stay yours</div><h2>Control is part of the product.</h2><p>Orbit asks for LinkedIn and Gmail because that is where the work happens. It opens a real browser and lets you sign in yourself.</p></div>
-          <ul class="facts">
-            <li class="fact"><span class="tick">✓</span><div><b>Passwords are never stored or seen.</b><p>You sign in directly with each service. Orbit only keeps the same local session your browser remembers.</p></div></li>
-            <li class="fact"><span class="tick">✓</span><div><b>Your data stays on your computer.</b><p>Your résumé, contacts, and account sessions are stored locally rather than uploaded.</p></div></li>
-            <li class="fact"><span class="tick">✓</span><div><b>You can stop at any moment.</b><p>The browser stays visible while Orbit searches, evaluates profiles, and sends.</p></div></li>
+          <div>
+            <div class="kicker">Your accounts stay yours</div>
+            <h2>Control is part of the product.</h2>
+            <p>
+              Orbit asks for LinkedIn and Gmail because that is where the work happens. It opens a real
+              browser and lets you sign in yourself.
+            </p>
+          </div>
+          <ul class="security-list">
+            <li>
+              <span class="check">✓</span>
+              <div><b>Passwords are never stored or seen.</b><p>You sign in directly with each service. Orbit only keeps the same local browser session.</p></div>
+            </li>
+            <li>
+              <span class="check">✓</span>
+              <div><b>Your profile and campaign history stay local.</b><p>Your résumé, prospects, and browser sessions live on your computer rather than in a shared dashboard.</p></div>
+            </li>
+            <li>
+              <span class="check">✓</span>
+              <div><b>You can stop at any moment.</b><p>The managed browser remains visible while Orbit searches, evaluates profiles, and sends.</p></div>
+            </li>
           </ul>
         </div>
       </section>
 
       <section id="download">
         <div class="shell install-shell">
-          <div class="install-head"><h2>From download to first campaign in minutes.</h2><p>Orbit is available for macOS 11+ and Windows 10/11. Google Chrome, LinkedIn, and Gmail are required.</p></div>
+          <div class="install-head">
+            <h2>From download to first campaign in minutes.</h2>
+            <p>Orbit is available for macOS 11+ and Windows 10/11. Google Chrome, LinkedIn, and Gmail are required.</p>
+          </div>
+
           <ol class="install os-mac" id="install-mac">
-            <li><div><h3>Install Orbit <span class="os-tag">macOS</span></h3><p>Open the <code>.dmg</code> and drag Orbit (Recruiting Agent) into Applications.</p></div></li>
-            <li><div><h3>Open it once</h3><p>If macOS says the beta is damaged or cannot be opened, run the command below in Terminal, then open it again.</p><div class="cmd"><code id="xattr">xattr -cr "/Applications/Recruiting Agent.app"</code><button class="copy" id="copy-btn" type="button">Copy</button></div></div></li>
+            <li><div><h3>Install Orbit <span class="os-tag">macOS</span></h3><p>Open the <code>.dmg</code> and drag Orbit into Applications.</p></div></li>
+            <li>
+              <div>
+                <h3>Open it once</h3>
+                <p>If macOS says the beta is damaged or cannot be opened, run this once in Terminal, then open Orbit again.</p>
+                <div class="cmd"><code id="xattr">xattr -cr "/Applications/Orbit.app"</code><button class="copy" id="copy-btn" type="button">Copy</button></div>
+              </div>
+            </li>
           </ol>
+
           <ol class="install os-win" id="install-win">
             <li><div><h3>Install Orbit <span class="os-tag">Windows</span></h3><p>Run the <code>.exe</code>. If Windows protects your PC, choose <b>More info</b>, then <b>Run anyway</b>; this beta is not code-signed yet.</p></div></li>
           </ol>
+
           <ol class="install" start="3">
-            <li><div><h3>Make sure Chrome is installed</h3><p>Orbit uses a separate Chrome window so its work stays apart from your everyday browsing. <a href="https://www.google.com/chrome" rel="noopener">Get Chrome</a></p></div></li>
-            <li><div><h3>Create your Orbit profile</h3><p>Add your background and résumé, set a recruiting goal, connect LinkedIn and Gmail, then start your first campaign.</p></div></li>
+            <li><div><h3>Make sure Chrome is installed</h3><p>Orbit uses a separate Chrome window so its work stays apart from everyday browsing. <a href="https://www.google.com/chrome" rel="noopener">Get Chrome</a>.</p></div></li>
+            <li><div><h3>Create your Orbit profile</h3><p>Add your background and résumé, set a networking goal, connect LinkedIn and Gmail, then start your first campaign.</p></div></li>
           </ol>
         </div>
       </section>
 
       <section class="final">
         <div class="shell">
-          <div class="final-orb" aria-hidden="true"></div>
-          <h2>Meet the people who can change your path.</h2>
-          <p>Build a thoughtful networking habit without turning it into a second full-time job.</p>
-          <div class="actions"><a class="btn" id="dl-btn-final" href="https://github.com/FutureWarren/recruiting-agent/releases/latest">Download Orbit <span class="arrow" aria-hidden="true">↘</span></a></div>
+          <span class="orbit-mark final-mark" aria-hidden="true"></span>
+          <h2>Build relationships while Orbit handles the repetitive work.</h2>
+          <p>Networking should feel intentional, not like a second full-time job.</p>
+          <div class="actions">
+            <a class="btn" id="dl-btn-final" href="https://github.com/FutureWarren/recruiting-agent/releases/latest">
+              Download Orbit <span class="arrow" aria-hidden="true">↘</span>
+            </a>
+          </div>
         </div>
       </section>
     </main>
 
     <footer>
-      <div class="shell footer-inner"><span>© 2026 Orbit · Built for NYU students</span><div class="footer-links"><a href="https://github.com/FutureWarren/recruiting-agent" rel="noopener">GitHub</a><a href="https://github.com/FutureWarren/recruiting-agent/releases" rel="noopener">All releases</a><a href="#security">Security</a></div></div>
+      <div class="shell footer-inner">
+        <span>© 2026 Orbit · Built for ambitious students</span>
+        <div class="footer-links">
+          <a href="https://github.com/FutureWarren/recruiting-agent" rel="noopener">GitHub</a>
+          <a href="https://github.com/FutureWarren/recruiting-agent/releases" rel="noopener">All releases</a>
+          <a href="#security">Security</a>
+        </div>
+      </div>
     </footer>
 
     <script>
@@ -524,10 +1088,22 @@
         const extension = os === 'win' ? '.exe' : '.dmg'
         const candidates = assets.filter((asset) => asset.name.toLowerCase().endsWith(extension))
         if (!candidates.length) return undefined
-        const match = arch === 'arm64'
+
+        const exact = arch === 'arm64'
           ? candidates.find((asset) => /arm64/i.test(asset.name))
           : candidates.find((asset) => !/arm64/i.test(asset.name))
-        return match || (candidates.length === 1 ? candidates[0] : undefined)
+
+        if (exact) return exact
+        if (candidates.length === 1) return candidates[0]
+
+        // Some electron-builder releases use one universal Windows installer
+        // with no architecture in the filename. Prefer that over reporting a
+        // missing build to Windows-on-ARM.
+        if (os === 'win') {
+          const universal = candidates.find((asset) => !/arm64|x64|ia32/i.test(asset.name))
+          if (universal) return universal
+        }
+        return undefined
       }
 
       const OS_LABEL = { mac: 'Mac', win: 'Windows' }
@@ -582,6 +1158,7 @@
           const archName = ARCH_LABEL[targetOs][targetArch]
           const label = archName ? `Download for ${OS_LABEL[targetOs]} (${archName})` : `Download for ${OS_LABEL[targetOs]}`
           const mb = Math.round(asset.size / 1048576)
+
           button.href = asset.browser_download_url
           button.firstChild.textContent = `${label} `
           finalButton.href = asset.browser_download_url
@@ -592,11 +1169,18 @@
           const otherArch = targetArch === 'arm64' ? 'x64' : 'arm64'
           const otherArchAsset = assetFor(assets, targetOs, otherArch)
           if (otherArchAsset && otherArchAsset.name !== asset.name) {
-            addAlt(targetOs === 'mac' ? `I have an ${ARCH_LABEL.mac[otherArch]} Mac` : 'I have an ARM Windows PC', () => show(targetOs, otherArch))
+            addAlt(
+              targetOs === 'mac' ? `I have an ${ARCH_LABEL.mac[otherArch]} Mac` : 'I have an ARM Windows PC',
+              () => show(targetOs, otherArch)
+            )
           }
+
           const otherOs = targetOs === 'mac' ? 'win' : 'mac'
           if (assetFor(assets, otherOs, 'x64') || assetFor(assets, otherOs, 'arm64')) {
-            addAlt(`I am on ${OS_LABEL[otherOs]}`, () => show(otherOs, assetFor(assets, otherOs, detectedArch || 'x64') ? detectedArch || 'x64' : 'x64'))
+            addAlt(`I am on ${OS_LABEL[otherOs]}`, () => {
+              const candidateArch = assetFor(assets, otherOs, detectedArch || 'x64') ? detectedArch || 'x64' : 'x64'
+              show(otherOs, candidateArch)
+            })
           }
           return true
         }
