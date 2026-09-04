@@ -3,774 +3,563 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Recruiting Agent — your AI networking agent</title>
+    <meta name="theme-color" content="#f7f7f2" />
+    <title>Orbit — AI networking for ambitious students</title>
     <meta
       name="description"
-      content="A desktop agent that finds the right professionals on LinkedIn, verifies their email, writes a personal introduction and sends it from your own Gmail. Built for NYU students."
+      content="Orbit finds the right professionals, verifies their work email, and writes personal outreach grounded in your background — all from a browser you control."
     />
-    <meta property="og:title" content="Recruiting Agent" />
+    <meta property="og:title" content="Orbit — your AI networking agent" />
     <meta
       property="og:description"
-      content="Tell it where you want to work. It finds the right people and does the outreach."
+      content="Build a thoughtful networking pipeline without spending every night searching LinkedIn."
     />
     <meta property="og:type" content="website" />
     <link rel="icon" href="icon.png" />
     <style>
-      /* Tokens mirrored from the app (app/src/renderer/src/theme.css) so the
-         site and the product are visibly one thing. */
       :root {
-        --bg: #f7f7f4;
+        --bg: #f7f7f2;
+        --bg-deep: #efefe8;
         --surface: #ffffff;
-        --surface-2: #fbfbf9;
-        --ink: #16161d;
-        --ink-2: #55555f;
-        --ink-3: #8b8b96;
-        --border: #e7e7e1;
-        --border-strong: #d8d8d0;
-        --accent: #4f5df0;
-        --accent-soft: #eef0fe;
-        --accent-ink: #3a45c4;
-        --success: #178a5b;
-        --warn: #b07d1e;
-        --warn-soft: #fdf4e0;
-        --font-sans: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Inter,
-          Roboto, sans-serif;
-        --font-mono: 'SF Mono', ui-monospace, Menlo, Consolas, monospace;
-        --radius-md: 12px;
-        --radius-lg: 18px;
-        --shadow-sm: 0 1px 2px rgba(22, 22, 29, 0.05);
-        --shadow-md: 0 6px 24px rgba(22, 22, 29, 0.07);
+        --surface-soft: rgba(255, 255, 255, 0.68);
+        --ink: #17171c;
+        --ink-2: #5f5f68;
+        --ink-3: #8b8b93;
+        --border: rgba(23, 23, 28, 0.1);
+        --border-strong: rgba(23, 23, 28, 0.17);
+        --accent: #5a5ff4;
+        --accent-dark: #4044c9;
+        --accent-soft: #eeeeff;
+        --success: #16845b;
+        --success-soft: #e8f7f0;
+        --warn-soft: #fff6df;
+        --font: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Inter, sans-serif;
+        --mono: "SF Mono", ui-monospace, Menlo, Consolas, monospace;
+        --r-sm: 12px;
+        --r-md: 18px;
+        --r-lg: 28px;
+        --shadow-sm: 0 1px 2px rgba(23, 23, 28, 0.04), 0 8px 24px rgba(23, 23, 28, 0.04);
+        --shadow-lg: 0 26px 80px rgba(48, 48, 74, 0.12), 0 2px 10px rgba(23, 23, 28, 0.04);
       }
 
-      * {
-        box-sizing: border-box;
-      }
-      html {
-        scroll-behavior: smooth;
-      }
+      * { box-sizing: border-box; }
+      html { scroll-behavior: smooth; }
       body {
         margin: 0;
-        background: var(--bg);
+        overflow-x: hidden;
+        background:
+          radial-gradient(circle at 50% -180px, rgba(128, 132, 255, 0.2), transparent 450px),
+          var(--bg);
         color: var(--ink);
-        font-family: var(--font-sans);
+        font-family: var(--font);
         font-size: 16px;
-        line-height: 1.6;
+        line-height: 1.55;
         -webkit-font-smoothing: antialiased;
       }
-      h1,
-      h2,
-      h3 {
-        margin: 0;
-        font-weight: 650;
-        letter-spacing: -0.025em;
-        text-wrap: balance;
-      }
-      p,
-      li {
-        text-wrap: pretty;
-      }
-      a {
-        color: var(--accent-ink);
-      }
-      :focus-visible {
-        outline: 2px solid var(--accent);
-        outline-offset: 3px;
-        border-radius: 8px;
-      }
+      a { color: inherit; }
+      button, input { font: inherit; }
+      h1, h2, h3, p { margin-top: 0; }
+      h1, h2, h3 { letter-spacing: -0.035em; text-wrap: balance; }
+      p { text-wrap: pretty; }
+      :focus-visible { outline: 3px solid rgba(90, 95, 244, 0.35); outline-offset: 3px; }
 
-      .wrap {
-        width: 100%;
-        max-width: 940px;
-        margin: 0 auto;
-        padding: 0 24px;
+      .shell { width: min(1160px, calc(100% - 48px)); margin: 0 auto; }
+      .nav {
+        position: sticky;
+        top: 12px;
+        z-index: 20;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        height: 62px;
+        margin-top: 12px;
+        padding: 0 10px 0 18px;
+        border: 1px solid rgba(255, 255, 255, 0.8);
+        border-radius: 18px;
+        background: rgba(247, 247, 242, 0.82);
+        box-shadow: 0 10px 40px rgba(23, 23, 28, 0.06);
+        backdrop-filter: blur(18px);
       }
-
-      /* ---------------- Hero ---------------- */
-
-      .hero {
-        text-align: center;
-        padding: 78px 0 66px;
-      }
-      .hero h1 {
-        font-size: clamp(34px, 6vw, 52px);
-        line-height: 1.05;
-        margin-top: 26px;
-        letter-spacing: -0.03em;
-      }
-      .hero-sub {
-        margin: 18px auto 0;
-        max-width: 34ch;
-        font-size: clamp(16px, 2.4vw, 19px);
-        color: var(--ink-2);
-      }
-
-      /* The orb — the same object as the app icon and the in-app agent.
-         Pure CSS so the page stays a single file with no assets. */
-      .orb {
-        position: relative;
-        width: 104px;
-        height: 104px;
-        margin: 0 auto;
-      }
-      .orb::before {
-        content: '';
+      .brand { display: inline-flex; align-items: center; gap: 10px; text-decoration: none; font-weight: 720; }
+      .brand-mark { width: 27px; height: 27px; position: relative; }
+      .brand-mark::before {
+        content: "";
         position: absolute;
-        inset: -26%;
-        border-radius: 50%;
-        background: radial-gradient(circle, rgba(79, 93, 240, 0.3), rgba(79, 93, 240, 0) 65%);
-        filter: blur(5px);
-      }
-      .orb-core {
-        position: absolute;
-        inset: 0;
+        inset: 1px;
         border-radius: 50%;
         background:
-          radial-gradient(circle at 32% 26%, rgba(255, 255, 255, 0.92), rgba(255, 255, 255, 0) 44%),
-          radial-gradient(circle at 70% 74%, rgba(139, 110, 255, 0.55), rgba(139, 110, 255, 0) 58%),
-          radial-gradient(circle at 24% 72%, rgba(79, 93, 240, 0.6), rgba(79, 93, 240, 0) 60%),
-          linear-gradient(135deg, #b6bdff 0%, #4f5df0 58%, #3a45c4 100%);
-        box-shadow:
-          0 11px 34px rgba(79, 93, 240, 0.35),
-          inset 0 1px 6px rgba(255, 255, 255, 0.5);
-        animation: breathe 7.9s ease-in-out infinite;
+          radial-gradient(circle at 31% 25%, rgba(255,255,255,.94), transparent 39%),
+          linear-gradient(145deg, #b8bdff, var(--accent) 56%, #393ebc);
+        box-shadow: 0 5px 13px rgba(90,95,244,.32);
       }
-      @keyframes breathe {
-        0%,
-        100% {
-          transform: scale(1);
-        }
-        50% {
-          transform: scale(1.02);
-        }
-      }
-      @media (prefers-reduced-motion: reduce) {
-        .orb-core {
-          animation: none;
-        }
-      }
+      .nav-links { display: flex; align-items: center; gap: 28px; }
+      .nav-links a { color: var(--ink-2); font-size: 13.5px; font-weight: 550; text-decoration: none; }
+      .nav-links a:hover { color: var(--ink); }
+      .nav-download { padding: 10px 17px; border-radius: 12px; background: var(--ink); color: #fff !important; }
 
-      /* ---------------- Download ---------------- */
-
-      .dl {
-        margin-top: 40px;
-        display: flex;
-        flex-direction: column;
+      .hero {
+        display: grid;
+        grid-template-columns: minmax(0, .9fr) minmax(480px, 1.1fr);
         align-items: center;
-        gap: 12px;
+        gap: 68px;
+        min-height: 710px;
+        padding: 92px 0 84px;
       }
+      .eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 22px;
+        color: var(--accent-dark);
+        font-size: 12px;
+        font-weight: 750;
+        letter-spacing: .1em;
+        text-transform: uppercase;
+      }
+      .eyebrow::before { content: ""; width: 18px; height: 1px; background: currentColor; }
+      .hero h1 { max-width: 650px; margin-bottom: 22px; font-size: clamp(46px, 6.3vw, 77px); line-height: .97; font-weight: 670; }
+      .hero-copy > p { max-width: 560px; margin-bottom: 0; color: var(--ink-2); font-size: 19px; line-height: 1.55; }
+      .actions { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; margin-top: 34px; }
       .btn {
         display: inline-flex;
+        min-height: 52px;
         align-items: center;
         justify-content: center;
-        gap: 10px;
-        border: none;
-        border-radius: 999px;
-        padding: 16px 40px;
-        font-family: inherit;
-        font-size: 17px;
-        font-weight: 600;
-        text-decoration: none;
+        gap: 9px;
+        border: 1px solid transparent;
+        border-radius: 14px;
+        padding: 0 22px;
         background: var(--ink);
         color: #fff;
-        box-shadow: var(--shadow-sm);
-        transition:
-          background 0.15s ease,
-          transform 0.1s ease;
-        cursor: pointer;
-      }
-      .btn:hover {
-        background: #2a2a33;
-      }
-      .btn:active {
-        transform: scale(0.985);
-      }
-      .dl-meta {
-        font-size: 13.5px;
-        color: var(--ink-3);
-      }
-      .dl-alt {
-        font-size: 13.5px;
-        color: var(--ink-3);
-        background: none;
-        border: none;
-        font-family: inherit;
-        text-decoration: underline;
-        text-underline-offset: 3px;
-        cursor: pointer;
-        padding: 2px 4px;
-      }
-      .dl-alt:hover {
-        color: var(--ink-2);
-      }
-      .os-tag {
-        display: inline-block;
-        margin-left: 8px;
-        padding: 1px 8px;
-        border-radius: 999px;
-        background: var(--surface-2);
-        border: 1px solid var(--border);
-        font-size: 11.5px;
-        font-weight: 600;
-        color: var(--ink-3);
-        vertical-align: middle;
-      }
-      .dl-alts {
-        display: flex;
-        gap: 18px;
-        justify-content: center;
-        flex-wrap: wrap;
-        margin-top: 2px;
-      }
-
-      /* ---------------- Sections ---------------- */
-
-      section {
-        padding: 60px 0;
-        border-top: 1px solid var(--border);
-      }
-      .sec-label {
-        font-size: 12px;
         font-weight: 650;
-        letter-spacing: 0.09em;
-        text-transform: uppercase;
-        color: var(--ink-3);
-        margin-bottom: 14px;
-      }
-      section h2 {
-        font-size: clamp(24px, 3.4vw, 30px);
-        margin-bottom: 12px;
-      }
-      .lede {
-        margin: 0 0 34px;
-        color: var(--ink-2);
-        max-width: 62ch;
-      }
-
-      .steps {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
-        gap: 18px;
-        margin: 0;
-        padding: 0;
-        list-style: none;
-        counter-reset: step;
-      }
-      .step {
-        background: var(--surface);
-        border: 1px solid var(--border);
-        border-radius: var(--radius-lg);
-        padding: 22px 22px 24px;
-        box-shadow: var(--shadow-sm);
-      }
-      .step-n {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        width: 26px;
-        height: 26px;
-        border-radius: 50%;
-        background: var(--accent-soft);
-        color: var(--accent-ink);
-        font-size: 13px;
-        font-weight: 700;
-        margin-bottom: 12px;
-      }
-      .step h3 {
-        font-size: 16.5px;
-        margin-bottom: 6px;
-      }
-      .step p {
-        margin: 0;
-        font-size: 14.5px;
-        color: var(--ink-2);
-      }
-
-      .shot {
-        width: 100%;
-        border-radius: var(--radius-lg);
-        border: 1px solid var(--border);
-        box-shadow: var(--shadow-md);
-        display: block;
-      }
-
-      .facts {
-        margin: 0;
-        padding: 0;
-        list-style: none;
-        display: grid;
-        gap: 14px;
-      }
-      .fact {
-        display: flex;
-        gap: 12px;
-        align-items: flex-start;
-      }
-      .tick {
-        flex: none;
-        margin-top: 3px;
-        width: 19px;
-        height: 19px;
-        border-radius: 50%;
-        background: var(--accent-soft);
-        color: var(--accent-ink);
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 11px;
-        font-weight: 800;
-      }
-      .fact b {
-        font-weight: 620;
-      }
-      .fact span {
-        color: var(--ink-2);
-      }
-
-      /* ---------------- Install ---------------- */
-
-      .install {
-        counter-reset: inst;
-        margin: 0;
-        padding: 0;
-        list-style: none;
-        display: grid;
-        gap: 22px;
-      }
-      .install > li {
-        display: grid;
-        /* minmax(0, 1fr), not 1fr: a `1fr` track keeps min-width:auto, so the
-           non-wrapping xattr command inside would widen the track and push the
-           whole page sideways on a phone. */
-        grid-template-columns: 30px minmax(0, 1fr);
-        gap: 14px;
-        align-items: start;
-      }
-      .install > li::before {
-        counter-increment: inst;
-        content: counter(inst);
-        width: 26px;
-        height: 26px;
-        border-radius: 50%;
-        background: var(--ink);
-        color: #fff;
-        font-size: 13px;
-        font-weight: 700;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        margin-top: 1px;
-      }
-      .install h3 {
-        font-size: 16.5px;
-        margin-bottom: 4px;
-      }
-      .install p {
-        margin: 0;
-        color: var(--ink-2);
-        font-size: 14.5px;
-      }
-
-      .note {
-        margin-top: 12px;
-        background: var(--warn-soft);
-        border-radius: var(--radius-md);
-        padding: 14px 16px;
-        font-size: 14px;
-        color: #6d4f12;
-      }
-      .cmd {
-        margin-top: 10px;
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        background: var(--ink);
-        border-radius: var(--radius-md);
-        padding: 11px 12px 11px 16px;
-        overflow: hidden;
-      }
-      .cmd code {
-        font-family: var(--font-mono);
-        font-size: 13px;
-        color: #f0f0f4;
-        white-space: nowrap;
-        overflow-x: auto;
-        flex: 1;
-        /* Without this the flex item's default `min-width: auto` refuses to
-           shrink below the command's width and pushes the whole page sideways
-           on a phone. The command scrolls inside its own box instead. */
-        min-width: 0;
-      }
-      .copy {
-        flex: none;
-        border: 1px solid rgba(255, 255, 255, 0.22);
-        background: rgba(255, 255, 255, 0.08);
-        color: #fff;
-        font-family: inherit;
-        font-size: 12.5px;
-        font-weight: 600;
-        border-radius: 7px;
-        padding: 6px 12px;
+        text-decoration: none;
         cursor: pointer;
+        transition: transform .18s ease, box-shadow .18s ease, background .18s ease;
       }
-      .copy:hover {
-        background: rgba(255, 255, 255, 0.16);
-      }
+      .btn:hover { transform: translateY(-2px); box-shadow: 0 12px 24px rgba(23,23,28,.13); background: #2a2a32; }
+      .btn-secondary { border-color: var(--border); background: rgba(255,255,255,.58); color: var(--ink); }
+      .btn-secondary:hover { background: #fff; }
+      .arrow { font-size: 18px; line-height: 1; }
+      .dl-meta { margin-top: 12px; color: var(--ink-3); font-size: 12.5px; }
+      .dl-alts { display: flex; gap: 14px; min-height: 24px; margin-top: 4px; }
+      .dl-alt { border: 0; padding: 0; background: none; color: var(--ink-3); font-size: 12px; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+      .dl-alt:hover { color: var(--ink); }
 
-      footer {
-        border-top: 1px solid var(--border);
-        padding: 34px 0 48px;
-        font-size: 13.5px;
-        color: var(--ink-3);
-        text-align: center;
+      .product-stage { position: relative; min-height: 520px; }
+      .product-stage::before {
+        content: "";
+        position: absolute;
+        inset: 13% 2% 4% 0;
+        border-radius: 50%;
+        background: rgba(117, 122, 255, .22);
+        filter: blur(90px);
       }
-      footer a {
-        color: var(--ink-2);
+      .window {
+        position: relative;
+        overflow: hidden;
+        border: 1px solid rgba(255,255,255,.9);
+        border-radius: 26px;
+        background: rgba(255,255,255,.9);
+        box-shadow: var(--shadow-lg);
+        transform: rotate(1deg);
+      }
+      .window-bar { display: flex; align-items: center; gap: 6px; height: 44px; padding: 0 16px; border-bottom: 1px solid var(--border); background: rgba(250,250,248,.9); }
+      .dot { width: 8px; height: 8px; border-radius: 50%; background: #d8d8d2; }
+      .window-title { margin-left: auto; margin-right: auto; color: var(--ink-3); font-size: 11px; transform: translateX(-14px); }
+      .app { display: grid; grid-template-columns: 152px 1fr; min-height: 430px; }
+      .sidebar { padding: 20px 14px; border-right: 1px solid var(--border); background: #fafaf8; }
+      .app-brand { display: flex; align-items: center; gap: 8px; margin: 0 7px 24px; font-size: 13px; font-weight: 700; }
+      .app-brand .brand-mark { width: 21px; height: 21px; }
+      .side-item { display: flex; gap: 9px; align-items: center; margin: 3px 0; padding: 9px 10px; border-radius: 9px; color: var(--ink-3); font-size: 11.5px; }
+      .side-item.active { background: #eeeee9; color: var(--ink); font-weight: 650; }
+      .side-icon { width: 14px; height: 14px; border: 1.4px solid currentColor; border-radius: 4px; opacity: .8; }
+      .app-main { padding: 30px; }
+      .app-kicker { color: var(--ink-3); font-size: 10px; font-weight: 700; letter-spacing: .09em; text-transform: uppercase; }
+      .app-title { margin: 5px 0 19px; font-size: 24px; font-weight: 680; }
+      .profile-card { display: grid; grid-template-columns: 52px 1fr auto; gap: 13px; align-items: center; padding: 16px; border: 1px solid var(--border); border-radius: 15px; background: #fff; box-shadow: var(--shadow-sm); }
+      .avatar { display: grid; place-items: center; width: 52px; height: 52px; border-radius: 16px; background: var(--accent-soft); color: var(--accent-dark); font-weight: 760; }
+      .profile-name { font-size: 13.5px; font-weight: 700; }
+      .profile-detail { margin-top: 2px; color: var(--ink-3); font-size: 10.5px; }
+      .ready { padding: 5px 9px; border-radius: 999px; background: var(--success-soft); color: var(--success); font-size: 9px; font-weight: 750; }
+      .knowledge { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 12px; }
+      .knowledge-card { min-height: 82px; padding: 13px; border: 1px solid var(--border); border-radius: 13px; background: #fbfbf9; }
+      .knowledge-label { color: var(--ink-3); font-size: 9px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; }
+      .chips { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 9px; }
+      .chip { padding: 4px 7px; border-radius: 999px; background: #fff; border: 1px solid var(--border); color: var(--ink-2); font-size: 8.5px; }
+      .orbit-card { position: absolute; right: -28px; bottom: -4px; width: 245px; padding: 16px; border: 1px solid rgba(255,255,255,.9); border-radius: 18px; background: rgba(255,255,255,.92); box-shadow: 0 24px 60px rgba(43,45,80,.18); transform: rotate(-2.5deg); }
+      .orbit-head { display: flex; align-items: center; gap: 9px; font-size: 11px; font-weight: 680; }
+      .mini-orb { width: 26px; height: 26px; border-radius: 50%; background: radial-gradient(circle at 31% 25%, #fff, transparent 40%), linear-gradient(145deg,#b9beff,#595ff4 60%,#393ebc); box-shadow: 0 6px 15px rgba(90,95,244,.3); }
+      .orbit-status { margin-left: auto; color: var(--success); font-size: 9px; }
+      .activity { display: grid; gap: 8px; margin-top: 13px; }
+      .activity-row { display: grid; grid-template-columns: 7px 1fr auto; gap: 7px; align-items: center; color: var(--ink-2); font-size: 8.5px; }
+      .activity-row i { width: 5px; height: 5px; border-radius: 50%; background: var(--accent); }
+      .activity-row time { color: var(--ink-3); }
+
+      .trust { display: grid; grid-template-columns: repeat(3, 1fr); border: 1px solid var(--border); border-radius: 20px; background: rgba(255,255,255,.48); }
+      .trust-item { display: flex; align-items: center; justify-content: center; gap: 10px; padding: 19px; color: var(--ink-2); font-size: 13px; font-weight: 570; }
+      .trust-item + .trust-item { border-left: 1px solid var(--border); }
+      .trust-icon { display: grid; place-items: center; width: 23px; height: 23px; border-radius: 50%; background: var(--accent-soft); color: var(--accent-dark); font-size: 11px; font-weight: 800; }
+
+      section { padding: 120px 0; }
+      .section-head { display: grid; grid-template-columns: .8fr 1.2fr; gap: 80px; align-items: end; margin-bottom: 52px; }
+      .section-head h2 { margin: 0; font-size: clamp(34px, 4.7vw, 55px); line-height: 1.02; font-weight: 650; }
+      .section-head p { max-width: 560px; margin: 0; color: var(--ink-2); font-size: 17px; }
+      .label { margin-bottom: 15px; color: var(--accent-dark); font-size: 11px; font-weight: 760; letter-spacing: .12em; text-transform: uppercase; }
+
+      .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin: 0; padding: 0; list-style: none; counter-reset: steps; }
+      .step { min-height: 270px; padding: 28px; border: 1px solid var(--border); border-radius: 22px; background: rgba(255,255,255,.62); }
+      .step::before { counter-increment: steps; content: "0" counter(steps); display: block; margin-bottom: 62px; color: var(--accent-dark); font-family: var(--mono); font-size: 11px; }
+      .step h3 { margin-bottom: 9px; font-size: 19px; font-weight: 670; }
+      .step p { margin: 0; color: var(--ink-2); font-size: 14px; }
+
+      .profile-story { display: grid; grid-template-columns: .92fr 1.08fr; gap: 18px; }
+      .story-panel { padding: 42px; border: 1px solid var(--border); border-radius: var(--r-lg); background: var(--surface); box-shadow: var(--shadow-sm); }
+      .story-panel h3 { margin-bottom: 12px; font-size: 27px; font-weight: 660; }
+      .story-panel > p { color: var(--ink-2); }
+      .fact-list { display: grid; gap: 10px; margin-top: 28px; }
+      .fact-row { display: flex; align-items: center; gap: 11px; padding: 12px 13px; border-radius: 12px; background: #f8f8f5; font-size: 13px; }
+      .fact-row span:first-child { color: var(--accent-dark); }
+      .message { position: relative; overflow: hidden; background: #191922; color: #fff; }
+      .message::after { content: ""; position: absolute; width: 280px; height: 280px; right: -120px; top: -120px; border-radius: 50%; background: rgba(90,95,244,.28); filter: blur(45px); }
+      .message-top { position: relative; z-index: 1; display: flex; justify-content: space-between; color: #aaaab5; font-size: 11px; }
+      .message h3 { position: relative; z-index: 1; margin: 42px 0 22px; max-width: 430px; font-size: 26px; }
+      .email { position: relative; z-index: 1; padding: 21px; border: 1px solid rgba(255,255,255,.12); border-radius: 16px; background: rgba(255,255,255,.06); color: #d6d6dc; font-size: 13px; line-height: 1.7; }
+      .email strong { color: #fff; }
+
+      .proof { padding-top: 60px; }
+      .screenshot-wrap { padding: 10px; border: 1px solid rgba(255,255,255,.9); border-radius: 28px; background: rgba(255,255,255,.48); box-shadow: var(--shadow-lg); }
+      .screenshot-wrap img { display: block; width: 100%; border-radius: 20px; }
+      .proof-caption { display: flex; justify-content: space-between; gap: 30px; margin-top: 22px; color: var(--ink-3); font-size: 12.5px; }
+
+      .security { display: grid; grid-template-columns: .82fr 1.18fr; gap: 80px; align-items: start; }
+      .security h2 { margin-bottom: 20px; font-size: clamp(36px, 4.7vw, 55px); line-height: 1.02; font-weight: 650; }
+      .security > div:first-child p { color: var(--ink-2); }
+      .facts { display: grid; gap: 12px; margin: 0; padding: 0; list-style: none; }
+      .fact { display: grid; grid-template-columns: 33px 1fr; gap: 15px; padding: 22px; border: 1px solid var(--border); border-radius: 18px; background: rgba(255,255,255,.55); }
+      .tick { display: grid; place-items: center; width: 27px; height: 27px; border-radius: 50%; background: var(--success-soft); color: var(--success); font-size: 12px; font-weight: 800; }
+      .fact b { display: block; margin-bottom: 3px; font-size: 14px; }
+      .fact p { margin: 0; color: var(--ink-2); font-size: 13px; }
+
+      .install-shell { padding: 52px; border-radius: 30px; background: #191922; color: #fff; }
+      .install-head { display: flex; align-items: end; justify-content: space-between; gap: 30px; margin-bottom: 42px; }
+      .install-head h2 { margin: 0; font-size: clamp(35px, 4.3vw, 50px); line-height: 1; }
+      .install-head p { max-width: 390px; margin: 0; color: #aaaab5; font-size: 14px; }
+      .install { display: grid; gap: 10px; margin: 0; padding: 0; list-style: none; counter-reset: install; }
+      .install > li { display: grid; grid-template-columns: 34px minmax(0, 1fr); gap: 15px; padding: 18px 0; border-top: 1px solid rgba(255,255,255,.1); }
+      .install > li::before { counter-increment: install; content: counter(install); display: grid; place-items: center; width: 28px; height: 28px; border: 1px solid rgba(255,255,255,.18); border-radius: 50%; color: #c8c8d2; font-size: 11px; }
+      .install h3 { margin: 2px 0 5px; font-size: 15px; letter-spacing: -.01em; }
+      .install p { margin: 0; color: #aaaab5; font-size: 13px; }
+      .os-tag { margin-left: 6px; padding: 3px 7px; border-radius: 999px; background: rgba(255,255,255,.1); color: #c7c7cf; font-size: 9px; letter-spacing: .06em; text-transform: uppercase; }
+      .note { margin-top: 11px; padding: 12px 14px; border-radius: 10px; background: rgba(255,194,77,.09); color: #d9c18e; font-size: 12px; }
+      .cmd { display: flex; align-items: center; gap: 10px; margin-top: 10px; padding: 9px 10px 9px 12px; border: 1px solid rgba(255,255,255,.12); border-radius: 9px; background: #101016; overflow: hidden; }
+      .cmd code { min-width: 0; flex: 1; overflow-x: auto; color: #ececf0; font-family: var(--mono); font-size: 11px; white-space: nowrap; }
+      .copy { flex: none; border: 1px solid rgba(255,255,255,.15); border-radius: 7px; padding: 5px 10px; background: rgba(255,255,255,.08); color: #fff; cursor: pointer; font-size: 10px; }
+      .install a { color: #c9caff; }
+
+      .final { padding: 92px 0 108px; text-align: center; }
+      .final-orb { position: relative; width: 78px; height: 78px; margin: 0 auto 26px; border-radius: 50%; background: radial-gradient(circle at 31% 25%, #fff, transparent 40%), linear-gradient(145deg,#b9beff,#595ff4 60%,#393ebc); box-shadow: 0 15px 40px rgba(90,95,244,.33); }
+      .final h2 { max-width: 760px; margin: 0 auto 17px; font-size: clamp(37px, 5.2vw, 62px); line-height: 1; font-weight: 650; }
+      .final p { max-width: 540px; margin: 0 auto; color: var(--ink-2); }
+      .final .actions { justify-content: center; }
+
+      footer { padding: 26px 0 45px; border-top: 1px solid var(--border); color: var(--ink-3); font-size: 12px; }
+      .footer-inner { display: flex; justify-content: space-between; gap: 20px; }
+      .footer-links { display: flex; gap: 20px; }
+      .footer-links a { text-decoration: none; }
+      .footer-links a:hover { color: var(--ink); }
+
+      @media (prefers-reduced-motion: no-preference) {
+        .final-orb, .brand-mark::before { animation: breathe 7s ease-in-out infinite; }
+        @keyframes breathe { 50% { transform: scale(1.035); } }
+      }
+      @media (max-width: 900px) {
+        .hero { grid-template-columns: 1fr; min-height: auto; padding-top: 86px; }
+        .hero-copy { text-align: center; }
+        .hero-copy > p { margin-left: auto; margin-right: auto; }
+        .actions, .dl-alts { justify-content: center; }
+        .product-stage { width: min(620px, 100%); margin: 0 auto; }
+        .section-head, .security { grid-template-columns: 1fr; gap: 26px; }
+        .profile-story { grid-template-columns: 1fr; }
+      }
+      @media (max-width: 700px) {
+        .shell { width: min(100% - 28px, 1160px); }
+        .nav { top: 8px; height: 56px; margin-top: 8px; padding-left: 14px; }
+        .nav-links > a:not(.nav-download) { display: none; }
+        .nav-download { padding: 8px 13px; }
+        .hero { gap: 44px; padding: 68px 0 62px; }
+        .hero h1 { font-size: clamp(43px, 14vw, 64px); }
+        .hero-copy > p { font-size: 17px; }
+        .actions { align-items: stretch; flex-direction: column; }
+        .btn { width: 100%; }
+        .product-stage { min-height: 390px; }
+        .window { border-radius: 20px; transform: none; }
+        .app { grid-template-columns: 1fr; min-height: 340px; }
+        .sidebar { display: none; }
+        .app-main { padding: 22px 18px; }
+        .knowledge { grid-template-columns: 1fr; }
+        .knowledge-card:last-child { display: none; }
+        .orbit-card { right: -6px; bottom: -30px; width: 210px; }
+        .trust { grid-template-columns: 1fr; }
+        .trust-item { justify-content: flex-start; }
+        .trust-item + .trust-item { border-left: 0; border-top: 1px solid var(--border); }
+        section { padding: 82px 0; }
+        .section-head { margin-bottom: 32px; }
+        .steps { grid-template-columns: 1fr; }
+        .step { min-height: 0; }
+        .step::before { margin-bottom: 30px; }
+        .story-panel { padding: 26px 22px; }
+        .proof { padding-top: 30px; }
+        .proof-caption { display: block; }
+        .install-shell { padding: 32px 22px; border-radius: 22px; }
+        .install-head { display: block; }
+        .install-head p { margin-top: 15px; }
+        .footer-inner { display: block; }
+        .footer-links { margin-top: 12px; }
       }
     </style>
   </head>
   <body>
-    <div class="wrap">
-      <header class="hero">
-        <div class="orb" aria-hidden="true"><div class="orb-core"></div></div>
-        <h1>Your AI recruiting agent</h1>
-        <p class="hero-sub">
-          Tell it where you want to work. It finds the right people and does the outreach.
-        </p>
+    <nav class="nav shell" aria-label="Primary navigation">
+      <a class="brand" href="#top" aria-label="Orbit home"><span class="brand-mark" aria-hidden="true"></span>Orbit</a>
+      <div class="nav-links">
+        <a href="#how">How it works</a>
+        <a href="#profile">Your profile</a>
+        <a href="#security">Security</a>
+        <a class="nav-download" href="#download">Download</a>
+      </div>
+    </nav>
 
-        <div class="dl">
-          <!-- The default is the releases page, not a file. Before the script
-               runs — or if GitHub's API is rate-limited, or JavaScript is off —
-               this must not hand a Windows visitor a .dmg, which is exactly
-               what it used to do. A page listing every build is right on every
-               platform; a wrong file is a lost user. -->
-          <a class="btn" id="dl-btn" href="https://github.com/FutureWarren/recruiting-agent/releases/latest">
-            Download
-          </a>
-          <div class="dl-meta" id="dl-meta">Mac and Windows · free · no account needed</div>
-          <div class="dl-alts" id="dl-alts"></div>
-        </div>
-      </header>
-    </div>
-
-    <div class="wrap">
-      <section>
-        <div class="sec-label">What it does</div>
-        <h2>It networks for you, in your own browser</h2>
-        <p class="lede">
-          You give it a goal — the field, the kind of firm, how many people. It works through that
-          list one person at a time, in a Chrome window you can watch.
-        </p>
-        <ol class="steps">
-          <li class="step">
-            <div class="step-n">1</div>
-            <h3>Finds the right people</h3>
+    <main id="top">
+      <div class="shell">
+        <header class="hero">
+          <div class="hero-copy">
+            <div class="eyebrow">Built for ambitious students</div>
+            <h1>Turn your background into warm introductions.</h1>
             <p>
-              Searches LinkedIn for professionals matching your goal and reads each profile to judge
-              whether they are actually a fit.
+              Orbit finds the right professionals, verifies their work email, and writes thoughtful
+              outreach grounded in who you actually are — while you stay in control.
             </p>
-          </li>
-          <li class="step">
-            <div class="step-n">2</div>
-            <h3>Verifies their email</h3>
-            <p>
-              Looks up a real, verified work email. Anyone it cannot find a verified address for is
-              skipped rather than guessed at.
-            </p>
-          </li>
-          <li class="step">
-            <div class="step-n">3</div>
-            <h3>Writes and sends the intro</h3>
-            <p>
-              Writes a short introduction grounded in your résumé and their background, then sends
-              it from your own Gmail.
-            </p>
-          </li>
-        </ol>
-      </section>
-
-      <section>
-        <div class="sec-label">While it runs</div>
-        <h2>You can see everything it is doing</h2>
-        <p class="lede">
-          It names the person it is working on right now and shows exactly how far through the list
-          it is. Nothing happens off-screen.
-        </p>
-        <img
-          class="shot"
-          src="dashboard.png"
-          alt="The agent dashboard, showing the orb, the person currently being worked on, and a live activity feed"
-          loading="lazy"
-        />
-      </section>
-
-      <section>
-        <div class="sec-label">Your accounts</div>
-        <h2>It never sees your passwords</h2>
-        <p class="lede">
-          The agent asks for LinkedIn and Gmail, so it is worth being precise about what that
-          actually means.
-        </p>
-        <ul class="facts">
-          <li class="fact">
-            <span class="tick" aria-hidden="true">✓</span>
-            <span
-              ><b>Passwords are never stored, or even seen.</b> You log in yourself, once, in a real
-              browser window. The app only keeps the resulting session — the same thing your browser
-              keeps when you tick "remember me".</span
-            >
-          </li>
-          <li class="fact">
-            <span class="tick" aria-hidden="true">✓</span>
-            <span
-              ><b>Everything stays on your own computer.</b> Your résumé, your contacts and your
-              sessions are stored locally. Nothing is uploaded.</span
-            >
-          </li>
-          <li class="fact">
-            <span class="tick" aria-hidden="true">✓</span>
-            <span
-              ><b>The browser is visible on purpose.</b> You watch it search, read profiles and send
-              — and you can stop it at any point.</span
-            >
-          </li>
-          <li class="fact">
-            <span class="tick" aria-hidden="true">✓</span>
-            <span
-              ><b>Nobody is emailed twice.</b> Everyone contacted is remembered across campaigns, so
-              a new campaign will never write to the same person again.</span
-            >
-          </li>
-        </ul>
-      </section>
-
-      <section id="install">
-        <div class="sec-label">Setup</div>
-        <h2>About two minutes</h2>
-        <!-- Two first steps, one per platform. The script shows the one that
-             matches; with no script, or an unrecognised system, both are
-             visible and labelled, which is honest rather than clever. -->
-        <ol class="install os-mac" id="install-mac">
-          <li>
-            <div>
-              <h3>Download and install <span class="os-tag">macOS</span></h3>
-              <p>Open the <code>.dmg</code> and drag <b>Recruiting Agent</b> into Applications.</p>
+            <div class="actions">
+              <a class="btn" id="dl-btn" href="https://github.com/FutureWarren/recruiting-agent/releases/latest">
+                Download Orbit <span class="arrow" aria-hidden="true">↘</span>
+              </a>
+              <a class="btn btn-secondary" href="#how">See how it works</a>
             </div>
-          </li>
-          <li>
-            <div>
-              <h3>Open it once</h3>
-              <p>
-                If it opens normally, you are done — skip to the next step.
-              </p>
-              <div class="note">
-                If macOS says the app is <b>damaged</b> or <b>can't be opened</b>, that is expected
-                on this beta: it is not yet notarized by Apple. Open <b>Terminal</b> and paste this
-                once, then open the app again.
-                <div class="cmd">
-                  <code id="xattr">xattr -cr "/Applications/Recruiting Agent.app"</code>
-                  <button class="copy" id="copy-btn" type="button">Copy</button>
+            <div class="dl-meta" id="dl-meta">Mac and Windows · free to start · about two minutes to set up</div>
+            <div class="dl-alts" id="dl-alts"></div>
+          </div>
+
+          <div class="product-stage" aria-label="Orbit profile preview">
+            <div class="window">
+              <div class="window-bar"><i class="dot"></i><i class="dot"></i><i class="dot"></i><span class="window-title">Orbit</span></div>
+              <div class="app">
+                <aside class="sidebar">
+                  <div class="app-brand"><span class="brand-mark"></span>Orbit</div>
+                  <div class="side-item active"><i class="side-icon"></i>Your profile</div>
+                  <div class="side-item"><i class="side-icon"></i>Campaigns</div>
+                  <div class="side-item"><i class="side-icon"></i>Connections</div>
+                  <div class="side-item"><i class="side-icon"></i>Settings</div>
+                </aside>
+                <div class="app-main">
+                  <div class="app-kicker">Your profile</div>
+                  <div class="app-title">What Orbit knows about you</div>
+                  <div class="profile-card">
+                    <div class="avatar">FW</div>
+                    <div><div class="profile-name">Future Wei</div><div class="profile-detail">NYU Stern · Class of 2027</div></div>
+                    <div class="ready">Ready</div>
+                  </div>
+                  <div class="knowledge">
+                    <div class="knowledge-card"><div class="knowledge-label">Experience</div><div class="chips"><span class="chip">Growth equity</span><span class="chip">Financial modeling</span><span class="chip">Founder</span></div></div>
+                    <div class="knowledge-card"><div class="knowledge-label">Recruiting for</div><div class="chips"><span class="chip">Investment Banking</span><span class="chip">New York</span></div></div>
+                  </div>
                 </div>
               </div>
             </div>
-          </li>
-        </ol>
-
-        <ol class="install os-win" id="install-win">
-          <li>
-            <div>
-              <h3>Download and install <span class="os-tag">Windows</span></h3>
-              <p>
-                Run the <code>.exe</code> installer. It installs for you only, so Windows will not
-                ask for an administrator password.
-              </p>
-              <div class="note">
-                Windows will say <b>“Windows protected your PC”</b> and call the publisher unknown.
-                That is expected on this beta: the app is not code-signed yet. Click
-                <b>More info</b>, then <b>Run anyway</b>.
+            <div class="orbit-card">
+              <div class="orbit-head"><span class="mini-orb"></span>Orbit is working <span class="orbit-status">● live</span></div>
+              <div class="activity">
+                <div class="activity-row"><i></i><span>Found Sarah Chen · Greenhill</span><time>now</time></div>
+                <div class="activity-row"><i></i><span>Work email verified</span><time>now</time></div>
+                <div class="activity-row"><i></i><span>Drafting a personal note</span><time>now</time></div>
               </div>
             </div>
-          </li>
-        </ol>
+          </div>
+        </header>
 
-        <ol class="install" start="2">
-          <li value="3">
-            <div>
-              <h3>Install Google Chrome</h3>
-              <p>
-                The agent drives its own separate Chrome window, kept apart from your everyday
-                browsing.
-                <a href="https://www.google.com/chrome" rel="noopener">Get Chrome</a>
-              </p>
-            </div>
-          </li>
-          <li>
-            <div>
-              <h3>Set up your agent</h3>
-              <p>
-                Add your name, school and résumé, describe who you want to reach, then connect
-                LinkedIn and Gmail and press start.
-              </p>
-            </div>
-          </li>
-        </ol>
+        <div class="trust" aria-label="Product principles">
+          <div class="trust-item"><span class="trust-icon">✓</span>Runs on your computer</div>
+          <div class="trust-item"><span class="trust-icon">◎</span>You see every browser action</div>
+          <div class="trust-item"><span class="trust-icon">⌁</span>Never stores your passwords</div>
+        </div>
+      </div>
+
+      <section id="how">
+        <div class="shell">
+          <div class="section-head">
+            <div><div class="label">How Orbit works</div><h2>A networking pipeline, not another spreadsheet.</h2></div>
+            <p>Give Orbit a goal and a little context. It handles the repetitive work one person at a time, leaving you with a visible trail of every decision and action.</p>
+          </div>
+          <ol class="steps">
+            <li class="step"><h3>Set a precise target</h3><p>Choose the fields, firms, roles, location, and number of professionals you want to reach.</p></li>
+            <li class="step"><h3>Let Orbit research</h3><p>It evaluates real LinkedIn profiles and skips people who are not a meaningful fit.</p></li>
+            <li class="step"><h3>Send a human note</h3><p>Orbit verifies the email, writes from your background, and sends through your own Gmail.</p></li>
+          </ol>
+        </div>
       </section>
 
-      <section>
-        <div class="sec-label">Requirements</div>
-        <h2>What you need</h2>
-        <ul class="facts">
-          <li class="fact">
-            <span class="tick" aria-hidden="true">✓</span>
-            <span>
-              A Mac (Apple Silicon or Intel, macOS 11 or later) or a Windows 10 / 11 PC
-            </span>
-          </li>
-          <li class="fact">
-            <span class="tick" aria-hidden="true">✓</span>
-            <span>Google Chrome installed</span>
-          </li>
-          <li class="fact">
-            <span class="tick" aria-hidden="true">✓</span>
-            <span>A LinkedIn account and a Gmail account you can log into</span>
-          </li>
-        </ul>
+      <section id="profile">
+        <div class="shell">
+          <div class="section-head">
+            <div><div class="label">Your Orbit profile</div><h2>Personal starts with context.</h2></div>
+            <p>Your profile is the source of truth for every introduction. Orbit turns your résumé and goals into a clear, editable picture of your experience — so every note sounds specific without inventing anything.</p>
+          </div>
+          <div class="profile-story">
+            <div class="story-panel">
+              <h3>Review what Orbit learned.</h3>
+              <p>Confirm the details that matter before a campaign begins. Update your recruiting interests once and future outreach stays aligned.</p>
+              <div class="fact-list">
+                <div class="fact-row"><span>✓</span>Education and graduation year</div>
+                <div class="fact-row"><span>✓</span>Experience, interests, and relevant skills</div>
+                <div class="fact-row"><span>✓</span>Preferred voice and outreach goals</div>
+              </div>
+            </div>
+            <div class="story-panel message">
+              <div class="message-top"><span>PERSONALIZED BY ORBIT</span><span>Ready to send</span></div>
+              <h3>Your story becomes the reason to reply.</h3>
+              <div class="email"><strong>Hi Sarah —</strong><br /><br />I’m a junior at NYU exploring boutique investment banking. Your move from Stern into Greenhill’s industrials team stood out, especially after my own experience building operating models for founder-led businesses…</div>
+            </div>
+          </div>
+        </div>
       </section>
-    </div>
+
+      <section class="proof">
+        <div class="shell">
+          <div class="section-head">
+            <div><div class="label">Visible by design</div><h2>Watch the work happen.</h2></div>
+            <p>Orbit shows who it is researching, why they qualify, where each prospect sits in the pipeline, and what has already been sent.</p>
+          </div>
+          <div class="screenshot-wrap"><img src="dashboard.png" alt="Orbit campaign dashboard showing the current prospect, pipeline progress, and a live activity feed" loading="lazy" /></div>
+          <div class="proof-caption"><span>Every browser action stays visible and interruptible.</span><span>Prospects are remembered across campaigns, so nobody gets emailed twice.</span></div>
+        </div>
+      </section>
+
+      <section id="security">
+        <div class="shell security">
+          <div><div class="label">Your accounts stay yours</div><h2>Control is part of the product.</h2><p>Orbit asks for LinkedIn and Gmail because that is where the work happens. It opens a real browser and lets you sign in yourself.</p></div>
+          <ul class="facts">
+            <li class="fact"><span class="tick">✓</span><div><b>Passwords are never stored or seen.</b><p>You sign in directly with each service. Orbit only keeps the same local session your browser remembers.</p></div></li>
+            <li class="fact"><span class="tick">✓</span><div><b>Your data stays on your computer.</b><p>Your résumé, contacts, and account sessions are stored locally rather than uploaded.</p></div></li>
+            <li class="fact"><span class="tick">✓</span><div><b>You can stop at any moment.</b><p>The browser stays visible while Orbit searches, evaluates profiles, and sends.</p></div></li>
+          </ul>
+        </div>
+      </section>
+
+      <section id="download">
+        <div class="shell install-shell">
+          <div class="install-head"><h2>From download to first campaign in minutes.</h2><p>Orbit is available for macOS 11+ and Windows 10/11. Google Chrome, LinkedIn, and Gmail are required.</p></div>
+          <ol class="install os-mac" id="install-mac">
+            <li><div><h3>Install Orbit <span class="os-tag">macOS</span></h3><p>Open the <code>.dmg</code> and drag Orbit (Recruiting Agent) into Applications.</p></div></li>
+            <li><div><h3>Open it once</h3><p>If macOS says the beta is damaged or cannot be opened, run the command below in Terminal, then open it again.</p><div class="cmd"><code id="xattr">xattr -cr "/Applications/Recruiting Agent.app"</code><button class="copy" id="copy-btn" type="button">Copy</button></div></div></li>
+          </ol>
+          <ol class="install os-win" id="install-win">
+            <li><div><h3>Install Orbit <span class="os-tag">Windows</span></h3><p>Run the <code>.exe</code>. If Windows protects your PC, choose <b>More info</b>, then <b>Run anyway</b>; this beta is not code-signed yet.</p></div></li>
+          </ol>
+          <ol class="install" start="3">
+            <li><div><h3>Make sure Chrome is installed</h3><p>Orbit uses a separate Chrome window so its work stays apart from your everyday browsing. <a href="https://www.google.com/chrome" rel="noopener">Get Chrome</a></p></div></li>
+            <li><div><h3>Create your Orbit profile</h3><p>Add your background and résumé, set a recruiting goal, connect LinkedIn and Gmail, then start your first campaign.</p></div></li>
+          </ol>
+        </div>
+      </section>
+
+      <section class="final">
+        <div class="shell">
+          <div class="final-orb" aria-hidden="true"></div>
+          <h2>Meet the people who can change your path.</h2>
+          <p>Build a thoughtful networking habit without turning it into a second full-time job.</p>
+          <div class="actions"><a class="btn" id="dl-btn-final" href="https://github.com/FutureWarren/recruiting-agent/releases/latest">Download Orbit <span class="arrow" aria-hidden="true">↘</span></a></div>
+        </div>
+      </section>
+    </main>
 
     <footer>
-      <div class="wrap">
-        Built for NYU students ·
-        <a href="https://github.com/FutureWarren/recruiting-agent" rel="noopener">GitHub</a> ·
-        <a href="https://github.com/FutureWarren/recruiting-agent/releases" rel="noopener">All releases</a>
-      </div>
+      <div class="shell footer-inner"><span>© 2026 Orbit · Built for NYU students</span><div class="footer-links"><a href="https://github.com/FutureWarren/recruiting-agent" rel="noopener">GitHub</a><a href="https://github.com/FutureWarren/recruiting-agent/releases" rel="noopener">All releases</a><a href="#security">Security</a></div></div>
     </footer>
 
     <script>
-      // The PUBLIC repo that carries the downloads. Deliberately not the
-      // source repo: that one is private, and its release assets and API are
-      // unreachable without a token.
       const REPO = 'FutureWarren/recruiting-agent'
 
-      /**
-       * Which system is this?
-       *
-       * A Windows student who clicked Download used to get a .dmg — a file
-       * Windows offers to open in Notepad. That is not a bad download, it is a
-       * lost user, and it happened because this page only ever knew about
-       * Macs. So the platform is decided before anything else, and anything
-       * this cannot recognise (a phone, a Linux box, a stripped user agent)
-       * gets BOTH downloads rather than a guess.
-       */
       function detectOS() {
         const ua = navigator.userAgent || ''
-        // A phone cannot run either build. Say so instead of offering one.
         if (/Android|iPhone|iPad|iPod/i.test(ua)) return 'mobile'
         try {
-          const p = (navigator.userAgentData && navigator.userAgentData.platform) || ''
-          if (/windows/i.test(p)) return 'win'
-          if (/macos|mac os/i.test(p)) return 'mac'
-        } catch (e) {
-          /* fall through to the user agent string */
-        }
+          const platform = (navigator.userAgentData && navigator.userAgentData.platform) || ''
+          if (/windows/i.test(platform)) return 'win'
+          if (/macos|mac os/i.test(platform)) return 'mac'
+        } catch (error) {}
         if (/Windows|Win64|Win32|WOW64/i.test(ua)) return 'win'
-        // Checked after Windows on purpose: only a Mac says Macintosh.
         if (/Macintosh|Mac OS X/i.test(ua)) return 'mac'
         return null
       }
 
-      /**
-       * Which processor? Wrong-architecture downloads are the other way a
-       * student ends up with an app that will not open, so this returns null
-       * rather than guessing, and null means "offer both".
-       */
       async function detectArch() {
-        // Chromium exposes the real architecture through high-entropy UA hints.
         try {
-          const uad = navigator.userAgentData
-          if (uad && uad.getHighEntropyValues) {
-            const v = await uad.getHighEntropyValues(['architecture'])
-            if (v.architecture === 'arm') return 'arm64'
-            if (v.architecture === 'x86') return 'x64'
+          const data = navigator.userAgentData
+          if (data && data.getHighEntropyValues) {
+            const value = await data.getHighEntropyValues(['architecture'])
+            if (value.architecture === 'arm') return 'arm64'
+            if (value.architecture === 'x86') return 'x64'
           }
-        } catch (e) {
-          /* fall through */
-        }
-        // Safari and Firefox do not, but the WebGL renderer names the GPU, and
-        // every Apple-silicon Mac reports an Apple GPU while Intel Macs report
-        // an Intel/AMD one. Only meaningful on a Mac; Windows on ARM is rare
-        // enough that x64 is the right default when this cannot tell.
+        } catch (error) {}
         try {
           const gl = document.createElement('canvas').getContext('webgl')
-          const dbg = gl && gl.getExtension('WEBGL_debug_renderer_info')
-          const r = dbg ? String(gl.getParameter(dbg.UNMASKED_RENDERER_WEBGL)) : ''
-          if (/apple/i.test(r)) return 'arm64'
-          if (/intel|radeon|amd|nvidia/i.test(r)) return 'x64'
-        } catch (e) {
-          /* fall through */
-        }
+          const debug = gl && gl.getExtension('WEBGL_debug_renderer_info')
+          const renderer = debug ? String(gl.getParameter(debug.UNMASKED_RENDERER_WEBGL)) : ''
+          if (/apple/i.test(renderer)) return 'arm64'
+          if (/intel|radeon|amd|nvidia/i.test(renderer)) return 'x64'
+        } catch (error) {}
         return null
       }
 
-      /**
-       * The installer for one system out of a release's assets.
-       *
-       * electron-builder suffixes the Apple-silicon and Windows-on-ARM builds
-       * with "arm64" and leaves the Intel/x64 ones unsuffixed, so the absence
-       * of the suffix is what identifies x64. Returns undefined when a release
-       * simply does not carry that build, and every caller treats that as
-       * "do not offer it" rather than showing a broken link.
-       */
       function assetFor(assets, os, arch) {
-        const ext = os === 'win' ? '.exe' : '.dmg'
-        const forOs = assets.filter((a) => a.name.toLowerCase().endsWith(ext))
-        if (forOs.length === 0) return undefined
-        const wanted =
-          arch === 'arm64'
-            ? forOs.find((a) => /arm64/i.test(a.name))
-            : forOs.find((a) => !/arm64/i.test(a.name))
-        if (wanted) return wanted
-        // One build for this system and no arch in its name is the universal
-        // installer — which is what the Windows release actually is. Without
-        // this, asking for arm64 found nothing and a Windows-on-ARM student
-        // was told there was no Windows build at all.
-        return forOs.length === 1 ? forOs[0] : undefined
+        const extension = os === 'win' ? '.exe' : '.dmg'
+        const candidates = assets.filter((asset) => asset.name.toLowerCase().endsWith(extension))
+        if (!candidates.length) return undefined
+        const match = arch === 'arm64'
+          ? candidates.find((asset) => /arm64/i.test(asset.name))
+          : candidates.find((asset) => !/arm64/i.test(asset.name))
+        return match || (candidates.length === 1 ? candidates[0] : undefined)
       }
 
       const OS_LABEL = { mac: 'Mac', win: 'Windows' }
       const ARCH_LABEL = { mac: { arm64: 'Apple Silicon', x64: 'Intel' }, win: { arm64: 'ARM', x64: '' } }
 
-      /** Show the install steps for one system, or both when unsure. */
       function showInstructionsFor(os) {
         const mac = document.getElementById('install-mac')
         const win = document.getElementById('install-win')
-        if (!mac || !win) return
         mac.hidden = os === 'win'
         win.hidden = os === 'mac'
       }
 
-      async function init() {
-        const btn = document.getElementById('dl-btn')
+      async function initDownload() {
+        const button = document.getElementById('dl-btn')
+        const finalButton = document.getElementById('dl-btn-final')
         const meta = document.getElementById('dl-meta')
         const alts = document.getElementById('dl-alts')
-
         const os = detectOS()
         showInstructionsFor(os === 'mobile' ? null : os)
 
         if (os === 'mobile') {
-          meta.textContent = 'A desktop app — open this page on your Mac or Windows laptop'
+          button.textContent = 'View desktop downloads'
+          meta.textContent = 'Orbit is a desktop app — reopen this page on your Mac or Windows PC'
           return
         }
 
         let release
         try {
-          const res = await fetch(`https://api.github.com/repos/${REPO}/releases/latest`)
-          if (!res.ok) throw new Error(String(res.status))
-          release = await res.json()
-        } catch (e) {
-          // Rate-limited or offline. The button already points at the releases
-          // page, which is correct on every platform, so say nothing that
-          // could send somebody to the wrong file.
-          meta.textContent = 'Mac and Windows · free · no account needed'
+          const response = await fetch(`https://api.github.com/repos/${REPO}/releases/latest`)
+          if (!response.ok) throw new Error(String(response.status))
+          release = await response.json()
+        } catch (error) {
           return
         }
 
@@ -778,57 +567,40 @@
         const assets = release.assets || []
         const detectedArch = await detectArch()
 
-        /** Draw the page as if this is the student's system. */
+        function addAlt(label, action) {
+          const alt = document.createElement('button')
+          alt.type = 'button'
+          alt.className = 'dl-alt'
+          alt.textContent = label
+          alt.onclick = action
+          alts.appendChild(alt)
+        }
+
         function show(targetOs, targetArch) {
           const asset = assetFor(assets, targetOs, targetArch)
           if (!asset) return false
-
           const archName = ARCH_LABEL[targetOs][targetArch]
+          const label = archName ? `Download for ${OS_LABEL[targetOs]} (${archName})` : `Download for ${OS_LABEL[targetOs]}`
           const mb = Math.round(asset.size / 1048576)
-          btn.href = asset.browser_download_url
-          btn.textContent = archName
-            ? `Download for ${OS_LABEL[targetOs]} (${archName})`
-            : `Download for ${OS_LABEL[targetOs]}`
+          button.href = asset.browser_download_url
+          button.firstChild.textContent = `${label} `
+          finalButton.href = asset.browser_download_url
           meta.textContent = `Version ${version} · ${mb} MB · ${OS_LABEL[targetOs]}`
           showInstructionsFor(targetOs)
-
-          // Everything this student might have instead, as plain links. The
-          // other architecture first, because a Mac user on the wrong one gets
-          // an app that will not open; then the other platform.
           alts.textContent = ''
+
           const otherArch = targetArch === 'arm64' ? 'x64' : 'arm64'
           const otherArchAsset = assetFor(assets, targetOs, otherArch)
-          // Only when it is genuinely a DIFFERENT file. A universal installer
-          // answers for both architectures, and offering it twice under two
-          // names would just be a link that does nothing.
           if (otherArchAsset && otherArchAsset.name !== asset.name) {
-            addAlt(
-              targetOs === 'mac'
-                ? `I have an ${ARCH_LABEL.mac[otherArch]} Mac`
-                : `I have an ARM Windows PC`,
-              () => show(targetOs, otherArch)
-            )
+            addAlt(targetOs === 'mac' ? `I have an ${ARCH_LABEL.mac[otherArch]} Mac` : 'I have an ARM Windows PC', () => show(targetOs, otherArch))
           }
           const otherOs = targetOs === 'mac' ? 'win' : 'mac'
           if (assetFor(assets, otherOs, 'x64') || assetFor(assets, otherOs, 'arm64')) {
-            addAlt(`I am on ${OS_LABEL[otherOs]}`, () =>
-              show(otherOs, assetFor(assets, otherOs, detectedArch || 'x64') ? detectedArch || 'x64' : 'x64')
-            )
+            addAlt(`I am on ${OS_LABEL[otherOs]}`, () => show(otherOs, assetFor(assets, otherOs, detectedArch || 'x64') ? detectedArch || 'x64' : 'x64'))
           }
           return true
         }
 
-        function addAlt(label, onClick) {
-          const b = document.createElement('button')
-          b.type = 'button'
-          b.className = 'dl-alt'
-          b.textContent = label
-          b.onclick = onClick
-          alts.appendChild(b)
-        }
-
-        // An unrecognised system is not a Mac by default any more. Offer both,
-        // and let the student say which they are on.
         if (!os) {
           meta.textContent = `Version ${version} · choose your system`
           addAlt('Download for Mac', () => show('mac', detectedArch || 'arm64'))
@@ -838,29 +610,22 @@
 
         const arch = detectedArch || (os === 'mac' ? 'arm64' : 'x64')
         if (!show(os, arch)) {
-          // This release carries no build for this system — a half-published
-          // release, or a platform we have not shipped yet. The releases page
-          // is the honest answer.
           meta.textContent = `Version ${version} · no ${OS_LABEL[os]} build in this release yet`
-          return
-        }
-        // Detection failed and this is a guess: say which, rather than
-        // presenting it as fact.
-        if (!detectedArch && os === 'mac') {
+        } else if (!detectedArch && os === 'mac') {
           meta.textContent = `Version ${version} · macOS · check this is the right Mac below`
         }
       }
 
-      init()
+      initDownload()
 
-      document.getElementById('copy-btn').addEventListener('click', async (e) => {
-        const btn = e.currentTarget
+      document.getElementById('copy-btn').addEventListener('click', async (event) => {
+        const button = event.currentTarget
         try {
           await navigator.clipboard.writeText(document.getElementById('xattr').textContent)
-          btn.textContent = 'Copied'
-          setTimeout(() => (btn.textContent = 'Copy'), 1600)
-        } catch (err) {
-          btn.textContent = 'Select it'
+          button.textContent = 'Copied'
+          setTimeout(() => (button.textContent = 'Copy'), 1600)
+        } catch (error) {
+          button.textContent = 'Select it'
         }
       })
     </script>
