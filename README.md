@@ -17,9 +17,9 @@ instead, choose by hand:
 
 | You have | Download |
 | --- | --- |
-| **Windows** 10 or 11 | `Recruiting-Agent-Setup-<version>.exe` |
-| **Mac**, Apple Silicon (M1 and later) | `Recruiting-Agent-<version>-arm64.dmg` |
-| **Mac**, Intel | `Recruiting-Agent-<version>.dmg` |
+| **Windows** 10 or 11 | `Orbit-Setup-<version>.exe` |
+| **Mac**, Apple Silicon (M1 and later) | `Orbit-<version>-arm64.dmg` |
+| **Mac**, Intel | `Orbit-<version>.dmg` |
 
 Everything else in a release — `.zip`, `.blockmap`, `latest*.yml` — is for the
 app's own updater, not for you.
