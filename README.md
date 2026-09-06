@@ -5,7 +5,7 @@ professionals on LinkedIn, verifies their work email, writes a thoughtful
 introduction grounded in your background, and sends it from your own Gmail —
 in a browser window you can watch and stop at any time.
 
-### [→ Download for Mac or Windows](https://futurewarren.github.io/recruiting-agent/)
+### [→ Download for Mac or Windows](https://orbit-reaches.com/)
 
 Built for NYU students. Available for macOS and Windows.
 

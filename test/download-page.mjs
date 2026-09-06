@@ -86,7 +86,7 @@ const server = live
     })
 if (server) await new Promise((r) => server.listen(0, '127.0.0.1', r))
 const base = live
-  ? 'https://futurewarren.github.io/recruiting-agent/'
+  ? 'https://orbit-reaches.com/'
   : `http://127.0.0.1:${server.address().port}/`
 
 const browser = await chromium.launch({
