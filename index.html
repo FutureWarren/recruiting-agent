@@ -653,27 +653,6 @@
       .install p { margin: 0; color: #aaaab3; font-size: 12px; }
       .install a { color: #c8c8ff; }
       .os-tag { margin-left: 5px; color: #8f8f99; font: 650 8px/1 var(--mono); text-transform: uppercase; letter-spacing: .06em; }
-      .cmd {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        margin-top: 9px;
-        padding: 9px 10px 9px 12px;
-        border: 1px solid rgba(255,255,255,.12);
-        background: #101014;
-        overflow: hidden;
-      }
-      .cmd code { min-width: 0; flex: 1; overflow-x: auto; color: #ededf0; font: 10.5px/1.4 var(--mono); white-space: nowrap; }
-      .copy {
-        flex: none;
-        border: 1px solid rgba(255,255,255,.15);
-        border-radius: 6px;
-        padding: 5px 9px;
-        background: rgba(255,255,255,.07);
-        color: white;
-        font-size: 9.5px;
-        cursor: pointer;
-      }
 
       .final {
         position: relative;
@@ -1006,9 +985,8 @@
             <li><div><h3>Install Orbit <span class="os-tag">macOS</span></h3><p>Open the <code>.dmg</code> and drag Orbit into Applications.</p></div></li>
             <li>
               <div>
-                <h3>Open it once</h3>
-                <p>If macOS says the beta is damaged or cannot be opened, run this once in Terminal, then open Orbit again.</p>
-                <div class="cmd"><code id="xattr">xattr -cr "/Applications/Orbit.app"</code><button class="copy" id="copy-btn" type="button">Copy</button></div>
+                <h3>Open Orbit</h3>
+                <p>Launch Orbit from Applications. The first launch may take a moment while macOS verifies the Apple-notarized app.</p>
               </div>
             </li>
           </ol>
@@ -1201,17 +1179,6 @@
       }
 
       initDownload()
-
-      document.getElementById('copy-btn').addEventListener('click', async (event) => {
-        const button = event.currentTarget
-        try {
-          await navigator.clipboard.writeText(document.getElementById('xattr').textContent)
-          button.textContent = 'Copied'
-          setTimeout(() => (button.textContent = 'Copy'), 1600)
-        } catch (error) {
-          button.textContent = 'Select it'
-        }
-      })
     </script>
   </body>
 </html>
