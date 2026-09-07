@@ -1084,6 +1084,14 @@
         return undefined
       }
 
+      function versionForAsset(asset, fallback) {
+        // A release can temporarily carry the last known-good installer for
+        // one platform while another platform ships first. Name the version
+        // the visitor will actually download, not merely the release tag.
+        const match = asset && asset.name.match(/\d+\.\d+\.\d+/)
+        return match ? match[0] : fallback
+      }
+
       const OS_LABEL = { mac: 'Mac', win: 'Windows' }
       const ARCH_LABEL = { mac: { arm64: 'Apple Silicon', x64: 'Intel' }, win: { arm64: 'ARM', x64: '' } }
 
@@ -1133,6 +1141,7 @@
         function show(targetOs, targetArch) {
           const asset = assetFor(assets, targetOs, targetArch)
           if (!asset) return false
+          const assetVersion = versionForAsset(asset, version)
           const archName = ARCH_LABEL[targetOs][targetArch]
           const label = archName ? `Download for ${OS_LABEL[targetOs]} (${archName})` : `Download for ${OS_LABEL[targetOs]}`
           const mb = Math.round(asset.size / 1048576)
@@ -1140,7 +1149,7 @@
           button.href = asset.browser_download_url
           button.firstChild.textContent = `${label} `
           finalButton.href = asset.browser_download_url
-          meta.textContent = `Version ${version} · ${mb} MB · ${OS_LABEL[targetOs]}`
+          meta.textContent = `Version ${assetVersion} · ${mb} MB · ${OS_LABEL[targetOs]}`
           showInstructionsFor(targetOs)
           alts.textContent = ''
 

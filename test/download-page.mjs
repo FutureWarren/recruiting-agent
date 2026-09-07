@@ -57,6 +57,16 @@ const REAL_RELEASE = {
   ]
 }
 
+/** Mac shipped first, while Windows safely remains on its last good build. */
+const MIXED_RELEASE = {
+  tag_name: 'v0.1.35',
+  assets: [
+    { name: 'Orbit-0.1.35-arm64.dmg', size: 121_000_000, browser_download_url: 'https://x/mac-0135.dmg' },
+    { name: 'Orbit-0.1.35.dmg', size: 127_000_000, browser_download_url: 'https://x/mac-x64-0135.dmg' },
+    { name: 'Orbit-Setup-0.1.34.exe', size: 212_000_000, browser_download_url: 'https://x/win-0134.exe' }
+  ]
+}
+
 const UA = {
   windows:
     'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
@@ -180,6 +190,11 @@ console.log('\nWindows on ARM, against the real v0.1.19 release:')
 // build and the student was told there was no Windows build at all.
 check('still gets the universal installer', realWinArm.href, (h) => h.endsWith('.exe'))
 check('is not told the build is missing', realWinArm.meta, (m) => !/no Windows build/i.test(m))
+
+const fallbackWin = await visit(UA.windows, MIXED_RELEASE, 'x86')
+console.log('\nWindows, while Mac has shipped one version ahead:')
+check('receives the last known-good Windows installer', fallbackWin.href, 'https://x/win-0134.exe')
+check('sees the installer version rather than the newer Mac tag', fallbackWin.meta, (m) => /0\.1\.34/.test(m) && !/0\.1\.35/.test(m))
 
 await browser.close()
 if (server) server.close()
