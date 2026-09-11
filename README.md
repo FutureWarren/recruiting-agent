@@ -1,9 +1,9 @@
 # Orbit
 
-Orbit is an AI networking agent for ambitious students. It finds relevant
-professionals on LinkedIn, verifies their work email, writes a thoughtful
-introduction grounded in your background, and sends it from your own Gmail —
-in a browser window you can watch and stop at any time.
+Orbit is an AI-assisted professional relationship workspace for ambitious
+students. It helps research relevant professionals, organize context, and
+prepare tailored communications grounded in your background — in a browser
+window you can watch, pause, and stop at any time.
 
 ### [→ Download for Mac or Windows](https://orbit-reaches.com/)
 
