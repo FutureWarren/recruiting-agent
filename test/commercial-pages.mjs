@@ -26,7 +26,7 @@ const expected = {
   '/terms/': ['Operated by Angelic', 'Paddle', 'renew automatically'],
   '/privacy/': ['Paddle', 'Google', 'Alibaba Cloud', 'Apollo.io'],
   '/refunds/': ['Automatic renewal', 'paddle.net', 'Canceling a subscription'],
-  '/support/': ['future@angelic.ai', 'Credits did not update']
+  '/support/': ['lw3405@nyu.edu', 'Credits did not update']
 }
 
 const failures = []
