@@ -77,7 +77,11 @@ const UA = {
   windowsArm:
     'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
   linux:
-    'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36'
+    'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
+  // iPadOS 13+ calls itself a Macintosh. The word iPad is nowhere in it, which
+  // is exactly why an iPad used to be handed a .dmg.
+  ipad:
+    'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Safari/605.1.15'
 }
 
 const failures = []
@@ -107,13 +111,19 @@ const browser = await chromium.launch({
   args: ['--no-sandbox']
 })
 
-async function visit(userAgent, release = RELEASE, arch) {
+async function visit(userAgent, release = RELEASE, arch, touchPoints) {
   const context = await browser.newContext({
     userAgent,
     // The proxy above terminates TLS with its own certificate.
     ...(live ? { ignoreHTTPSErrors: true } : {})
   })
   const page = await context.newPage()
+  // Only a touch iPad claims several touch points while calling itself a Mac.
+  if (touchPoints !== undefined) {
+    await page.addInitScript((n) => {
+      Object.defineProperty(navigator, 'maxTouchPoints', { configurable: true, get: () => n })
+    }, touchPoints)
+  }
   // The release is stubbed so this tests the page, not GitHub's rate limit.
   await page.route('**/api.github.com/**', (route) =>
     route.fulfill({ contentType: 'application/json', body: JSON.stringify(release) })
@@ -141,7 +151,16 @@ async function visit(userAgent, release = RELEASE, arch) {
     meta: document.getElementById('dl-meta').textContent.trim(),
     alts: [...document.querySelectorAll('#dl-alts .dl-alt')].map((b) => b.textContent.trim()),
     macSteps: !document.getElementById('install-mac').hidden,
-    winSteps: !document.getElementById('install-win').hidden
+    winSteps: !document.getElementById('install-win').hidden,
+    // The steps are numbered by a CSS counter. It must be reset ONCE for the
+    // whole section: a reset per list restarts the count, and a Mac visitor
+    // reads "1, 2, 1, 2". start="3" cannot fix it — counters ignore it.
+    counterResets: [...document.querySelectorAll('#download *')].filter(
+      (el) => /install/.test(getComputedStyle(el).counterReset || '')
+    ).length,
+    visibleSteps: [...document.querySelectorAll('#download ol.install')]
+      .filter((list) => !list.hidden)
+      .flatMap((list) => [...list.querySelectorAll(':scope > li')]).length
   }))
   await context.close()
   return state
@@ -170,6 +189,20 @@ const phone = await visit(UA.iphone)
 console.log('\niPhone:')
 check('does not offer a desktop installer', phone.href, (h) => !/\.(dmg|exe)$/.test(h))
 check('says it is a desktop app', phone.meta, (m) => /desktop/i.test(m))
+
+const ipad = await visit(UA.ipad, RELEASE, undefined, 5)
+console.log('\niPad (claims to be a Mac):')
+check('is not handed a Mac disk image', ipad.href, (h) => !/\.(dmg|exe)$/.test(h))
+check('says it is a desktop app', ipad.meta, (m) => /desktop/i.test(m))
+
+const realMac = await visit(UA.macIntel, RELEASE, undefined, 0)
+console.log('\nA real Mac is unaffected by the iPad check:')
+check('still gets a .dmg', realMac.href, (h) => h.endsWith('.dmg'))
+
+console.log('\nInstall steps:')
+check('are numbered by one counter, not one per list', mac.counterResets, 1)
+check('run 1..4 on a Mac without restarting', mac.visibleSteps, 4)
+check('run 1..3 on Windows without restarting', win.visibleSteps, 3)
 
 const other = await visit(UA.linux)
 console.log('\nUnrecognised system:')

@@ -629,7 +629,11 @@
       .install-head { display: grid; grid-template-columns: 1.1fr .9fr; gap: 60px; align-items: end; margin-bottom: 38px; }
       .install-head h2 { margin: 0; font-size: clamp(38px, 4.4vw, 55px); line-height: 1; font-weight: 620; }
       .install-head p { margin: 0; color: #a8a8b1; font-size: 13px; }
-      .install { margin: 0; padding: 0; list-style: none; counter-reset: install; }
+      /* One counter for the whole section. Each <ol class="install"> used to
+         reset it, so the shared steps restarted at 1 and a Mac visitor read
+         "1, 2, 1, 2". start="3" cannot fix that: CSS counters ignore it. */
+      .install-shell { counter-reset: install; }
+      .install { margin: 0; padding: 0; list-style: none; }
       .install > li {
         display: grid;
         grid-template-columns: 34px 1fr;
@@ -998,7 +1002,7 @@
             <li><div><h3>Install Orbit <span class="os-tag">Windows</span></h3><p>Run the <code>.exe</code>. If Windows protects your PC, choose <b>More info</b>, then <b>Run anyway</b>; this beta is not code-signed yet.</p></div></li>
           </ol>
 
-          <ol class="install" start="3">
+          <ol class="install">
             <li><div><h3>Make sure Chrome is installed</h3><p>Orbit uses a separate Chrome window so its work stays apart from everyday browsing. <a href="https://www.google.com/chrome" rel="noopener">Get Chrome</a>.</p></div></li>
             <li><div><h3>Create your Orbit profile</h3><p>Add your background and résumé, set a professional relationship goal, connect the accounts you choose, then start your first workspace.</p></div></li>
           </ol>
@@ -1041,6 +1045,12 @@
       function detectOS() {
         const ua = navigator.userAgent || ''
         if (/Android|iPhone|iPad|iPod/i.test(ua)) return 'mobile'
+        // iPadOS 13+ reports itself as "Macintosh; Intel Mac OS X" — the word
+        // iPad is nowhere in the string. Without this an iPad is handed a .dmg
+        // it cannot open, which is the .exe-on-Windows bug wearing a new hat.
+        // A real Mac reports at most one touch point; only a touch iPad claims
+        // several while calling itself a Macintosh.
+        if (/Macintosh/.test(ua) && (navigator.maxTouchPoints || 0) > 1) return 'mobile'
         try {
           const platform = (navigator.userAgentData && navigator.userAgentData.platform) || ''
           if (/windows/i.test(platform)) return 'win'
@@ -1165,7 +1175,11 @@
           const otherArchAsset = assetFor(assets, targetOs, otherArch)
           if (otherArchAsset && otherArchAsset.name !== asset.name) {
             addAlt(
-              targetOs === 'mac' ? `I have an ${ARCH_LABEL.mac[otherArch]} Mac` : 'I have an ARM Windows PC',
+              targetOs === 'mac'
+                ? `I have an ${ARCH_LABEL.mac[otherArch]} Mac`
+                : otherArch === 'arm64'
+                  ? 'I have an ARM Windows PC'
+                  : 'I have an Intel or AMD Windows PC',
               () => show(targetOs, otherArch)
             )
           }

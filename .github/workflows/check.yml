@@ -29,3 +29,10 @@ jobs:
       # deploys rather than after students have seen it.
       - name: Every platform gets the right installer
         run: npm test
+
+      # The pricing and policy pages are what a paying student reads before
+      # they buy, and the plan figures on them have to match what the app
+      # charges. The test existed from the day those pages landed and was
+      # never wired up here, so nothing checked them on the way in.
+      - name: The commercial pages still say the right things
+        run: npm run test:commercial
