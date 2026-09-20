@@ -781,7 +781,7 @@
               <a class="btn btn-secondary" href="#how">See the system</a>
             </div>
             <div class="download-info">
-              <div class="dl-meta" id="dl-meta">Mac and Windows · free · no account needed</div>
+              <div class="dl-meta" id="dl-meta">Apple Silicon Mac · free · no account needed</div>
               <div class="dl-alts" id="dl-alts"></div>
             </div>
           </div>
@@ -985,7 +985,7 @@
         <div class="shell install-shell">
           <div class="install-head">
             <h2>From download to your first relationship workspace in minutes.</h2>
-            <p>Orbit is available for macOS 11+ and Windows 10/11. Google Chrome, LinkedIn, and Gmail are required.</p>
+            <p>Orbit currently supports Apple Silicon Macs on macOS 11+. Google Chrome, LinkedIn, and Gmail are required.</p>
           </div>
 
           <ol class="install os-mac" id="install-mac">
@@ -1116,8 +1116,11 @@
       function showInstructionsFor(os) {
         const mac = document.getElementById('install-mac')
         const win = document.getElementById('install-win')
-        mac.hidden = os === 'win'
-        win.hidden = os === 'mac'
+        mac.hidden = os !== 'mac'
+        // Windows builds are no longer part of Orbit's supported launch surface.
+        // Keep the old markup hidden so a historical asset can never resurrect
+        // an unsupported installer in the public download flow.
+        win.hidden = true
       }
 
       async function initDownload() {
@@ -1126,11 +1129,24 @@
         const meta = document.getElementById('dl-meta')
         const alts = document.getElementById('dl-alts')
         const os = detectOS()
-        showInstructionsFor(os === 'mobile' ? null : os)
+        showInstructionsFor(os === 'mac' ? 'mac' : null)
+
+        function disableDownload(label, message) {
+          button.removeAttribute('href')
+          finalButton.removeAttribute('href')
+          button.setAttribute('aria-disabled', 'true')
+          finalButton.setAttribute('aria-disabled', 'true')
+          button.textContent = label
+          meta.textContent = message
+        }
 
         if (os === 'mobile') {
-          button.textContent = 'View desktop downloads'
-          meta.textContent = 'Orbit is a desktop app — reopen this page on your Mac or Windows PC'
+          disableDownload('Orbit for Apple Silicon Mac', 'Orbit is a desktop app — reopen this page on an Apple Silicon Mac')
+          return
+        }
+
+        if (os === 'win') {
+          disableDownload('Orbit for Apple Silicon Mac', 'Orbit currently supports Apple Silicon Mac only')
           return
         }
 
@@ -1157,6 +1173,7 @@
         }
 
         function show(targetOs, targetArch) {
+          if (targetOs !== 'mac' || targetArch !== 'arm64') return false
           const asset = assetFor(assets, targetOs, targetArch)
           if (!asset) return false
           const assetVersion = versionForAsset(asset, version)
@@ -1171,41 +1188,24 @@
           showInstructionsFor(targetOs)
           alts.textContent = ''
 
-          const otherArch = targetArch === 'arm64' ? 'x64' : 'arm64'
-          const otherArchAsset = assetFor(assets, targetOs, otherArch)
-          if (otherArchAsset && otherArchAsset.name !== asset.name) {
-            addAlt(
-              targetOs === 'mac'
-                ? `I have an ${ARCH_LABEL.mac[otherArch]} Mac`
-                : otherArch === 'arm64'
-                  ? 'I have an ARM Windows PC'
-                  : 'I have an Intel or AMD Windows PC',
-              () => show(targetOs, otherArch)
-            )
-          }
-
-          const otherOs = targetOs === 'mac' ? 'win' : 'mac'
-          if (assetFor(assets, otherOs, 'x64') || assetFor(assets, otherOs, 'arm64')) {
-            addAlt(`I am on ${OS_LABEL[otherOs]}`, () => {
-              const candidateArch = assetFor(assets, otherOs, detectedArch || 'x64') ? detectedArch || 'x64' : 'x64'
-              show(otherOs, candidateArch)
-            })
-          }
           return true
         }
 
         if (!os) {
-          meta.textContent = `Version ${version} · choose your system`
-          addAlt('Download for Mac', () => show('mac', detectedArch || 'arm64'))
-          addAlt('Download for Windows', () => show('win', detectedArch || 'x64'))
+          disableDownload('Orbit for Apple Silicon Mac', 'Orbit currently supports Apple Silicon Mac only')
           return
         }
 
-        const arch = detectedArch || (os === 'mac' ? 'arm64' : 'x64')
-        if (!show(os, arch)) {
-          meta.textContent = `Version ${version} · no ${OS_LABEL[os]} build in this release yet`
-        } else if (!detectedArch && os === 'mac') {
-          meta.textContent = `Version ${version} · macOS · check this is the right Mac below`
+        if (os === 'mac' && detectedArch === 'x64') {
+          showInstructionsFor(null)
+          disableDownload('Orbit requires Apple Silicon', 'Orbit currently supports Apple Silicon Mac only')
+          return
+        }
+
+        if (!show('mac', 'arm64')) {
+          meta.textContent = `Version ${version} · Apple Silicon Mac build is unavailable`
+        } else if (!detectedArch) {
+          meta.textContent = `Version ${version} · Apple Silicon Mac · check your Mac chip before installing`
         }
       }
 
