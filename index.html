@@ -1166,6 +1166,7 @@
         }
 
         function show(targetOs, targetArch) {
+          if (targetOs !== 'mac' || targetArch !== 'arm64') return false
           const asset = assetFor(assets, targetOs, targetArch)
           if (!asset) return false
           const assetVersion = versionForAsset(asset, version)
@@ -1180,10 +1181,6 @@
           showInstructionsFor(targetOs)
           alts.textContent = ''
 
-          // Launch support is intentionally Apple-Silicon-only. Historical
-          // Intel/Windows assets can remain in GitHub releases for existing
-          // users, but the current website never advertises them as supported.
-          if (targetOs !== 'mac' || targetArch !== 'arm64') return false
           return true
         }
 
