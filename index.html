@@ -1131,15 +1131,22 @@
         const os = detectOS()
         showInstructionsFor(os === 'mac' ? 'mac' : null)
 
+        function disableDownload(label, message) {
+          button.removeAttribute('href')
+          finalButton.removeAttribute('href')
+          button.setAttribute('aria-disabled', 'true')
+          finalButton.setAttribute('aria-disabled', 'true')
+          button.textContent = label
+          meta.textContent = message
+        }
+
         if (os === 'mobile') {
-          button.textContent = 'Orbit for Apple Silicon Mac'
-          meta.textContent = 'Orbit is a desktop app — reopen this page on an Apple Silicon Mac'
+          disableDownload('Orbit for Apple Silicon Mac', 'Orbit is a desktop app — reopen this page on an Apple Silicon Mac')
           return
         }
 
         if (os === 'win') {
-          button.textContent = 'Orbit for Apple Silicon Mac'
-          meta.textContent = 'Orbit currently supports Apple Silicon Mac only'
+          disableDownload('Orbit for Apple Silicon Mac', 'Orbit currently supports Apple Silicon Mac only')
           return
         }
 
@@ -1185,14 +1192,13 @@
         }
 
         if (!os) {
-          meta.textContent = 'Orbit currently supports Apple Silicon Mac only'
+          disableDownload('Orbit for Apple Silicon Mac', 'Orbit currently supports Apple Silicon Mac only')
           return
         }
 
         if (os === 'mac' && detectedArch === 'x64') {
           showInstructionsFor(null)
-          button.textContent = 'Orbit requires Apple Silicon'
-          meta.textContent = 'Orbit currently supports Apple Silicon Mac only'
+          disableDownload('Orbit requires Apple Silicon', 'Orbit currently supports Apple Silicon Mac only')
           return
         }
 
