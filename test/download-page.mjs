@@ -173,7 +173,7 @@ console.log(`\ndownload page — ${live ? base : 'local index.html'}\n`)
 // the public page cannot accidentally resurrect them.
 const win = await visit(UA.windows)
 console.log('Windows:')
-check('does not offer an unsupported Windows installer', win.href, (h) => !/\.(dmg|exe)$/.test(h))
+check('disables the download CTA on Windows', win.href, (h) => !h)
 check('explains current Apple Silicon support', win.meta, (m) => /Apple Silicon Mac only/i.test(m))
 check('hides Windows install steps', win.winSteps, false)
 check('does not pretend Mac steps apply on Windows', win.macSteps, false)
@@ -188,18 +188,18 @@ check('does not advertise Windows or Intel alternates', mac.alts.join(' | '), (a
 
 const intel = await visit(UA.macIntel, RELEASE, 'x86')
 console.log('\nIntel macOS:')
-check('does not hand an Intel Mac an incompatible installer', intel.href, (h) => !/\.(dmg|exe)$/.test(h))
+check('disables the download CTA on Intel Mac', intel.href, (h) => !h)
 check('explains Apple Silicon requirement', intel.meta, (m) => /Apple Silicon Mac only/i.test(m))
 check('hides install steps for unsupported hardware', intel.macSteps, false)
 
 const phone = await visit(UA.iphone)
 console.log('\niPhone:')
-check('does not offer a desktop installer', phone.href, (h) => !/\.(dmg|exe)$/.test(h))
+check('disables the download CTA on iPhone', phone.href, (h) => !h)
 check('says to reopen on Apple Silicon Mac', phone.meta, (m) => /Apple Silicon Mac/i.test(m))
 
 const ipad = await visit(UA.ipad, RELEASE, undefined, 5)
 console.log('\niPad (claims to be a Mac):')
-check('is not handed a Mac disk image', ipad.href, (h) => !/\.(dmg|exe)$/.test(h))
+check('disables the download CTA on iPad', ipad.href, (h) => !h)
 check('says to reopen on Apple Silicon Mac', ipad.meta, (m) => /Apple Silicon Mac/i.test(m))
 
 console.log('\nInstall steps:')
@@ -208,14 +208,14 @@ check('run 1..4 on a supported Mac without restarting', mac.visibleSteps, 4)
 
 const other = await visit(UA.linux)
 console.log('\nUnrecognised system:')
-check('hands out no file by default', other.href, (h) => !/\.(dmg|exe)$/.test(h))
+check('disables the download CTA on unsupported desktop systems', other.href, (h) => !h)
 check('states the supported platform', other.meta, (m) => /Apple Silicon Mac only/i.test(m))
 check('does not advertise unsupported alternatives', other.alts.join(' | '), (a) => !/Windows|Intel/i.test(a))
 check('shows no platform-specific steps', other.macSteps || other.winSteps, false)
 
 const historicalWin = await visit(UA.windows, REAL_RELEASE, 'x86')
 console.log('\nWindows, even when a historical release contains an .exe:')
-check('still refuses the historical Windows installer', historicalWin.href, (h) => !/\.exe$/.test(h))
+check('still disables the CTA despite a historical Windows installer', historicalWin.href, (h) => !h)
 check('still states Apple Silicon support only', historicalWin.meta, (m) => /Apple Silicon Mac only/i.test(m))
 
 const mixedMac = await visit(UA.macIntel, MIXED_RELEASE, 'arm')
