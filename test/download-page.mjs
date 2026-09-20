@@ -142,7 +142,7 @@ async function visit(userAgent, release = RELEASE, arch, touchPoints) {
   }
   await page.goto(base)
   await page.waitForFunction(
-    () => document.getElementById('dl-meta').textContent !== 'Mac and Windows · free · no account needed',
+    () => document.getElementById('dl-meta').textContent !== 'Apple Silicon Mac · free · no account needed',
     { timeout: 8000 }
   ).catch(() => {})
   const state = await page.evaluate(() => ({
@@ -168,66 +168,60 @@ async function visit(userAgent, release = RELEASE, arch, touchPoints) {
 
 console.log(`\ndownload page — ${live ? base : 'local index.html'}\n`)
 
-// The one that was broken, and the reason this file exists.
+// Launch support is intentionally Apple-Silicon-only. The synthetic release
+// deliberately contains historical Windows and Intel assets so this test proves
+// the public page cannot accidentally resurrect them.
 const win = await visit(UA.windows)
 console.log('Windows:')
-check('offers the .exe, not the .dmg', win.href, (h) => h.endsWith('.exe'))
-check('button says Windows', win.label, (l) => /Windows/i.test(l))
-check('shows the Windows install steps', win.winSteps, true)
-check('hides the macOS install steps', win.macSteps, false)
-check('offers a way to the Mac build', win.alts.join(' | '), (a) => /Mac/i.test(a))
+check('does not offer an unsupported Windows installer', win.href, (h) => !/\.(dmg|exe)$/.test(h))
+check('explains current Apple Silicon support', win.meta, (m) => /Apple Silicon Mac only/i.test(m))
+check('hides Windows install steps', win.winSteps, false)
+check('does not pretend Mac steps apply on Windows', win.macSteps, false)
 
-const mac = await visit(UA.macIntel)
-console.log('\nmacOS:')
-check('offers a .dmg', mac.href, (h) => h.endsWith('.dmg'))
+const mac = await visit(UA.macIntel, RELEASE, 'arm')
+console.log('\nApple Silicon macOS:')
+check('offers the Apple Silicon .dmg', mac.href, (h) => /arm64.*\.dmg$/.test(h))
 check('button says Mac', mac.label, (l) => /Mac/i.test(l))
 check('shows the macOS install steps', mac.macSteps, true)
-check('hides the Windows install steps', mac.winSteps, false)
-check('offers a way to the Windows build', mac.alts.join(' | '), (a) => /Windows/i.test(a))
+check('hides the old Windows install steps', mac.winSteps, false)
+check('does not advertise Windows or Intel alternates', mac.alts.join(' | '), (a) => !/Windows|Intel/i.test(a))
+
+const intel = await visit(UA.macIntel, RELEASE, 'x86')
+console.log('\nIntel macOS:')
+check('does not hand an Intel Mac an incompatible installer', intel.href, (h) => !/\.(dmg|exe)$/.test(h))
+check('explains Apple Silicon requirement', intel.meta, (m) => /Apple Silicon Mac only/i.test(m))
+check('hides install steps for unsupported hardware', intel.macSteps, false)
 
 const phone = await visit(UA.iphone)
 console.log('\niPhone:')
 check('does not offer a desktop installer', phone.href, (h) => !/\.(dmg|exe)$/.test(h))
-check('says it is a desktop app', phone.meta, (m) => /desktop/i.test(m))
+check('says to reopen on Apple Silicon Mac', phone.meta, (m) => /Apple Silicon Mac/i.test(m))
 
 const ipad = await visit(UA.ipad, RELEASE, undefined, 5)
 console.log('\niPad (claims to be a Mac):')
 check('is not handed a Mac disk image', ipad.href, (h) => !/\.(dmg|exe)$/.test(h))
-check('says it is a desktop app', ipad.meta, (m) => /desktop/i.test(m))
-
-const realMac = await visit(UA.macIntel, RELEASE, undefined, 0)
-console.log('\nA real Mac is unaffected by the iPad check:')
-check('still gets a .dmg', realMac.href, (h) => h.endsWith('.dmg'))
+check('says to reopen on Apple Silicon Mac', ipad.meta, (m) => /Apple Silicon Mac/i.test(m))
 
 console.log('\nInstall steps:')
 check('are numbered by one counter, not one per list', mac.counterResets, 1)
-check('run 1..4 on a Mac without restarting', mac.visibleSteps, 4)
-check('run 1..3 on Windows without restarting', win.visibleSteps, 3)
+check('run 1..4 on a supported Mac without restarting', mac.visibleSteps, 4)
 
 const other = await visit(UA.linux)
 console.log('\nUnrecognised system:')
 check('hands out no file by default', other.href, (h) => !/\.(dmg|exe)$/.test(h))
-check('asks which system', other.meta, (m) => /choose your system/i.test(m))
-check('offers both', other.alts.join(' | '), (a) => /Mac/i.test(a) && /Windows/i.test(a))
-check('shows both sets of steps', other.macSteps && other.winSteps, true)
+check('states the supported platform', other.meta, (m) => /Apple Silicon Mac only/i.test(m))
+check('does not advertise unsupported alternatives', other.alts.join(' | '), (a) => !/Windows|Intel/i.test(a))
+check('shows no platform-specific steps', other.macSteps || other.winSteps, false)
 
-// The real release: one universal Windows installer, no arch in the name.
-const realWin = await visit(UA.windows, REAL_RELEASE, 'x86')
-console.log('\nWindows, against the real v0.1.19 release:')
-check('offers the real installer', realWin.href, (h) => h.endsWith('.exe'))
-check('no pointless second architecture link', realWin.alts.join(' | '), (a) => !/ARM Windows/i.test(a))
+const historicalWin = await visit(UA.windows, REAL_RELEASE, 'x86')
+console.log('\nWindows, even when a historical release contains an .exe:')
+check('still refuses the historical Windows installer', historicalWin.href, (h) => !/\.exe$/.test(h))
+check('still states Apple Silicon support only', historicalWin.meta, (m) => /Apple Silicon Mac only/i.test(m))
 
-const realWinArm = await visit(UA.windowsArm, REAL_RELEASE, 'arm')
-console.log('\nWindows on ARM, against the real v0.1.19 release:')
-// This is the case that was broken: asking for arm64 found no arch-suffixed
-// build and the student was told there was no Windows build at all.
-check('still gets the universal installer', realWinArm.href, (h) => h.endsWith('.exe'))
-check('is not told the build is missing', realWinArm.meta, (m) => !/no Windows build/i.test(m))
-
-const fallbackWin = await visit(UA.windows, MIXED_RELEASE, 'x86')
-console.log('\nWindows, while Mac has shipped one version ahead:')
-check('receives the last known-good Windows installer', fallbackWin.href, 'https://x/win-0134.exe')
-check('sees the installer version rather than the newer Mac tag', fallbackWin.meta, (m) => /0\.1\.34/.test(m) && !/0\.1\.35/.test(m))
+const mixedMac = await visit(UA.macIntel, MIXED_RELEASE, 'arm')
+console.log('\nApple Silicon Mac with a mixed historical release:')
+check('uses the supported Mac asset', mixedMac.href, 'https://x/mac-0135.dmg')
+check('does not expose the historical Windows alternate', mixedMac.alts.join(' | '), (a) => !/Windows/i.test(a))
 
 await browser.close()
 if (server) server.close()
