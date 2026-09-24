@@ -22,7 +22,7 @@ const base = `http://127.0.0.1:${server.address().port}`
 const browser = await chromium.launch({ ...(exe ? { executablePath: exe } : {}), args: ['--no-sandbox'] })
 const pages = ['/pricing/', '/terms/', '/privacy/', '/refunds/', '/support/']
 const expected = {
-  '/pricing/': ['$19', '200 credits', '$39', '600 credits', '$149', '3,000 credits', '$99', '1,500 credits', 'Stripe'],
+  '/pricing/': ['$19', '200 credits', '$39', '600 credits', '$149', '3,000 credits', '$99', '2,000 credits', 'Stripe'],
   '/terms/': ['Operated by Angelic', 'Stripe', 'renew automatically'],
   '/privacy/': ['Stripe', 'Google', 'Alibaba Cloud', 'Apollo.io'],
   '/refunds/': ['Automatic renewal', 'Stripe', 'Canceling a subscription'],
