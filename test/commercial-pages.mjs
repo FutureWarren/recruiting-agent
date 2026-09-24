@@ -23,9 +23,9 @@ const browser = await chromium.launch({ ...(exe ? { executablePath: exe } : {}),
 const pages = ['/pricing/', '/terms/', '/privacy/', '/refunds/', '/support/']
 const expected = {
   '/pricing/': ['$19', '100 credits', '$39', '600 credits', '$149', '3,000 credits', '$99', '1,500 credits'],
-  '/terms/': ['Operated by Angelic', 'Paddle', 'renew automatically'],
-  '/privacy/': ['Paddle', 'Google', 'Alibaba Cloud', 'Apollo.io'],
-  '/refunds/': ['Automatic renewal', 'paddle.net', 'Canceling a subscription'],
+  '/terms/': ['Operated by Angelic', 'Stripe', 'renew automatically'],
+  '/privacy/': ['Stripe', 'Google', 'Alibaba Cloud', 'Apollo.io'],
+  '/refunds/': ['Automatic renewal', 'Stripe', 'Canceling a subscription'],
   '/support/': ['lw3405@nyu.edu', 'Credits did not update']
 }
 
