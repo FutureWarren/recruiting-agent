@@ -142,7 +142,7 @@ async function visit(userAgent, release = RELEASE, arch, touchPoints) {
   }
   await page.goto(base)
   await page.waitForFunction(
-    () => document.getElementById('dl-meta').textContent !== 'Apple Silicon Mac · free · no account needed',
+    () => document.getElementById('dl-meta').textContent !== 'Apple Silicon Mac · 30 free credits',
     { timeout: 8000 }
   ).catch(() => {})
   const state = await page.evaluate(() => ({
