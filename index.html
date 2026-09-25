@@ -4,15 +4,15 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="theme-color" content="#f5f5f0" />
-    <title>Orbit — AI-assisted professional relationship work</title>
+    <title>Orbit — AI recruiting agent for professional outreach</title>
     <meta
       name="description"
-      content="Orbit helps you research relevant professionals, organize relationship context, and prepare tailored communication from your own browser."
+      content="Orbit researches the right professionals, verifies contact information, and prepares personalized recruiting outreach in your voice — inside a browser you can watch and interrupt."
     />
-    <meta property="og:title" content="Orbit — your AI professional relationship workspace" />
+    <meta property="og:title" content="Orbit — your AI recruiting agent" />
     <meta
       property="og:description"
-      content="Turn your background into thoughtful, visible professional relationship work."
+      content="Find the right people, understand the context, and prepare thoughtful outreach without living on LinkedIn."
     />
     <meta property="og:type" content="website" />
     <link
@@ -51,10 +51,9 @@
         margin: 0;
         overflow-x: hidden;
         background:
-          linear-gradient(rgba(21,21,26,.028) 1px, transparent 1px),
-          linear-gradient(90deg, rgba(21,21,26,.028) 1px, transparent 1px),
+          radial-gradient(circle at 82% 4%, rgba(92,92,242,.075), transparent 28%),
+          radial-gradient(circle at 12% 34%, rgba(255,255,255,.8), transparent 24%),
           var(--bg);
-        background-size: 64px 64px;
         color: var(--ink);
         font-family: var(--font);
         font-size: 16px;
@@ -125,10 +124,11 @@
         display: flex;
         align-items: center;
         justify-content: space-between;
-        border: 1px solid rgba(255,255,255,.72);
+        border: 1px solid var(--line);
         background: rgba(245,245,240,.84);
         backdrop-filter: blur(20px) saturate(1.15);
-        box-shadow: 0 10px 32px rgba(24,24,32,.05);
+        border-radius: 18px;
+        box-shadow: 0 10px 34px rgba(24,24,32,.055);
         pointer-events: auto;
       }
       .brand {
@@ -253,6 +253,7 @@
         inset: 18px 0 28px;
         overflow: hidden;
         border: 1px solid rgba(255,255,255,.75);
+        border-radius: 24px;
         background:
           linear-gradient(rgba(255,255,255,.56), rgba(255,255,255,.56)),
           linear-gradient(rgba(21,21,26,.04) 1px, transparent 1px),
@@ -495,7 +496,9 @@
       }
       .context-panel {
         border: 1px solid var(--line);
-        background: rgba(255,255,255,.55);
+        border-radius: 20px;
+        overflow: hidden;
+        background: rgba(255,255,255,.62);
       }
       .context-main { padding: 34px; }
       .context-top { display: flex; align-items: center; justify-content: space-between; gap: 20px; }
@@ -571,6 +574,7 @@
         z-index: 1;
         padding: 19px 20px;
         border: 1px solid rgba(255,255,255,.13);
+        border-radius: 14px;
         background: rgba(255,255,255,.045);
         color: #c9c9d0;
         font-size: 12.5px;
@@ -623,6 +627,7 @@
 
       .install-shell {
         padding: 52px;
+        border-radius: 24px;
         background: var(--dark);
         color: white;
       }
@@ -707,7 +712,7 @@
       }
       @media (max-width: 720px) {
         :root { --shell: min(100% - 28px, 1180px); }
-        body { background-size: 48px 48px; }
+        body { }
         .nav-wrap { padding-top: 8px; }
         .nav { height: 55px; padding-left: 13px; }
         .nav-links > a:not(.nav-download) { display: none; }
@@ -767,12 +772,12 @@
       <div class="shell">
         <header class="hero">
           <div class="hero-copy">
-            <div class="kicker">AI professional relationship workspace</div>
-            <h1>Build professional relationships with more context.</h1>
+            <div class="kicker">AI recruiting agent</div>
+            <h1>Find the right people. Reach out with context.</h1>
             <p>
-              Orbit helps you research relevant professionals, organize your context, and prepare
-              tailored communication grounded in your actual background. It works in your browser,
-              where you can see, pause, or stop the work.
+              Orbit researches relevant professionals, verifies contact information, and prepares
+              personalized outreach grounded in your real background. It works in a visible browser,
+              so you can watch, redirect, pause, or stop the work.
             </p>
             <div class="actions">
               <a class="btn" id="dl-btn" href="https://github.com/FutureWarren/recruiting-agent/releases/latest">
@@ -781,7 +786,7 @@
               <a class="btn btn-secondary" href="#how">See the system</a>
             </div>
             <div class="download-info">
-              <div class="dl-meta" id="dl-meta">Apple Silicon Mac · free · no account needed</div>
+              <div class="dl-meta" id="dl-meta">Apple Silicon Mac · 30 free credits</div>
               <div class="dl-alts" id="dl-alts"></div>
             </div>
           </div>
@@ -793,7 +798,7 @@
                 <span class="cg-title">Orbit · live workspace</span>
               </div>
               <div class="cg-canvas">
-                <div class="cg-label">RELATIONSHIP WORKSPACE / LIVE</div>
+                <div class="cg-label">RECRUITING WORKSPACE / LIVE</div>
 
                 <div class="beam beam-a"></div>
                 <div class="beam beam-b"></div>
@@ -803,7 +808,7 @@
                   <div class="cg-ring"></div>
                   <div class="cg-satellite-wrap"><i class="cg-satellite"></i></div>
                   <div class="cg-center">
-                    <div><strong>Orbit</strong><span>working beside you</span></div>
+                    <div><strong>Orbit</strong><span>working with you</span></div>
                   </div>
                 </div>
 
@@ -836,7 +841,7 @@
         </header>
 
         <div class="principles">
-          <div class="principle"><b>Local first</b>Runs on your own computer.</div>
+          <div class="principle"><b>Runs on your Mac</b>Your browser sessions stay on this device.</div>
           <div class="principle"><b>Visible by design</b>You can watch every browser action.</div>
           <div class="principle"><b>Human control</b>Pause, edit, or stop whenever you want.</div>
         </div>
@@ -847,20 +852,20 @@
           <div class="section-head">
             <div>
               <div class="kicker">How Orbit works</div>
-              <h2>One focused system from research to a thoughtful next step.</h2>
+              <h2>One focused system from finding the right person to a thoughtful next step.</h2>
             </div>
             <p>
-              Tell Orbit which professional relationships matter. It handles repetitive research one
-              person at a time, keeps a visible trail of its work, and helps you stay organized without
-              another spreadsheet.
+              Tell Orbit who you want to reach and what you want to happen. It handles the repetitive
+              research one person at a time, keeps a visible trail of its work, and turns context into
+              outreach without another spreadsheet.
             </p>
           </div>
 
           <div class="timeline">
             <article>
-              <div class="timeline-index">01 / TARGET</div>
-              <h3>Define the people that matter.</h3>
-              <p>Choose fields, firms, roles, locations, and the relationship goals that matter to you.</p>
+              <div class="timeline-index">01 / BRIEF</div>
+              <h3>Describe who you want to reach.</h3>
+              <p>Write the goal in your own words. Orbit turns the brief into a starting plan you can review.</p>
             </article>
             <article>
               <div class="timeline-index">02 / RESEARCH</div>
@@ -868,9 +873,9 @@
               <p>It researches professional profiles one at a time and skips people who are not a meaningful fit.</p>
             </article>
             <article>
-              <div class="timeline-index">03 / PREPARE</div>
+              <div class="timeline-index">03 / OUTREACH</div>
               <h3>Turn context into a tailored next step.</h3>
-              <p>Orbit prepares a personalized draft from your goals and background for use through your connected accounts.</p>
+              <p>Orbit prepares personalized outreach from your goals, writing preferences, and background for your connected accounts.</p>
             </article>
           </div>
         </div>
@@ -880,12 +885,12 @@
         <div class="shell">
           <div class="section-head">
             <div>
-              <div class="kicker">Your Orbit context</div>
-              <h2>Professional communication starts with a source of truth.</h2>
+              <div class="kicker">Your background</div>
+              <h2>Good outreach starts with a source of truth.</h2>
             </div>
             <p>
-              Orbit turns your résumé and goals into editable context. It knows what is safe to use,
-              what matters for a specific person, and what it should never invent.
+              Orbit turns your résumé, recruiting goals, and writing preferences into editable context.
+              Each task decides what matters for a specific person, and Orbit never has to invent your story.
             </p>
           </div>
 
@@ -893,8 +898,8 @@
             <div class="context-panel context-main">
               <div class="context-top">
                 <div>
-                  <div class="kicker">Profile memory</div>
-                  <h3>What Orbit knows about you</h3>
+                  <div class="kicker">Profile</div>
+                  <h3>Your background, reviewed by you</h3>
                 </div>
                 <span class="ready">Ready</span>
               </div>
@@ -939,8 +944,8 @@
               <h2>You always know what Orbit is doing next.</h2>
             </div>
             <p>
-              Research, qualification, context-building, and communication are distinct states. That
-              makes the agent understandable instead of magical — and easy to interrupt when you want to step in.
+              Orbit shows what it is doing, who it is working on, and what comes next. That makes the
+              agent understandable instead of magical — and easy to redirect when you want to step in.
             </p>
           </div>
 
@@ -984,7 +989,7 @@
       <section id="download">
         <div class="shell install-shell">
           <div class="install-head">
-            <h2>From download to your first relationship workspace in minutes.</h2>
+            <h2>From download to your first recruiting task in minutes.</h2>
             <p>Orbit currently supports Apple Silicon Macs on macOS 11+. Google Chrome, LinkedIn, and Gmail are required.</p>
           </div>
 
@@ -1004,7 +1009,7 @@
 
           <ol class="install">
             <li><div><h3>Make sure Chrome is installed</h3><p>Orbit uses a separate Chrome window so its work stays apart from everyday browsing. <a href="https://www.google.com/chrome" rel="noopener">Get Chrome</a>.</p></div></li>
-            <li><div><h3>Create your Orbit profile</h3><p>Add your background and résumé, set a professional relationship goal, connect the accounts you choose, then start your first workspace.</p></div></li>
+            <li><div><h3>Create your Orbit profile</h3><p>Add your background and résumé, tell Orbit what you want it to do, connect the accounts you choose, then review and start the task.</p></div></li>
           </ol>
         </div>
       </section>
@@ -1012,8 +1017,8 @@
       <section class="final">
         <div class="shell">
           <span class="orbit-mark final-mark" aria-hidden="true"></span>
-          <h2>Build relationships while Orbit handles the repetitive groundwork.</h2>
-          <p>Networking should feel intentional, not like a second full-time job.</p>
+          <h2>Do the recruiting work that matters. Let Orbit handle the repetition.</h2>
+          <p>Research and outreach should feel intentional, not like a second full-time job.</p>
           <div class="actions">
             <a class="btn" id="dl-btn-final" href="https://github.com/FutureWarren/recruiting-agent/releases/latest">
               Download Orbit <span class="arrow" aria-hidden="true">↘</span>
