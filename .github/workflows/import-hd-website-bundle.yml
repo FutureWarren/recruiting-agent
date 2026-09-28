@@ -1,0 +1,51 @@
+name: Import approved HD website assets
+on:
+  push:
+    branches: [prepare/hd-website-20260928]
+permissions:
+  contents: write
+jobs:
+  import:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: 8fb444dcc4203754c77a2a9b388c6d0efe810c08
+      - name: Import exact website bundle into an isolated branch
+        env:
+          BUNDLE_URL: 'https://sdmntprcentralus.oaiusercontent.com/files/00000000-7348-81f5-ad34-1e17485f67b6/raw?se=2026-09-28T05%3A35%3A48Z&sp=r&sv=2026-02-06&sr=b&scid=c81200c9-927d-5fdf-80db-aa487bc7bac6&skoid=a1be202a-6464-476c-a496-723317c4a4db&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skt=2026-09-27T23%3A46%3A52Z&ske=2026-09-28T23%3A46%3A52Z&sks=b&skv=2026-02-06&sig=YA7Bwom87sH9nexrOZVJJSPL8ZcFNtGJCd72MGHJV3M%3D'
+        run: |
+          set -euo pipefail
+          echo "::add-mask::$BUNDLE_URL"
+          test "$(git rev-parse HEAD)" = '8fb444dcc4203754c77a2a9b388c6d0efe810c08'
+          curl --fail --silent --show-error --location --max-time 90 "$BUNDLE_URL" -o "$RUNNER_TEMP/website.zip"
+          echo "fa26cfb54588f1a5d24dbbc9fbae0da0b9d96827a3ddc3b8b19eaf1ea992b650  $RUNNER_TEMP/website.zip" | sha256sum -c -
+          python - <<'PY'
+          import os, json, zipfile, pathlib, hashlib, stat
+          allowed={'index.html','home.css','home.js','media/orbit-demo-hd.mp4','media/orbit-demo-hd-poster.jpg','test/download-page.mjs','test/hero-quality.mjs','test/static-server.mjs','docs/hd-landing-media.json'}
+          with zipfile.ZipFile(pathlib.Path(os.environ['RUNNER_TEMP'])/'website.zip') as z:
+              assert set(z.namelist()) == allowed | {'bundle-manifest.json'}
+              assert len(z.namelist()) == len(allowed)+1
+              assert sum(i.file_size for i in z.infolist()) < 30000000
+              manifest=json.loads(z.read('bundle-manifest.json'))
+              assert manifest['base']=='8fb444dcc4203754c77a2a9b388c6d0efe810c08'
+              assert set(manifest['files'])==allowed
+              for name in sorted(allowed):
+                  assert not stat.S_ISLNK(z.getinfo(name).external_attr >> 16)
+                  data=z.read(name)
+                  assert hashlib.sha256(data).hexdigest()==manifest['files'][name],name
+                  dest=pathlib.Path(name); dest.parent.mkdir(parents=True,exist_ok=True); dest.write_bytes(data)
+                  print('Verified',name,len(data))
+          PY
+          node --check home.js
+          node --check test/download-page.mjs
+          node --check test/hero-quality.mjs
+          git switch -c fix/hero-fold-hd-download
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html home.css home.js media/orbit-demo-hd.mp4 media/orbit-demo-hd-poster.jpg test/download-page.mjs test/hero-quality.mjs test/static-server.mjs docs/hd-landing-media.json
+          git commit -m 'Put company strip under Hero, showcase full 1080p demo second, and fix every download CTA'
+          git push origin HEAD:refs/heads/fix/hero-fold-hd-download
+          echo "Imported website commit: $(git rev-parse HEAD)" >> "$GITHUB_STEP_SUMMARY"
+          echo 'No main, Pages, desktop app, billing or release changes made by this import.' >> "$GITHUB_STEP_SUMMARY"
