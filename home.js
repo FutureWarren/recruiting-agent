@@ -8,7 +8,7 @@ async function initDownload(){
  const buttons=[...document.querySelectorAll('[data-orbit-download]')];
  const meta=document.getElementById('dl-meta'),os=detectOS(),allowance='300 free Orbit Credits';
  const label=(b,text,navText)=>{b.textContent=b.id==='nav-download'?(navText||text):text};
- const disable=(text,message)=>{buttons.forEach(b=>{b.removeAttribute('href');b.setAttribute('aria-disabled','true');b.dataset.downloadState='unsupported';label(b,text)});meta.textContent=message};
+ const disable=(text,message)=>{buttons.forEach(b=>{b.removeAttribute('href');b.setAttribute('aria-disabled','true');b.dataset.downloadState='unsupported';label(b,text,'Mac only');b.setAttribute('aria-label',message)});meta.textContent=message};
  buttons.forEach(b=>{b.dataset.downloadState='loading'});
  if(os==='mobile'){
   buttons.forEach(b=>{b.href='#demo';b.removeAttribute('aria-disabled');b.dataset.downloadState='demo';label(b,'Watch Orbit work','Watch demo');b.setAttribute('aria-label','Watch the Orbit product demo')});
