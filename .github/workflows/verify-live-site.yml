@@ -1,0 +1,26 @@
+name: Verify deployed Orbit website
+on:
+  push:
+    branches: [verify/live-site-8fb444d]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  live-smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - run: npx playwright install --with-deps chromium
+      - name: Check real production assets and browser behavior
+        run: node test/production-smoke.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: orbit-production-verification-8fb444d
+          retention-days: 3
+          path: production-verification/
