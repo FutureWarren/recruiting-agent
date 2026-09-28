@@ -212,6 +212,14 @@
         background: #27272e;
         box-shadow: 0 12px 28px rgba(21,21,26,.14);
       }
+      .btn .arrow { display:inline-block; transition:transform .35s var(--ease); }
+      .btn:hover .arrow { transform:translate(2px,2px); }
+      .nav-download { position:relative; overflow:hidden; }
+      .nav-download::after {
+        content:""; position:absolute; width:32px; height:32px; right:-20px; top:-20px; border:1px solid rgba(255,255,255,.34);
+        border-radius:50%; transition:transform .55s var(--ease);
+      }
+      .nav-download:hover::after { transform:scale(2.5); }
       .btn-secondary {
         border-color: var(--line-strong);
         background: rgba(255,255,255,.45);
@@ -585,7 +593,11 @@
         border-top: 1px solid var(--line);
         border-bottom: 1px solid var(--line);
       }
-      .timeline article { min-height: 270px; padding: 24px 30px 30px 0; }
+      .timeline article { min-height: 270px; padding: 24px 30px 30px 0; transition:transform .7s var(--ease),opacity .7s var(--ease); }
+      .reveal-on-scroll { opacity:0; transform:translateY(24px); }
+      .reveal-on-scroll.in-view { opacity:1; transform:none; }
+      .timeline article:nth-child(2) { transition-delay:.08s; }
+      .timeline article:nth-child(3) { transition-delay:.16s; }
       .timeline article + article { padding-left: 30px; border-left: 1px solid var(--line); }
       .timeline-index { color: var(--signal-ink); font: 650 10px/1 var(--mono); }
       .timeline h3 { margin: 94px 0 8px; font-size: 18px; font-weight: 650; }
@@ -1358,6 +1370,18 @@
       }
 
       initDownload()
+
+      ;(() => {
+        const targets=[...document.querySelectorAll('.timeline article,.context-panel,.live-flow,.security-list li,.install li')]
+        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+        targets.forEach(el=>el.classList.add('reveal-on-scroll'))
+        const observer=new IntersectionObserver(entries=>{
+          entries.forEach(entry=>{
+            if(entry.isIntersecting){entry.target.classList.add('in-view');observer.unobserve(entry.target)}
+          })
+        },{threshold:.14,rootMargin:'0px 0px -6% 0px'})
+        targets.forEach(el=>observer.observe(el))
+      })()
 
       // The hero begins as Orbit's visual system, then yields to the real
       // product. Motion is decorative; reduced-motion visitors see the real
