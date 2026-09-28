@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 2,
+  "denominationScale": 10,
+  "metering": {"candidate_found": 2, "contact_obtained": 3, "outreach": 5},
+  "plans": [
+    {"id": "free", "name": "Free", "priceUsd": 0, "credits": 300, "periodMonths": null},
+    {"id": "basic", "name": "Starter", "priceUsd": 19, "credits": 2000, "periodMonths": 1},
+    {"id": "pro", "name": "Pro", "priceUsd": 39, "credits": 6000, "periodMonths": 1},
+    {"id": "power", "name": "Power", "priceUsd": 149, "credits": 30000, "periodMonths": 1},
+    {"id": "jobpass", "name": "Recruiting Season Pass", "priceUsd": 99, "credits": 20000, "periodMonths": 3}
+  ]
+}
