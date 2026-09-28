@@ -1,4 +1,4 @@
-name: Verify launch Credit V2 parity
+name: Verify live Credit V2 website
 on:
   push:
     branches: [verify/launch-credit-parity-20260928]
@@ -7,61 +7,81 @@ permissions:
 jobs:
   verify:
     runs-on: ubuntu-latest
-    timeout-minutes: 18
+    timeout-minutes: 12
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: d07646b5e207f51be7f662e5ccb3ce462ca82a14
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      - name: Unit-test the parity check
-        run: node --test test/pricing-parity.test.mjs
-      - name: Read-only wait for exact healthy production contract
+      - name: Read-only production and deployed file hash verification
         shell: bash
         run: |
           set -euo pipefail
           mkdir -p artifacts
           node --input-type=module <<'JS'
-          import { writeFileSync } from 'node:fs';
+          import { readFileSync,writeFileSync } from 'node:fs';
+          import { createHash } from 'node:crypto';
           import assert from 'node:assert/strict';
-          import { assertPricingParity, endpoint } from './test/pricing-production-parity.mjs';
-          const origin = new URL(endpoint).origin;
-          const expectedCommit = '840928a7192ae433eed4c82fbb80016d7b27e086';
-          let passed = false;
-          for (let attempt=1; attempt<=36; attempt++) {
-            const report={capturedAt:new Date().toISOString(),readOnly:true,expectedCommit,attempt};
-            try {
-              const get=async path=>{const r=await fetch(origin+path,{signal:AbortSignal.timeout(12000),headers:{'cache-control':'no-cache'}}); assert.equal(r.status,200,path+' HTTP '+r.status); return r.json()};
-              const [health, caps, data]=await Promise.all([get('/health'),get('/api/openclaw/capabilities'),get('/api/auth/config')]);
-              Object.assign(report,{healthStatus:200,buildCommit:caps.buildCommit,creditProtocol:caps.creditProtocol,creditWeights:caps.creditWeights,accountsEnabled:data.accountsEnabled,billingEnabled:data.billingEnabled,billingProvider:data.billingProvider,stripeCheckoutEnabled:data.stripeCheckoutEnabled,freeLaunch:data.freeLaunch,creditSystem:data.creditSystem,plans:data.plans});
-              assert.equal(caps.buildCommit,expectedCommit,'serving commit not the approved merge');
-              assert.equal(caps.creditProtocol,'orbit-credits-v2');
-              assert.deepEqual(caps.creditWeights,{candidate_found:2,contact_obtained:3,outreach:5});
-              assert.equal(data.accountsEnabled,true);assert.equal(data.stripeCheckoutEnabled,true);
-              assertPricingParity(data);
-              report.passed=true; passed=true;
-            } catch (e) { report.passed=false; report.reason=e.message; }
-            writeFileSync('artifacts/production-credit-parity.json',JSON.stringify(report,null,2));
-            console.log(JSON.stringify(report));
-            if (passed) break;
-            if (attempt<36) await new Promise(r=>setTimeout(r,20000));
+          import { verifyProduction } from './test/pricing-production-parity.mjs';
+          const report={capturedAt:new Date().toISOString(),readOnly:true,siteCommit:'d07646b5e207f51be7f662e5ccb3ce462ca82a14',backendCommit:'840928a7192ae433eed4c82fbb80016d7b27e086',files:[]};
+          const hash=b=>createHash('sha256').update(b).digest('hex');
+          const files=[['/pricing/','pricing/index.html'],['/terms/','terms/index.html'],['/pricing/credit-v2.json','pricing/credit-v2.json'],['/','index.html'],['/home.js','home.js']];
+          let passed=false;
+          for(let attempt=1;attempt<=25;attempt++){
+            try{
+              const results=await Promise.all(files.map(async([path,file])=>{
+                const r=await fetch('https://orbit-reaches.com'+path,{signal:AbortSignal.timeout(12000),headers:{'cache-control':'no-cache'}});
+                const b=Buffer.from(await r.arrayBuffer());return {path,status:r.status,expectedSha256:hash(readFileSync(file)),actualSha256:hash(b)};
+              }));
+              report.files=results;report.attempt=attempt;
+              for(const r of results){assert.equal(r.status,200,r.path);assert.equal(r.actualSha256,r.expectedSha256,'CDN not current: '+r.path)}
+              const config=await verifyProduction();report.plans=config.plans;report.creditSystem=config.creditSystem;
+              const caps=await (await fetch('https://backend-production-2b40.up.railway.app/api/openclaw/capabilities',{signal:AbortSignal.timeout(12000)})).json();
+              assert.equal(caps.buildCommit,report.backendCommit);report.servingBackendCommit=caps.buildCommit;
+              const release=await (await fetch('https://api.github.com/repos/FutureWarren/recruiting-agent/releases/latest',{signal:AbortSignal.timeout(12000)})).json();
+              report.publicAppVersion=release.tag_name;report.publicRelease=release.html_url;
+              passed=true;report.passed=true;break;
+            }catch(e){report.reason=e.message;console.log('Waiting for live artifacts, attempt '+attempt+': '+e.message);if(attempt<25)await new Promise(r=>setTimeout(r,15000));}
           }
-          assert.ok(passed,'Production parity is not proven. Do not publish pricing.');
+          report.checkedAt=new Date().toISOString();writeFileSync('artifacts/live-credit-alignment.json',JSON.stringify(report,null,2));console.log(JSON.stringify(report));assert.ok(passed,'Live website files/production contract not proven');
           JS
-      - name: Install website test dependencies
-        run: npm install --no-audit --no-fund
-      - name: Install test browser
-        run: npx playwright install --with-deps chromium
-      - name: Website and commercial page regression tests
+      - name: Install existing website browser test dependencies
+        run: npm install --no-audit --no-fund && npx playwright install --with-deps chromium
+      - name: Actual live desktop and mobile pricing check
         shell: bash
         run: |
           set -euo pipefail
-          npm test 2>&1 | tee artifacts/website-tests.log
-          npm run test:commercial 2>&1 | tee artifacts/commercial-tests.log
-          printf '%s\n' '860fb32d25598e3a90b189169c0d832e49f57171' > artifacts/approved-site-head.txt
-          sha256sum pricing/index.html terms/index.html pricing/credit-v2.json > artifacts/approved-site-files.sha256
+          node --input-type=module <<'JS'
+          import {chromium} from 'playwright-core';
+          import {readFileSync,writeFileSync} from 'node:fs';
+          import assert from 'node:assert/strict';
+          const contract=JSON.parse(readFileSync('pricing/credit-v2.json','utf8'));
+          const browser=await chromium.launch({args:['--no-sandbox']});const results=[];
+          try{
+            for(const width of [390,1440]){
+              const page=await browser.newPage({viewport:{width,height:900},deviceScaleFactor:1});const errors=[];
+              page.on('pageerror',e=>errors.push(e.message));
+              for(const path of ['/pricing/','/terms/']){
+                const response=await page.goto('https://orbit-reaches.com'+path,{waitUntil:'networkidle',timeout:45000});assert.equal(response.status(),200);
+                const body=await page.locator('body').innerText();assert.doesNotMatch(body,/One credit is one|One credit is charged|\b30 free credits\b/i);
+                assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false,'overflow '+path+' '+width);
+                if(path==='/pricing/'){
+                  for(const p of contract.plans){const card=page.locator('[data-plan="'+p.id+'"]');assert.equal(await card.getAttribute('data-credits'),String(p.credits));assert.ok((await card.innerText()).includes(p.credits.toLocaleString('en-US')+' Orbit Credits'))}
+                  assert.ok(body.includes('2 + 3 + 5 = 10 Orbit Credits'));
+                  await page.screenshot({path:'artifacts/pricing-live-'+width+'.png',fullPage:true});
+                }else assert.ok(body.includes('Credit V2'));
+                results.push({width,path,http:response.status(),horizontalOverflow:false});
+              }
+              assert.deepEqual(errors,[]);await page.close();
+            }
+          }finally{await browser.close()}
+          writeFileSync('artifacts/live-browser-check.json',JSON.stringify({capturedAt:new Date().toISOString(),passed:true,results,customerActions:0,payments:0},null,2));console.log('PASS live Pricing/Terms, both widths, no page errors/overflow. No payment clicks.');
+          JS
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: launch-credit-parity
+          name: live-credit-alignment
           path: artifacts/
           retention-days: 7
