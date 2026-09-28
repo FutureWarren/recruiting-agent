@@ -1,266 +1,33 @@
-/**
- * The download page, driven by a real browser pretending to be each system.
- *
- * A Windows student who clicked Download used to get a .dmg — Windows offered
- * to open it in Notepad. Nothing about that looked broken from here: the page
- * rendered, the button worked, the file downloaded. It was only wrong for the
- * half of the visitors nobody had tested as.
- *
- * So this loads the real page in Chromium as each system, with the GitHub API
- * stubbed to a known release, and asserts what the button actually points at.
- *
- *   node test/download-page.mjs                 # against the local index.html
- *   node test/download-page.mjs --live          # against the deployed page
- */
-import { chromium } from 'playwright-core'
-import { createServer } from 'http'
-import { existsSync, readFileSync } from 'fs'
-import { dirname, join } from 'path'
-import { fileURLToPath } from 'url'
-
-const here = dirname(fileURLToPath(import.meta.url))
-const live = process.argv.includes('--live')
-// Undefined means "whatever Playwright installed", which is what CI has.
-// CHROMIUM points at a preinstalled binary for environments that have one.
-const exe = process.env.CHROMIUM || undefined
-
-/** A release shaped exactly like the ones electron-builder publishes. */
-const RELEASE = {
-  tag_name: 'v9.9.9',
-  assets: [
-    { name: 'Recruiting-Agent-9.9.9-arm64.dmg', size: 122_000_000, browser_download_url: 'https://x/mac-arm64.dmg' },
-    { name: 'Recruiting-Agent-9.9.9.dmg', size: 127_000_000, browser_download_url: 'https://x/mac-x64.dmg' },
-    { name: 'Recruiting.Agent.Setup.9.9.9.exe', size: 95_000_000, browser_download_url: 'https://x/win-x64.exe' },
-    { name: 'Recruiting.Agent.Setup.9.9.9-arm64.exe', size: 94_000_000, browser_download_url: 'https://x/win-arm64.exe' },
-    { name: 'latest-mac.yml', size: 800, browser_download_url: 'https://x/latest-mac.yml' }
-  ]
+/** Cross-platform download contracts, including historical/mixed releases. */
+import assert from 'node:assert/strict';
+import {existsSync} from 'node:fs';
+import {join} from 'node:path';
+import {chromium} from 'playwright-core';
+import {serve,root} from './static-server.mjs';
+const live=process.argv.includes('--live'),server=live?null:await serve();
+const base=live?'https://orbit-reaches.com':server.base;
+const browser=await chromium.launch({...(process.env.CHROMIUM?{executablePath:process.env.CHROMIUM}:{}),args:['--no-sandbox']});
+const UA={mac:'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 Chrome/131.0.0.0 Safari/537.36',win:'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/131.0.0.0',phone:'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 Version/17.0 Mobile/15E148 Safari/604.1',linux:'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chrome/131.0.0.0'};
+const asset=(name,url)=>({name,size:120000000,browser_download_url:'https://example.test/'+url});
+const release={tag_name:'v9.9.9',assets:[asset('Orbit-9.9.9-arm64.dmg','mac-arm64.dmg'),asset('Orbit-9.9.9.dmg','mac-x64.dmg'),asset('Orbit.Setup.9.9.9.exe','win.exe'),asset('Orbit.Setup.9.9.9-arm64.exe','win-arm.exe'),asset('latest-mac.yml','latest-mac.yml')]};
+async function visit(ua,arch,data=release,touch=0,status=200){
+ const context=await browser.newContext({userAgent:ua});
+ await context.addInitScript(({arch,touch})=>{Object.defineProperty(navigator,'maxTouchPoints',{configurable:true,get:()=>touch});if(arch)Object.defineProperty(navigator,'userAgentData',{configurable:true,get:()=>({platform:/Windows/.test(navigator.userAgent)?'Windows':'macOS',getHighEntropyValues:async()=>({architecture:arch})})})},{arch,touch});
+ await context.route('**/api.github.com/**',r=>r.fulfill({status,contentType:'application/json',body:JSON.stringify(data)}));
+ const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));
+ try{
+  await page.goto(base);await page.waitForFunction(()=>document.getElementById('dl-meta').textContent!=='Apple Silicon Mac · 300 free Orbit Credits');
+  const state=await page.evaluate(()=>({href:document.querySelector('#dl-btn').getAttribute('href'),final:document.querySelector('#dl-btn-final').getAttribute('href'),label:document.querySelector('#dl-btn').textContent,meta:document.querySelector('#dl-meta').textContent,mac:!document.querySelector('#install-mac').hidden,win:!document.querySelector('#install-win').hidden,alts:document.querySelector('#dl-alts').textContent,resets:[...document.querySelectorAll('#download *')].filter(e=>/install/.test(getComputedStyle(e).counterReset)).length,steps:[...document.querySelectorAll('#download ol.install')].filter(e=>!e.hidden).flatMap(e=>[...e.children]).length,video:(()=>{const v=document.querySelector('#hero-demo');return {src:v.querySelector('source').getAttribute('src'),poster:v.getAttribute('poster'),inline:v.playsInline,muted:v.muted,loop:v.loop,controls:v.controls}})()}));
+  assert.deepEqual(errors,[]);return state;
+ }finally{await context.close()}
 }
-
-/**
- * The real v0.1.19 release, as GitHub actually returned it.
- *
- * It matters because it is not shaped like the synthetic one: electron-builder
- * emitted a SINGLE universal Windows installer with no architecture in its
- * name, so the first version of the arch matching found nothing for
- * Windows-on-ARM and told that student there was no Windows build.
- */
-const REAL_RELEASE = {
-  tag_name: 'v0.1.19',
-  assets: [
-    { name: 'latest-mac.yml', size: 856, browser_download_url: 'https://x/latest-mac.yml' },
-    { name: 'latest.yml', size: 364, browser_download_url: 'https://x/latest.yml' },
-    { name: 'Recruiting-Agent-0.1.19-arm64.dmg', size: 122197241, browser_download_url: 'https://x/mac-arm64.dmg' },
-    { name: 'Recruiting-Agent-0.1.19.dmg', size: 127015753, browser_download_url: 'https://x/mac-x64.dmg' },
-    { name: 'Recruiting-Agent-Setup-0.1.19.exe', size: 215300785, browser_download_url: 'https://x/win-universal.exe' },
-    { name: 'Recruiting-Agent-Setup-0.1.19.exe.blockmap', size: 219207, browser_download_url: 'https://x/win.blockmap' },
-    { name: 'Recruiting-Agent-0.1.19-arm64-mac.zip', size: 117165125, browser_download_url: 'https://x/mac-arm64.zip' }
-  ]
-}
-
-/** Mac shipped first, while Windows safely remains on its last good build. */
-const MIXED_RELEASE = {
-  tag_name: 'v0.1.35',
-  assets: [
-    { name: 'Orbit-0.1.35-arm64.dmg', size: 121_000_000, browser_download_url: 'https://x/mac-0135.dmg' },
-    { name: 'Orbit-0.1.35.dmg', size: 127_000_000, browser_download_url: 'https://x/mac-x64-0135.dmg' },
-    { name: 'Orbit-Setup-0.1.34.exe', size: 212_000_000, browser_download_url: 'https://x/win-0134.exe' }
-  ]
-}
-
-const UA = {
-  windows:
-    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
-  macIntel:
-    'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
-  iphone:
-    'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1',
-  windowsArm:
-    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
-  linux:
-    'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
-  // iPadOS 13+ calls itself a Macintosh. The word iPad is nowhere in it, which
-  // is exactly why an iPad used to be handed a .dmg.
-  ipad:
-    'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Safari/605.1.15'
-}
-
-const failures = []
-function check(name, actual, expected) {
-  const ok = typeof expected === 'function' ? expected(actual) : actual === expected
-  console.log(`${ok ? '  ok  ' : ' FAIL '} ${name}${ok ? '' : `\n         got: ${actual}`}`)
-  if (!ok) failures.push(name)
-}
-
-const html = live ? null : readFileSync(join(here, '..', 'index.html'), 'utf8')
-const server = live
-  ? null
-  : createServer((req, res) => {
-      const pathname = new URL(req.url, 'http://local.test').pathname
-      if (pathname === '/') {
-        res.setHeader('content-type', 'text/html; charset=utf-8')
-        res.end(html)
-        return
-      }
-      const relative = pathname.replace(/^\//, '')
-      const file = join(here, '..', relative)
-      if (!relative.startsWith('media/') || !existsSync(file)) {
-        res.statusCode = 404
-        res.end('Not found')
-        return
-      }
-      res.setHeader('content-type', relative.endsWith('.mp4') ? 'video/mp4' : 'image/jpeg')
-      res.end(readFileSync(file))
-    })
-if (server) await new Promise((r) => server.listen(0, '127.0.0.1', r))
-const base = live
-  ? 'https://orbit-reaches.com/'
-  : `http://127.0.0.1:${server.address().port}/`
-
-const browser = await chromium.launch({
-  ...(exe ? { executablePath: exe } : {}),
-  // --live has to leave the machine, and some environments only reach the
-  // internet through a proxy. Ignored when there is none.
-  ...(live && process.env.HTTPS_PROXY ? { proxy: { server: process.env.HTTPS_PROXY } } : {}),
-  args: ['--no-sandbox']
-})
-
-async function visit(userAgent, release = RELEASE, arch, touchPoints) {
-  const context = await browser.newContext({
-    userAgent,
-    // The proxy above terminates TLS with its own certificate.
-    ...(live ? { ignoreHTTPSErrors: true } : {})
-  })
-  const page = await context.newPage()
-  // Only a touch iPad claims several touch points while calling itself a Mac.
-  if (touchPoints !== undefined) {
-    await page.addInitScript((n) => {
-      Object.defineProperty(navigator, 'maxTouchPoints', { configurable: true, get: () => n })
-    }, touchPoints)
-  }
-  // The release is stubbed so this tests the page, not GitHub's rate limit.
-  await page.route('**/api.github.com/**', (route) =>
-    route.fulfill({ contentType: 'application/json', body: JSON.stringify(release) })
-  )
-  // Force the reported architecture when a case is about one.
-  if (arch) {
-    await page.addInitScript((a) => {
-      Object.defineProperty(navigator, 'userAgentData', {
-        configurable: true,
-        get: () => ({
-          platform: /Win/.test(navigator.userAgent) ? 'Windows' : 'macOS',
-          getHighEntropyValues: async () => ({ architecture: a })
-        })
-      })
-    }, arch)
-  }
-  await page.goto(base)
-  await page.waitForFunction(
-    () => document.getElementById('dl-meta').textContent !== 'Apple Silicon Mac · 30 free credits',
-    { timeout: 8000 }
-  ).catch(() => {})
-  const state = await page.evaluate(() => ({
-    href: document.getElementById('dl-btn').href,
-    label: document.getElementById('dl-btn').textContent.trim(),
-    meta: document.getElementById('dl-meta').textContent.trim(),
-    alts: [...document.querySelectorAll('#dl-alts .dl-alt')].map((b) => b.textContent.trim()),
-    macSteps: !document.getElementById('install-mac').hidden,
-    winSteps: !document.getElementById('install-win').hidden,
-    // The steps are numbered by a CSS counter. It must be reset ONCE for the
-    // whole section: a reset per list restarts the count, and a Mac visitor
-    // reads "1, 2, 1, 2". start="3" cannot fix it — counters ignore it.
-    counterResets: [...document.querySelectorAll('#download *')].filter(
-      (el) => /install/.test(getComputedStyle(el).counterReset || '')
-    ).length,
-    visibleSteps: [...document.querySelectorAll('#download ol.install')]
-      .filter((list) => !list.hidden)
-      .flatMap((list) => [...list.querySelectorAll(':scope > li')]).length,
-    demo: (() => {
-      const video = document.querySelector('.demo-video')
-      const source = video?.querySelector('source')
-      return {
-        autoplay: video?.autoplay,
-        muted: video?.muted,
-        loop: video?.loop,
-        playsInline: video?.playsInline,
-        controls: video?.controls,
-        poster: video?.getAttribute('poster'),
-        source: source?.getAttribute('src')
-      }
-    })()
-  }))
-  await context.close()
-  return state
-}
-
-console.log(`\ndownload page — ${live ? base : 'local index.html'}\n`)
-
-// Launch support is intentionally Apple-Silicon-only. The synthetic release
-// deliberately contains historical Windows and Intel assets so this test proves
-// the public page cannot accidentally resurrect them.
-const win = await visit(UA.windows)
-console.log('Windows:')
-check('disables the download CTA on Windows', win.href, (h) => !h)
-check('explains current Apple Silicon support', win.meta, (m) => /Apple Silicon Mac only/i.test(m))
-check('hides Windows install steps', win.winSteps, false)
-check('does not pretend Mac steps apply on Windows', win.macSteps, false)
-
-const mac = await visit(UA.macIntel, RELEASE, 'arm')
-console.log('\nApple Silicon macOS:')
-check('offers the Apple Silicon .dmg', mac.href, (h) => /arm64.*\.dmg$/.test(h))
-check('button says Mac', mac.label, (l) => /Mac/i.test(l))
-check('keeps the Credit V2 free allowance visible', mac.meta, (m) => /300 free Orbit Credits/i.test(m))
-check('shows the macOS install steps', mac.macSteps, true)
-check('hides the old Windows install steps', mac.winSteps, false)
-check('does not advertise Windows or Intel alternates', mac.alts.join(' | '), (a) => !/Windows|Intel/i.test(a))
-
-const intel = await visit(UA.macIntel, RELEASE, 'x86')
-console.log('\nIntel macOS:')
-check('disables the download CTA on Intel Mac', intel.href, (h) => !h)
-check('explains Apple Silicon requirement', intel.meta, (m) => /Apple Silicon Mac only/i.test(m))
-check('hides install steps for unsupported hardware', intel.macSteps, false)
-
-const phone = await visit(UA.iphone)
-console.log('\niPhone:')
-check('keeps the primary CTA actionable on iPhone', phone.href, (h) => /#demo$/.test(h))
-check('turns the primary CTA into a demo CTA on iPhone', phone.label, 'Watch Orbit work')
-check('says to reopen on Apple Silicon Mac', phone.meta, (m) => /Apple Silicon Mac/i.test(m))
-check('shows native controls on iPhone if autoplay is blocked', phone.demo.controls, true)
-
-const ipad = await visit(UA.ipad, RELEASE, undefined, 5)
-console.log('\niPad (claims to be a Mac):')
-check('keeps the primary CTA actionable on iPad', ipad.href, (h) => /#demo$/.test(h))
-check('says to reopen on Apple Silicon Mac', ipad.meta, (m) => /Apple Silicon Mac/i.test(m))
-
-console.log('\nInstall steps:')
-check('are numbered by one counter, not one per list', mac.counterResets, 1)
-check('run 1..4 on a supported Mac without restarting', mac.visibleSteps, 4)
-
-const other = await visit(UA.linux)
-console.log('\nUnrecognised system:')
-check('disables the download CTA on unsupported desktop systems', other.href, (h) => !h)
-check('states the supported platform', other.meta, (m) => /Apple Silicon Mac only/i.test(m))
-check('does not advertise unsupported alternatives', other.alts.join(' | '), (a) => !/Windows|Intel/i.test(a))
-check('shows no platform-specific steps', other.macSteps || other.winSteps, false)
-
-const historicalWin = await visit(UA.windows, REAL_RELEASE, 'x86')
-console.log('\nWindows, even when a historical release contains an .exe:')
-check('still disables the CTA despite a historical Windows installer', historicalWin.href, (h) => !h)
-check('still states Apple Silicon support only', historicalWin.meta, (m) => /Apple Silicon Mac only/i.test(m))
-
-const mixedMac = await visit(UA.macIntel, MIXED_RELEASE, 'arm')
-console.log('\nApple Silicon Mac with a mixed historical release:')
-check('uses the supported Mac asset', mixedMac.href, 'https://x/mac-0135.dmg')
-check('does not expose the historical Windows alternate', mixedMac.alts.join(' | '), (a) => !/Windows/i.test(a))
-
-console.log('\nProduct demo:')
-check('uses a muted inline looping video', mac.demo.autoplay && mac.demo.muted && mac.demo.loop && mac.demo.playsInline, true)
-check('uses the optimized demo video', mac.demo.source, 'media/orbit-demo.mp4')
-check('uses a real poster frame', mac.demo.poster, 'media/orbit-demo-poster.jpg')
-check('ships the demo video asset', existsSync(join(here, '..', 'media', 'orbit-demo.mp4')), true)
-check('ships the demo poster asset', existsSync(join(here, '..', 'media', 'orbit-demo-poster.jpg')), true)
-
-await browser.close()
-if (server) server.close()
-
-console.log(failures.length ? `\n${failures.length} FAILED\n` : '\nall good\n')
-process.exit(failures.length ? 1 : 0)
+try{
+ for(const [name,ua,arch] of [['Windows',UA.win,'x86'],['Windows ARM',UA.win,'arm'],['Intel Mac',UA.mac,'x86'],['Linux',UA.linux,null]]){const s=await visit(ua,arch);assert.equal(s.href,null,name);assert.equal(s.final,null);assert.match(s.meta,/Apple Silicon Mac only/);assert.equal(s.mac||s.win,false);assert.doesNotMatch(s.alts,/Windows|Intel/)}
+ const mac=await visit(UA.mac,'arm');assert.equal(mac.href,'https://example.test/mac-arm64.dmg');assert.equal(mac.final,mac.href);assert.match(mac.label,/Mac/);assert.match(mac.meta,/9\.9\.9.*300 free Orbit Credits/);assert.equal(mac.mac,true);assert.equal(mac.win,false);assert.equal(mac.resets,1);assert.equal(mac.steps,4);assert.doesNotMatch(mac.alts,/Windows|Intel/);
+ for(const [ua,touch] of [[UA.phone,0],[UA.mac,5]]){const s=await visit(ua,null,release,touch);assert.equal(s.href,'#demo');assert.equal(s.final,'#demo');assert.equal(s.label,'Watch Orbit work');assert.match(s.meta,/Apple Silicon Mac/);assert.equal(s.video.controls,true)}
+ const historical={tag_name:'v0.1.19',assets:[asset('Recruiting-Agent-0.1.19-arm64.dmg','mac-arm64.dmg'),asset('Recruiting-Agent-Setup-0.1.19.exe','universal.exe')]};assert.equal((await visit(UA.win,'x86',historical)).href,null);
+ const mixed={tag_name:'v0.1.35',assets:[asset('Orbit-0.1.34-arm64.dmg','mac-old.dmg'),asset('Orbit-Setup-0.1.35.exe','new-win.exe')]};const m=await visit(UA.mac,'arm',mixed);assert.equal(m.href,'https://example.test/mac-old.dmg');assert.match(m.meta,/Version 0\.1\.34/);
+ for(const [data,status] of [{tag_name:'v1.0.0',assets:[asset('Orbit-x64.dmg','wrong.dmg')]},{}].map((d,i)=>[d,i?403:200])){const s=await visit(UA.mac,'arm',data,0,status);assert.match(s.href,/releases\/latest$/);assert.match(s.meta,/300 free Orbit Credits/)}
+ assert.deepEqual(mac.video,{src:'media/orbit-demo.mp4',poster:'media/orbit-demo-poster.jpg',inline:true,muted:true,loop:true,controls:true});for(const file of ['media/orbit-demo.mp4','media/orbit-demo-poster.jpg','home.css','home.js'])assert.ok(existsSync(join(root,file)),file);
+ console.log('Download contracts passed: platforms, touch iPad, historic/mixed assets, missing build/API failure, free allowance, controls and install numbering.');
+}finally{await browser.close();await server?.close()}

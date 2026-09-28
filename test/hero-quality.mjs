@@ -1,0 +1,28 @@
+/** Functional motion + branding contracts. No artificial performance metrics. */
+import assert from 'node:assert/strict';
+import {readFileSync,mkdirSync} from 'node:fs';
+import {join} from 'node:path';
+import {chromium} from 'playwright-core';
+import {serve,root} from './static-server.mjs';
+const server=await serve(),browser=await chromium.launch({...(process.env.CHROMIUM?{executablePath:process.env.CHROMIUM}:{}),args:['--no-sandbox']});
+const errors=[],report=[];mkdirSync(join(root,'artifacts'),{recursive:true});
+async function open(options={}){const c=await browser.newContext({viewport:{width:1440,height:900},deviceScaleFactor:2,...options});await c.route('**/api.github.com/**',r=>r.fulfill({status:503,body:'{}'}));const p=await c.newPage();p.on('pageerror',e=>errors.push(e.message));await p.goto(server.base);return {c,p}}
+try{
+ const css=readFileSync(join(root,'home.css'),'utf8'),js=readFileSync(join(root,'home.js'),'utf8');
+ assert.ok(css.includes('border:10px solid var(--ink);border-radius:50%'));
+ assert.ok(css.includes('animation:orbit-spin 6.8s linear infinite'));
+ assert.doesNotMatch(css,/cursor\s*:\s*none/);assert.doesNotMatch(js,/addEventListener\(['"]wheel/);
+ for(const w of [320,390,768,1024,1280,1440,1920]){const {c,p}=await open({viewport:{width:w,height:w<760?844:900}});assert.equal(await p.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false,'overflow '+w);assert.equal(await p.locator('.cursor-aura').evaluate(e=>getComputedStyle(e).pointerEvents),'none');const physical=await p.locator('#hero-demo').evaluate(e=>e.getBoundingClientRect().width*devicePixelRatio);assert.ok(physical<=912,'video enlarged past source');report.push(w);await c.close()}
+ const {c,p}=await open();await p.mouse.move(600,300);const card=p.locator('.float-card').first(),r=await card.boundingBox();await p.mouse.move(r.x+r.width/2,r.y+r.height/2);await p.mouse.down();await p.mouse.move(r.x+r.width/2+42,r.y+r.height/2+28,{steps:12});await p.waitForTimeout(220);const drag=await card.evaluate(e=>new DOMMatrix(getComputedStyle(e).transform).m41);assert.ok(drag>30,'card follows drag');await p.mouse.up();await p.mouse.move(600,230);await p.waitForTimeout(1200);assert.ok(Math.abs(await card.evaluate(e=>new DOMMatrix(getComputedStyle(e).transform).m41))<.3,'spring returns');assert.ok((await p.evaluate(()=>scrollY))<10,'drag is not a click');
+ const geom=await p.locator('.story').evaluate(e=>({top:e.getBoundingClientRect().top+scrollY,height:e.offsetHeight}));
+ for(const step of [0,1,2,3,1]){await p.evaluate(y=>scrollTo(0,y),geom.top-100+(step/3)*(geom.height-750));await p.waitForTimeout(120);assert.equal(await p.locator('.story-stage').getAttribute('data-step'),String(step));assert.equal(await p.locator('.scene-layer[aria-hidden="false"]').count(),1)}
+ await p.screenshot({path:join(root,'artifacts','scroll-workflow.png')});
+ await p.locator('#companies').scrollIntoViewIfNeeded();const strip=p.locator('.company-window');await strip.focus();const before=await p.locator('.company-track').evaluate(e=>e.style.transform);await p.keyboard.press('ArrowRight');await p.waitForTimeout(80);assert.notEqual(await p.locator('.company-track').evaluate(e=>e.style.transform),before);assert.equal(await p.locator('.company-set[aria-hidden="true"]').count(),1);
+ await p.locator('#motion-toggle').click();assert.ok((await p.locator('body').getAttribute('class')).includes('motion-off'));assert.equal(await p.locator('.cursor-aura').evaluate(e=>getComputedStyle(e).display),'none');await p.locator('.story-step').nth(3).click();assert.equal(await p.locator('.story-stage').getAttribute('data-step'),'3');await p.reload();assert.ok((await p.locator('body').getAttribute('class')).includes('motion-off'));await c.close();
+ const mobile=await open({viewport:{width:390,height:844},isMobile:true,hasTouch:true,userAgent:'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 Version/17.0 Mobile/15E148 Safari/604.1'});assert.equal(await mobile.p.locator('#dl-btn').getAttribute('href'),'#demo');assert.equal(await mobile.p.locator('.cursor-aura').evaluate(e=>getComputedStyle(e).display),'none');await mobile.p.screenshot({path:join(root,'artifacts','mobile-hero.png')});await mobile.p.locator('.story-step').nth(2).click();assert.equal(await mobile.p.locator('.story-stage').getAttribute('data-step'),'2');await mobile.c.close();
+ const red=await open({reducedMotion:'reduce'});assert.ok((await red.p.locator('body').getAttribute('class')).includes('motion-off'));assert.equal(await red.p.locator('#hero-demo').evaluate(e=>e.autoplay),false);await red.c.close();
+ const save=await browser.newContext();await save.addInitScript(()=>Object.defineProperty(navigator,'connection',{get:()=>({saveData:true})}));const sp=await save.newPage();await sp.goto(server.base);assert.ok((await sp.locator('body').getAttribute('class')).includes('motion-off'));await save.close();
+ const nojs=await open({javaScriptEnabled:false});assert.ok(await nojs.p.locator('h1').isVisible());assert.ok(await nojs.p.locator('.scene-layer').first().isVisible());await nojs.c.close();
+ const html=readFileSync(join(root,'index.html'),'utf8');assert.match(html,/approximately 90\/hour/);assert.match(html,/Drafts, not confirmed sends/);assert.match(html,/not customers, partners or verified offer outcomes/);assert.doesNotMatch(html,/99%|98%|10x faster|offers at|100% accuracy/i);
+ assert.deepEqual(errors,[]);console.log('Hero contracts passed at widths '+report.join(', ')+': original logo geometry, drag/spring, reversible scroll, keyboard strip, pause persistence, touch, reduced motion, save-data, no-JS and honest claims.');
+}finally{await browser.close();await server.close()}
