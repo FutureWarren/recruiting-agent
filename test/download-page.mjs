@@ -14,7 +14,7 @@
  */
 import { chromium } from 'playwright-core'
 import { createServer } from 'http'
-import { readFileSync } from 'fs'
+import { existsSync, readFileSync } from 'fs'
 import { dirname, join } from 'path'
 import { fileURLToPath } from 'url'
 
@@ -94,9 +94,22 @@ function check(name, actual, expected) {
 const html = live ? null : readFileSync(join(here, '..', 'index.html'), 'utf8')
 const server = live
   ? null
-  : createServer((_req, res) => {
-      res.setHeader('content-type', 'text/html; charset=utf-8')
-      res.end(html)
+  : createServer((req, res) => {
+      const pathname = new URL(req.url, 'http://local.test').pathname
+      if (pathname === '/') {
+        res.setHeader('content-type', 'text/html; charset=utf-8')
+        res.end(html)
+        return
+      }
+      const relative = pathname.replace(/^\//, '')
+      const file = join(here, '..', relative)
+      if (!relative.startsWith('media/') || !existsSync(file)) {
+        res.statusCode = 404
+        res.end('Not found')
+        return
+      }
+      res.setHeader('content-type', relative.endsWith('.mp4') ? 'video/mp4' : 'image/jpeg')
+      res.end(readFileSync(file))
     })
 if (server) await new Promise((r) => server.listen(0, '127.0.0.1', r))
 const base = live
@@ -160,7 +173,20 @@ async function visit(userAgent, release = RELEASE, arch, touchPoints) {
     ).length,
     visibleSteps: [...document.querySelectorAll('#download ol.install')]
       .filter((list) => !list.hidden)
-      .flatMap((list) => [...list.querySelectorAll(':scope > li')]).length
+      .flatMap((list) => [...list.querySelectorAll(':scope > li')]).length,
+    demo: (() => {
+      const video = document.querySelector('.demo-video')
+      const source = video?.querySelector('source')
+      return {
+        autoplay: video?.autoplay,
+        muted: video?.muted,
+        loop: video?.loop,
+        playsInline: video?.playsInline,
+        controls: video?.controls,
+        poster: video?.getAttribute('poster'),
+        source: source?.getAttribute('src')
+      }
+    })()
   }))
   await context.close()
   return state
@@ -194,12 +220,14 @@ check('hides install steps for unsupported hardware', intel.macSteps, false)
 
 const phone = await visit(UA.iphone)
 console.log('\niPhone:')
-check('disables the download CTA on iPhone', phone.href, (h) => !h)
+check('keeps the primary CTA actionable on iPhone', phone.href, (h) => /#demo$/.test(h))
+check('turns the primary CTA into a demo CTA on iPhone', phone.label, 'Watch Orbit work')
 check('says to reopen on Apple Silicon Mac', phone.meta, (m) => /Apple Silicon Mac/i.test(m))
+check('shows native controls on iPhone if autoplay is blocked', phone.demo.controls, true)
 
 const ipad = await visit(UA.ipad, RELEASE, undefined, 5)
 console.log('\niPad (claims to be a Mac):')
-check('disables the download CTA on iPad', ipad.href, (h) => !h)
+check('keeps the primary CTA actionable on iPad', ipad.href, (h) => /#demo$/.test(h))
 check('says to reopen on Apple Silicon Mac', ipad.meta, (m) => /Apple Silicon Mac/i.test(m))
 
 console.log('\nInstall steps:')
@@ -222,6 +250,13 @@ const mixedMac = await visit(UA.macIntel, MIXED_RELEASE, 'arm')
 console.log('\nApple Silicon Mac with a mixed historical release:')
 check('uses the supported Mac asset', mixedMac.href, 'https://x/mac-0135.dmg')
 check('does not expose the historical Windows alternate', mixedMac.alts.join(' | '), (a) => !/Windows/i.test(a))
+
+console.log('\nProduct demo:')
+check('uses a muted inline looping video', mac.demo.autoplay && mac.demo.muted && mac.demo.loop && mac.demo.playsInline, true)
+check('uses the optimized demo video', mac.demo.source, 'media/orbit-demo.mp4')
+check('uses a real poster frame', mac.demo.poster, 'media/orbit-demo-poster.jpg')
+check('ships the demo video asset', existsSync(join(here, '..', 'media', 'orbit-demo.mp4')), true)
+check('ships the demo poster asset', existsSync(join(here, '..', 'media', 'orbit-demo-poster.jpg')), true)
 
 await browser.close()
 if (server) server.close()
