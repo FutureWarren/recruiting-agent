@@ -1,0 +1,28 @@
+name: Read production pricing configuration
+on:
+  push:
+    branches: [verify/pricing-runtime-20260928]
+permissions:
+  contents: read
+jobs:
+  read-only:
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: Read public production plan fields only
+        run: |
+          python - <<'PY'
+          import json, urllib.request, datetime
+          url='https://backend-production-2b40.up.railway.app/api/auth/config'
+          req=urllib.request.Request(url, headers={'Origin':'https://orbit-reaches.com','User-Agent':'Orbit-Pricing-Read-Only-QA'})
+          with urllib.request.urlopen(req,timeout=25) as response:
+            data=json.load(response)
+            out={'checkedAt':datetime.datetime.now(datetime.timezone.utc).isoformat(),'source':url,'status':response.status,'cors':response.headers.get('Access-Control-Allow-Origin'),'plans':data.get('plans'),'billingEnabled':data.get('billingEnabled'),'billingProvider':data.get('billingProvider'),'freeLaunch':data.get('freeLaunch')}
+          print(json.dumps(out,indent=2))
+          with open('pricing-runtime.json','w') as f: json.dump(out,f,indent=2)
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: pricing-runtime
+          path: pricing-runtime.json
+          retention-days: 3
