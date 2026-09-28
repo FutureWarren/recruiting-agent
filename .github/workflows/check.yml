@@ -1,38 +1,35 @@
 name: Check the download page
-
-# The page is the only funnel every user passes through, and the way it broke
-# was invisible from a Mac: it served the .dmg to everybody, so a Windows
-# student got a file Windows offers to open in Notepad. Nothing looked wrong
-# unless you visited AS a Windows machine, which is what this does.
-
 on:
   push:
     branches: [main]
   pull_request:
   workflow_dispatch:
-
+permissions:
+  contents: read
 jobs:
   platforms:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-
       - run: npm install --no-audit --no-fund
-
       - run: npx playwright install --with-deps chromium
-
-      # Against the file in this commit, so a bad change fails before it
-      # deploys rather than after students have seen it.
-      - name: Every platform gets the right installer
+      - name: Installer and whole-page motion contracts
         run: npm test
-
-      # The pricing and policy pages are what a paying student reads before
-      # they buy, and the plan figures on them have to match what the app
-      # charges. The test existed from the day those pages landed and was
-      # never wired up here, so nothing checked them on the way in.
-      - name: The commercial pages still say the right things
+      - name: Commercial page regressions
         run: npm run test:commercial
+      - name: Preserve review screenshots and exact tested website
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: orbit-site-review
+          retention-days: 3
+          path: |
+            artifacts/
+            index.html
+            home.css
+            home.js
+            media/
+            docs/launch-motion-and-claims.md

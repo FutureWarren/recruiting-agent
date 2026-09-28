@@ -1,94 +1,28 @@
-import assert from 'node:assert/strict'
-import { readFileSync } from 'node:fs'
-import { fileURLToPath } from 'node:url'
-import { chromium } from 'playwright-core'
-
-const root = new URL('../', import.meta.url)
-const html = readFileSync(new URL('index.html', root), 'utf8')
-assert(html.includes('src="media/orbit-demo.mp4"'))
-assert(html.includes('poster="media/orbit-demo-poster.jpg"'))
-const fixture = html
-  .replace('src="media/orbit-demo.mp4"', `src="data:video/mp4;base64,${readFileSync(new URL('media/orbit-demo.mp4', root)).toString('base64')}"`)
-  .replace('poster="media/orbit-demo-poster.jpg"', `poster="data:image/jpeg;base64,${readFileSync(new URL('media/orbit-demo-poster.jpg', root)).toString('base64')}"`)
-const release = { tag_name: 'v9.9.9', assets: [
-  { name: 'Orbit-9.9.9-arm64.dmg', size: 1000000, browser_download_url: 'https://example.test/mac-arm64.dmg' },
-  { name: 'Orbit-9.9.9.dmg', size: 1000000, browser_download_url: 'https://example.test/mac-intel.dmg' },
-  { name: 'Orbit-9.9.9.exe', size: 1000000, browser_download_url: 'https://example.test/windows.exe' }
-] }
-const macUA = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 Chrome/131.0.0.0 Safari/537.36'
-const phoneUA = 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 Version/17.0 Mobile/15E148 Safari/604.1'
-const browser = await chromium.launch({ ...(process.env.CHROMIUM ? { executablePath: process.env.CHROMIUM } : {}), args: ['--no-sandbox'] })
-async function pageFor(width, { reduced = false, phone = false, saveData = false, releaseFailure = false, arch = 'arm' } = {}) {
-  const context = await browser.newContext({ viewport: { width, height: 940 }, deviceScaleFactor: 2, userAgent: phone ? phoneUA : macUA, reducedMotion: reduced ? 'reduce' : 'no-preference' })
-  const page = await context.newPage()
-  const errors = []
-  page.on('pageerror', e => errors.push(String(e)))
-  // Exercise the shipped HTML+JS and real packaged media bytes without relying
-  // on an external service or a network request to localhost.
-  await page.evaluate(({ release, releaseFailure, saveData, arch }) => {
-    window.fetch = async () => new Response(JSON.stringify(release), { status: releaseFailure ? 503 : 200, headers: { 'content-type': 'application/json' } })
-    Object.defineProperty(navigator, 'userAgentData', { configurable: true, value: { platform: 'macOS', getHighEntropyValues: async () => ({ architecture: arch }) } })
-    Object.defineProperty(navigator, 'connection', { configurable: true, value: { saveData } })
-  }, { release, releaseFailure, saveData, arch })
-  await page.setContent(fixture)
-  await page.waitForFunction(() => document.documentElement.dataset.downloadReady === 'true')
-  return { context, page, errors }
-}
-try {
-  for (const width of [320, 390, 768, 1024, 1280, 1440, 1920]) {
-    const { context, page, errors } = await pageFor(width, { phone: width < 800 })
-    assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false, `${width}: horizontal overflow`)
-    assert.equal(await page.locator('.work-card').count(), 4)
-    for (const card of await page.locator('.work-card').all()) {
-      assert.equal(await card.evaluate(el => el.scrollWidth > el.clientWidth || el.scrollHeight > el.clientHeight), false, `${width}: clipped workflow card`)
-    }
-    if (width >= 1024) {
-      assert(await page.locator('h1').evaluate(el => el.getBoundingClientRect().height / parseFloat(getComputedStyle(el).lineHeight) < 3.2), `${width}: heading exceeds 3 lines`)
-      assert.match(await page.locator('#dl-btn').getAttribute('href'), /mac-arm64\.dmg$/)
-    } else {
-      assert.equal(await page.locator('#dl-btn').getAttribute('href'), '#demo')
-      assert.equal(await page.locator('.hero-copy .btn-secondary').getAttribute('href'), '#orbit-stage')
-    }
-    await page.waitForFunction(() => document.querySelector('video').videoWidth > 0)
-    assert.equal(await page.locator('video').evaluate(el => el.controls), true)
-    const raster = await page.locator('video').evaluate(el => ({ display: el.getBoundingClientRect().width * devicePixelRatio, source: el.videoWidth, transform: getComputedStyle(el).transform }))
-    assert(raster.display <= raster.source + 2, `${width}: recording is enlarged beyond source pixels`)
-    assert.equal(raster.transform, 'none')
-    const caption = await page.locator('.video-caption').evaluate(el => ({ box: el.getBoundingClientRect().toJSON(), parent: el.parentElement.getBoundingClientRect().toJSON() }))
-    assert(caption.box.bottom <= caption.parent.bottom + 1, `${width}: video caption is cropped`)
-    assert.equal(errors.length, 0, errors.join('\n'))
-    await context.close()
-  }
-  const motion = await pageFor(1440)
-  await motion.page.locator('#replay-flow').click()
-  for (const step of [1, 2, 3]) {
-    await motion.page.waitForFunction(step => document.getElementById('orbit-stage').dataset.step === String(step), step, { timeout: 4500 })
-    assert.equal(await motion.page.locator('#orbit-stage').isVisible(), true, `phase ${step} vanished`)
-  }
-  await motion.page.locator('#pause-flow').click()
-  const before = await motion.page.locator('#satellite-a').getAttribute('cx')
-  await motion.page.waitForTimeout(250)
-  assert.equal(await motion.page.locator('#satellite-a').getAttribute('cx'), before, 'pause does not pause')
-  await motion.page.locator('[data-work-step="2"]').click()
-  assert.equal(await motion.page.locator('#orbit-stage').getAttribute('data-step'), '2')
-  await motion.page.locator('#replay-flow').click()
-  assert.equal(await motion.page.locator('#orbit-stage').getAttribute('data-step'), '0')
-  assert.equal(motion.errors.length, 0)
-  await motion.context.close()
-  for (const opts of [{ reduced: true }, { saveData: true }]) {
-    const { page, context } = await pageFor(1440, opts)
-    assert.equal(await page.locator('video').evaluate(el => el.autoplay), false)
-    if (opts.reduced) {
-      assert.equal(await page.locator('#orbit-stage').getAttribute('data-motion'), 'reduced')
-      assert.equal(await page.locator('#pause-flow').isDisabled(), true)
-      await page.locator('[data-work-step="3"]').click()
-      assert.equal(await page.locator('#orbit-stage').getAttribute('data-step'), '3')
-    }
-    await context.close()
-  }
-  const fallback = await pageFor(1440, { releaseFailure: true })
-  assert.match(await fallback.page.locator('#dl-btn').getAttribute('href'), /releases\/latest$/)
-  assert.match(await fallback.page.locator('#dl-meta').innerText(), /300 free Orbit Credits/)
-  await fallback.context.close()
-  console.log('Hero quality: 7 widths at DPR 2, 4 complete animation phases, controls, reduced motion, source-pixel budget, caption bounds and download fallback passed.')
-} finally { await browser.close() }
+/** Functional motion + branding contracts. No artificial performance metrics. */
+import assert from 'node:assert/strict';
+import {readFileSync,mkdirSync} from 'node:fs';
+import {join} from 'node:path';
+import {chromium} from 'playwright-core';
+import {serve,root} from './static-server.mjs';
+const server=await serve(),browser=await chromium.launch({...(process.env.CHROMIUM?{executablePath:process.env.CHROMIUM}:{}),args:['--no-sandbox']});
+const errors=[],report=[];mkdirSync(join(root,'artifacts'),{recursive:true});
+async function open(options={}){const c=await browser.newContext({viewport:{width:1440,height:900},deviceScaleFactor:2,...options});await c.route('**/api.github.com/**',r=>r.fulfill({status:503,body:'{}'}));const p=await c.newPage();p.on('pageerror',e=>errors.push(e.message));await p.goto(server.base);return {c,p}}
+try{
+ const css=readFileSync(join(root,'home.css'),'utf8'),js=readFileSync(join(root,'home.js'),'utf8');
+ assert.ok(css.includes('border:10px solid var(--ink);border-radius:50%'));
+ assert.ok(css.includes('animation:orbit-spin 6.8s linear infinite'));
+ assert.doesNotMatch(css,/cursor\s*:\s*none/);assert.doesNotMatch(js,/addEventListener\(['"]wheel/);
+ for(const w of [320,390,768,1024,1280,1440,1920]){const {c,p}=await open({viewport:{width:w,height:w<760?844:900}});assert.equal(await p.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false,'overflow '+w);assert.equal(await p.locator('.cursor-aura').evaluate(e=>getComputedStyle(e).pointerEvents),'none');const physical=await p.locator('#hero-demo').evaluate(e=>e.getBoundingClientRect().width*devicePixelRatio);assert.ok(physical<=912,'video enlarged past source');report.push(w);await c.close()}
+ const {c,p}=await open();await p.mouse.move(600,300);const card=p.locator('.float-card').first(),r=await card.boundingBox();await p.mouse.move(r.x+r.width/2,r.y+r.height/2);await p.mouse.down();await p.mouse.move(r.x+r.width/2+42,r.y+r.height/2+28,{steps:12});await p.waitForTimeout(220);const drag=await card.evaluate(e=>new DOMMatrix(getComputedStyle(e).transform).m41);assert.ok(drag>30,'card follows drag');await p.mouse.up();await p.mouse.move(600,230);await p.waitForTimeout(1200);assert.ok(Math.abs(await card.evaluate(e=>new DOMMatrix(getComputedStyle(e).transform).m41))<.3,'spring returns');assert.ok((await p.evaluate(()=>scrollY))<10,'drag is not a click');
+ const geom=await p.locator('.story').evaluate(e=>({top:e.getBoundingClientRect().top+scrollY,height:e.offsetHeight}));
+ for(const step of [0,1,2,3,1]){await p.evaluate(y=>scrollTo(0,y),geom.top-100+(step/3)*(geom.height-750));await p.waitForTimeout(120);assert.equal(await p.locator('.story-stage').getAttribute('data-step'),String(step));assert.equal(await p.locator('.scene-layer[aria-hidden="false"]').count(),1)}
+ await p.screenshot({path:join(root,'artifacts','scroll-workflow.png')});
+ await p.locator('#companies').scrollIntoViewIfNeeded();const strip=p.locator('.company-window');await strip.focus();const before=await p.locator('.company-track').evaluate(e=>e.style.transform);await p.keyboard.press('ArrowRight');await p.waitForTimeout(80);assert.notEqual(await p.locator('.company-track').evaluate(e=>e.style.transform),before);assert.equal(await p.locator('.company-set[aria-hidden="true"]').count(),1);
+ await p.locator('#motion-toggle').click();assert.ok((await p.locator('body').getAttribute('class')).includes('motion-off'));assert.equal(await p.locator('.cursor-aura').evaluate(e=>getComputedStyle(e).display),'none');await p.locator('.story-step').nth(3).click();assert.equal(await p.locator('.story-stage').getAttribute('data-step'),'3');await p.reload();assert.ok((await p.locator('body').getAttribute('class')).includes('motion-off'));await c.close();
+ const mobile=await open({viewport:{width:390,height:844},isMobile:true,hasTouch:true,userAgent:'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 Version/17.0 Mobile/15E148 Safari/604.1'});assert.equal(await mobile.p.locator('#dl-btn').getAttribute('href'),'#demo');assert.equal(await mobile.p.locator('.cursor-aura').evaluate(e=>getComputedStyle(e).display),'none');await mobile.p.screenshot({path:join(root,'artifacts','mobile-hero.png')});await mobile.p.locator('.story-step').nth(2).click();assert.equal(await mobile.p.locator('.story-stage').getAttribute('data-step'),'2');await mobile.c.close();
+ const red=await open({reducedMotion:'reduce'});assert.ok((await red.p.locator('body').getAttribute('class')).includes('motion-off'));assert.equal(await red.p.locator('#hero-demo').evaluate(e=>e.autoplay),false);await red.c.close();
+ const save=await browser.newContext();await save.addInitScript(()=>Object.defineProperty(navigator,'connection',{get:()=>({saveData:true})}));const sp=await save.newPage();await sp.goto(server.base);assert.ok((await sp.locator('body').getAttribute('class')).includes('motion-off'));await save.close();
+ const nojs=await open({javaScriptEnabled:false});assert.ok(await nojs.p.locator('h1').isVisible());assert.ok(await nojs.p.locator('.scene-layer').first().isVisible());await nojs.c.close();
+ const html=readFileSync(join(root,'index.html'),'utf8');assert.match(html,/approximately 90\/hour/);assert.match(html,/Drafts, not confirmed sends/);assert.match(html,/not customers, partners or verified offer outcomes/);assert.doesNotMatch(html,/99%|98%|10x faster|offers at|100% accuracy/i);
+ assert.deepEqual(errors,[]);console.log('Hero contracts passed at widths '+report.join(', ')+': original logo geometry, drag/spring, reversible scroll, keyboard strip, pause persistence, touch, reduced motion, save-data, no-JS and honest claims.');
+}finally{await browser.close();await server.close()}
