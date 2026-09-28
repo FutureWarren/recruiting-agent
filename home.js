@@ -3,9 +3,43 @@
 const REPO='FutureWarren/recruiting-agent';
 function detectOS(){const ua=navigator.userAgent||'';if(/Android|iPhone|iPad|iPod/i.test(ua)||(/Macintosh/.test(ua)&&(navigator.maxTouchPoints||0)>1))return'mobile';const p=navigator.userAgentData?.platform||'';if(/windows/i.test(p)||/Windows|Win64|Win32|WOW64/i.test(ua))return'win';if(/macos|mac os/i.test(p)||/Macintosh|Mac OS X/i.test(ua))return'mac';return null}
 async function detectArch(){try{const v=await navigator.userAgentData?.getHighEntropyValues?.(['architecture']);if(v?.architecture==='arm')return'arm64';if(v?.architecture==='x86')return'x64'}catch(_){}try{const g=document.createElement('canvas').getContext('webgl'),d=g?.getExtension('WEBGL_debug_renderer_info'),r=d?String(g.getParameter(d.UNMASKED_RENDERER_WEBGL)):'';if(/apple/i.test(r))return'arm64';if(/intel|radeon|amd|nvidia/i.test(r))return'x64'}catch(_){}return null}
-function showInstructionsFor(os){document.getElementById('install-mac').hidden=os!=='mac';document.getElementById('install-win').hidden=true}
-async function initDownload(){const buttons=[document.getElementById('dl-btn'),document.getElementById('dl-btn-final')],meta=document.getElementById('dl-meta'),os=detectOS(),allowance='300 free Orbit Credits';showInstructionsFor(os);const disable=(label,message)=>{buttons.forEach(b=>{b.removeAttribute('href');b.setAttribute('aria-disabled','true');b.textContent=label});meta.textContent=message};if(os==='mobile'){buttons.forEach(b=>{b.href='#demo';b.textContent='Watch Orbit work';b.removeAttribute('aria-disabled')});const s=document.querySelector('.hero-copy .btn-secondary');s.href='#how';s.textContent='Explore workflow';s.removeAttribute('data-watch-demo');meta.textContent='Apple Silicon Mac · '+allowance+' · watch here, then open on your Mac';return}if(os!=='mac'){disable('Orbit for Apple Silicon Mac','Orbit currently supports Apple Silicon Mac only');return}const arch=await detectArch();if(arch==='x64'){showInstructionsFor(null);disable('Orbit requires Apple Silicon','Orbit currently supports Apple Silicon Mac only');return}const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),5000);try{const r=await fetch('https://api.github.com/repos/'+REPO+'/releases/latest',{signal:controller.signal});if(!r.ok)throw Error('Release unavailable');const release=await r.json(),asset=(release.assets||[]).find(a=>/arm64.*\.dmg$/i.test(a.name||'')&&/^https:\/\//.test(a.browser_download_url||''));if(!asset)throw Error('Mac build unavailable');buttons.forEach(b=>{b.href=asset.browser_download_url;b.removeAttribute('aria-disabled');b.textContent='Download for Mac (Apple Silicon) ↗'});const v=asset.name.match(/\d+\.\d+\.\d+/)?.[0]||String(release.tag_name||'').replace(/^v/,'');meta.textContent='Version '+v+' · '+Math.round(asset.size/1048576)+' MB · Mac · '+allowance+(arch?'':' · check your Mac chip')}catch(_){meta.textContent='Apple Silicon Mac · '+allowance+' · open releases to choose the latest Mac installer'}finally{clearTimeout(timer)}}
-initDownload();
+// Every download CTA, including navigation, shares one resolution state.
+async function initDownload(){
+ const buttons=[...document.querySelectorAll('[data-orbit-download]')];
+ const meta=document.getElementById('dl-meta'),os=detectOS(),allowance='300 free Orbit Credits';
+ const label=(b,text,navText)=>{b.textContent=b.id==='nav-download'?(navText||text):text};
+ const disable=(text,message)=>{buttons.forEach(b=>{b.removeAttribute('href');b.setAttribute('aria-disabled','true');b.dataset.downloadState='unsupported';label(b,text)});meta.textContent=message};
+ buttons.forEach(b=>{b.dataset.downloadState='loading'});
+ if(os==='mobile'){
+  buttons.forEach(b=>{b.href='#demo';b.removeAttribute('aria-disabled');b.dataset.downloadState='demo';label(b,'Watch Orbit work','Watch demo');b.setAttribute('aria-label','Watch the Orbit product demo')});
+  const secondary=document.querySelector('.hero-copy .btn-secondary');secondary.href='#how';secondary.textContent='Explore workflow';secondary.removeAttribute('data-watch-demo');
+  meta.textContent='Apple Silicon Mac · '+allowance+' · watch here, then open on your Mac';return;
+ }
+ if(os!=='mac'){disable('Orbit for Apple Silicon Mac','Orbit currently supports Apple Silicon Mac only');return}
+ const arch=await detectArch();
+ if(arch==='x64'){disable('Orbit requires Apple Silicon','Orbit currently supports Apple Silicon Mac only');return}
+ const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),5000);
+ try{
+  const response=await fetch('https://api.github.com/repos/'+REPO+'/releases/latest',{signal:controller.signal});
+  if(!response.ok)throw Error('Release unavailable');const release=await response.json();
+  const asset=(release.assets||[]).find(a=>/arm64.*\.dmg$/i.test(a.name||'')&&/^https:\/\//.test(a.browser_download_url||''));
+  if(!asset)throw Error('Apple Silicon build unavailable');
+  buttons.forEach(b=>{b.href=asset.browser_download_url;b.removeAttribute('aria-disabled');b.dataset.downloadState='ready';label(b,'Download for Mac (Apple Silicon) ↗','Get Orbit ↗');b.setAttribute('aria-label','Download Orbit for Apple Silicon Mac')});
+  const v=asset.name.match(/\d+\.\d+\.\d+/)?.[0]||String(release.tag_name||'').replace(/^v/,'');
+  meta.textContent='Version '+v+' · '+Math.round(asset.size/1048576)+' MB · Mac · '+allowance+(arch?'':' · check your Mac chip');
+ }catch(_){
+  buttons.forEach(b=>{b.href='https://github.com/'+REPO+'/releases/latest';b.dataset.downloadState='fallback';label(b,'View Mac downloads ↗','Get Orbit ↗')});
+  meta.textContent='Apple Silicon Mac · '+allowance+' · open releases to choose the latest Mac installer';
+ }finally{clearTimeout(timer)}
+}
+const downloadReady=initDownload();
+document.querySelectorAll('[data-orbit-download]').forEach(button=>button.addEventListener('click',async event=>{
+ if(button.getAttribute('aria-disabled')==='true'){event.preventDefault();return}
+ if(button.dataset.downloadState!=='loading')return;
+ // A click during release lookup waits for the actual installer instead of jumping to a tutorial.
+ event.preventDefault();await downloadReady;
+ const href=button.getAttribute('href');if(href&&button.getAttribute('aria-disabled')!=='true')window.location.assign(href);
+}));
 (()=>{
  const $=s=>document.querySelector(s),all=s=>[...document.querySelectorAll(s)],clamp=(v,a=0,b=1)=>Math.min(b,Math.max(a,v));
  const reduced=matchMedia('(prefers-reduced-motion: reduce)'),fine=matchMedia('(hover:hover) and (pointer:fine)'),connection=navigator.connection;
@@ -60,15 +94,15 @@ initDownload();
  window.addEventListener('scroll',()=>{manualScene=null;dirty=true;schedule()},{passive:true});window.addEventListener('resize',layout,{passive:true});
  document.addEventListener('visibilitychange',()=>{hero.classList.toggle('offscreen',document.hidden||!heroVisible);pointerSeen=false;aura.style.opacity='0';if(document.hidden){cancelAnimationFrame(frame);frame=0;last=0;moving.forEach(s=>{s.drag=false;s.tx=s.ty=0});stripDrag=false;velocity=0}else{dirty=true;schedule()}});
  if('IntersectionObserver'in window){const io=new IntersectionObserver(entries=>{entries.forEach(e=>{if(e.target===hero){heroVisible=e.isIntersecting;hero.classList.toggle('offscreen',!heroVisible||document.hidden)}else if(e.target===strip){stripVisible=e.isIntersecting;schedule()}else if(e.isIntersecting){e.target.classList.add('seen');io.unobserve(e.target)}})},{threshold:.08});io.observe(hero);io.observe(strip);all('.motion-reveal').forEach(el=>io.observe(el))}else{all('.motion-reveal').forEach(el=>el.classList.add('seen'));stripVisible=true}
- // Keep the existing video and its honest source-pixel limit pending an HD master.
- const video=$('#hero-demo');let videoInView=false,userPaused=false;const pixelBudget=()=>{const w=Math.min(910,video.videoWidth||910);video.parentElement.style.setProperty('--video-pixel-budget',(w/Math.max(1,devicePixelRatio))+'px')};
- video.addEventListener('loadedmetadata',()=>{pixelBudget();if(Number.isFinite(video.duration))$('#video-duration').textContent=Math.round(video.duration)+'s'});window.addEventListener('resize',pixelBudget,{passive:true});pixelBudget();
+ // Full-resolution source; CSS controls layout, not the previous 910px/DPR ceiling.
+ const video=$('#hero-demo');let videoInView=false,userPaused=false;
+ video.addEventListener('loadedmetadata',()=>{if(Number.isFinite(video.duration))$('#video-duration').textContent=Math.round(video.duration)+'s · 1080p'});
  video.addEventListener('error',()=>{$('#video-fallback').hidden=false});
  video.addEventListener('pause',()=>{if(videoInView&&!document.hidden)userPaused=true});
  const playVideo=()=>{if(enabled&&videoInView&&!userPaused&&!document.hidden)video.play().catch(()=>{})};
  if('IntersectionObserver'in window)new IntersectionObserver(entries=>{videoInView=entries[0].isIntersecting;if(videoInView)playVideo();else video.pause()},{threshold:.35}).observe(video);
  video.addEventListener('play',()=>{userPaused=false});document.addEventListener('visibilitychange',()=>{if(document.hidden)video.pause();else playVideo()});
- all('a[data-watch-demo],#dl-btn,#dl-btn-final').forEach(a=>a.addEventListener('click',()=>{if(a.getAttribute('href')==='#demo'){userPaused=false;video.play().catch(()=>{})}}));
+ all('a[data-watch-demo],[data-orbit-download]').forEach(a=>a.addEventListener('click',()=>{if(a.getAttribute('href')==='#demo'){userPaused=false;video.play().catch(()=>{})}}));
  reduced.addEventListener('change',()=>{if(reduced.matches)video.pause()});toggle.addEventListener('click',()=>{if(!enabled)video.pause()});
  settings();if(!enabled){video.autoplay=false;video.pause()}layout();
 })();
