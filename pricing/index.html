@@ -1,68 +1,79 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#f5f5f0" />
-    <title>Pricing — Orbit</title>
-    <meta name="description" content="Choose an Orbit plan for AI-assisted recruiting research and personalized outreach." />
-    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='21' fill='none' stroke='%2317171c' stroke-width='6'/%3E%3Ccircle cx='32' cy='10' r='7' fill='%235c5cf2'/%3E%3C/svg%3E" />
-    <link rel="stylesheet" href="/site.css" />
-  </head>
-  <body>
-    <header class="shell topbar">
-      <a class="brand" href="/"><span class="orbit-mark" aria-hidden="true"></span>Orbit</a>
-      <nav class="nav" aria-label="Primary navigation">
-        <a aria-current="page" href="/pricing/">Pricing</a><a href="/support/">Support</a><a class="primary" href="/#download">Download</a>
-      </nav>
-    </header>
-    <main class="shell">
-      <section class="page-hero">
-        <div class="eyebrow">Simple recruiting plans</div>
-        <h1>Pay for completed personalized outreach — not dead ends.</h1>
-        <p>One credit is one completed personalized outreach. Research that finds no match, a prospect Orbit rejects, or a failed action does not use a credit.</p>
-        <div class="hero-meta"><span class="pill">30 free credits</span><span class="pill">Automatic renewal</span><span class="pill">Cancel anytime</span></div>
-      </section>
-
-      <section class="pricing-grid" aria-label="Orbit pricing plans">
-        <article class="plan">
-          <div class="plan-label">Start free</div><h2>Free</h2>
-          <div class="price"><strong>$0</strong></div><div class="credits">30 credits</div>
-          <ul><li>Try the complete Orbit workflow</li><li>No payment method required</li><li>Local campaign history</li></ul>
-          <a class="cta" href="/#download">Download Orbit</a>
-        </article>
-        <article class="plan">
-          <div class="plan-label">Light use</div><h2>Starter</h2>
-          <div class="price"><strong>$19</strong><span>/ month</span></div><div class="credits">200 credits each month</div>
-          <ul><li>Personalized AI-assisted outreach</li><li>Credits refresh monthly</li><li>Manage or cancel through Stripe</li></ul>
-          <a class="cta" href="/#download">Get Orbit</a>
-        </article>
-        <article class="plan featured">
-          <div class="plan-label">Best value</div><h2>Pro</h2>
-          <div class="price"><strong>$39</strong><span>/ month</span></div><div class="credits">600 credits each month</div>
-          <ul><li>Three times Starter capacity</li><li>Built for an active recruiting month</li><li>Credits refresh monthly</li><li>Manage or cancel through Stripe</li></ul>
-          <a class="cta" href="/#download">Choose Pro in Orbit</a>
-        </article>
-        <article class="plan secondary-plan">
-          <div class="plan-label">High volume</div><h2>Power</h2>
-          <div class="price"><strong>$149</strong><span>/ month</span></div><div class="credits">3,000 credits each month</div>
-          <ul><li>For sustained high-volume recruiting outreach</li><li>Credits refresh monthly</li><li>Manage or cancel through Stripe</li></ul>
-          <a class="cta" href="/#download">Get Orbit</a>
-        </article>
-        <article class="plan secondary-plan">
-          <div class="plan-label">One recruiting season</div><h2>Recruiting Season Pass</h2>
-          <div class="price"><strong>$99</strong><span>/ 3 months</span></div><div class="credits">2,000 credits per three-month period</div>
-          <ul><li>One allowance for the whole recruiting season</li><li>Renews every three months until canceled</li><li>Manage or cancel through Stripe</li></ul>
-          <a class="cta" href="/#download">Choose the Season Pass in Orbit</a>
-        </article>
-      </section>
-
-      <section class="pricing-note" aria-label="Billing details">
-        <article><h3>How credits work</h3><p>One credit is one completed personalized outreach. Monthly plan credits reset each billing period and do not roll over.</p></article>
-        <article><h3>Recurring billing</h3><p>Paid plans renew automatically at the interval shown until canceled. Any applicable taxes are shown before you pay.</p></article>
-        <article><h3>Payment and control</h3><p>Stripe securely processes payment. You can manage billing or cancel through the Orbit billing portal.</p></article>
-      </section>
-    </main>
-    <footer><div class="shell footer-inner"><span>© 2026 Orbit · Operated by Angelic</span><div class="footer-links"><a href="/terms/">Terms</a><a href="/privacy/">Privacy</a><a href="/refunds/">Refunds</a><a href="/support/">Support</a></div></div></footer>
-  </body>
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f5f5f0"><title>Pricing — Orbit</title>
+  <meta name="description" content="Start with 300 free Orbit Credits. Choose a recruiting plan and see exactly how qualified research, contact discovery and completed outreach use credits.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='21' fill='none' stroke='%2317171c' stroke-width='6'/%3E%3Ccircle cx='32' cy='10' r='7' fill='%235c5cf2'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="/site.css">
+  <style>
+    .credit-intro{max-width:710px}.credit-intro a{color:var(--signal-ink);text-underline-offset:4px}
+    .credit-explainer{padding:40px 0 0}.credit-explainer h2{font-size:clamp(30px,4vw,44px);font-weight:620;line-height:1.1;letter-spacing:-.045em;margin:12px 0 18px}
+    .credit-explainer>p{max-width:780px;color:var(--ink-2)}
+    .credit-stages{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:28px 0}
+    .credit-stage{padding:24px;border:1px solid var(--line);border-radius:16px;background:rgba(255,255,255,.7)}
+    .credit-stage .stage-price{font-size:46px;letter-spacing:-.06em;font-weight:600;line-height:1.1;margin:15px 0}
+    .stage-price small{font-size:12px;letter-spacing:0;font-weight:500;color:var(--ink-2)}
+    .credit-stage h3{font-size:16px;margin:0 0 7px;letter-spacing:-.025em}.credit-stage p{font-size:13px;color:var(--ink-2);margin:0}
+    .credit-example{padding:26px;border:1px solid var(--line);border-radius:16px;background:var(--signal-soft);margin-bottom:22px}
+    .credit-example strong{font-size:23px;font-weight:620;letter-spacing:-.035em}.credit-example p{font-size:13px;color:var(--ink-2);max-width:840px;margin:10px 0 0}
+    .credit-faq{border-top:1px solid var(--line);margin-top:32px}.credit-faq details{border-bottom:1px solid var(--line);padding:18px 0}.credit-faq summary{font-weight:600;font-size:14px;cursor:pointer}.credit-faq p{font-size:13px;color:var(--ink-2);max-width:820px;margin:12px 0 0}
+    .pricing-note{margin-bottom:70px}.plan .credits{line-height:1.5}.page-hero{padding-bottom:42px}.page-hero h1{max-width:900px}
+    @media(max-width:680px){.credit-stages{grid-template-columns:1fr}.credit-stage{padding:20px}.credit-example{padding:22px}.credit-example strong{font-size:21px}.credit-explainer{padding-top:26px}}
+  </style>
+</head>
+<body>
+  <header class="shell topbar"><a class="brand" href="/"><span class="orbit-mark" aria-hidden="true"></span>Orbit</a><nav class="nav" aria-label="Primary navigation"><a aria-current="page" href="/pricing/">Pricing</a><a href="/support/">Support</a><a class="primary" href="/#download">Get Orbit</a></nav></header>
+  <main class="shell" data-credit-system="v2">
+    <section class="page-hero">
+      <div class="eyebrow">Plans for your next move</div><h1>One balance.<br>Every meaningful step.</h1>
+      <p class="credit-intro">Orbit Credits cover qualified research, finding contacts, and completed outreach. Choose your capacity; stay in control of the work. <a href="#how-credits-work">See how credits work ↓</a></p>
+      <div class="hero-meta"><span class="pill">300 free Orbit Credits</span><span class="pill">Paid plans renew automatically</span><span class="pill">Cancel anytime</span></div>
+    </section>
+    <section class="pricing-grid" aria-label="Orbit pricing plans">
+      <article class="plan" data-plan="free" data-credits="300" data-price-usd="0" data-period-months="">
+        <div class="plan-label">Start free</div><h2>Free</h2><div class="price"><strong>$0</strong></div><div class="credits">300 Orbit Credits to start</div>
+        <ul><li>Try the complete Orbit workflow</li><li>No payment method required</li><li>Research, contacts and outreach share one balance</li></ul><a class="cta" href="/#download">Get Orbit</a>
+      </article>
+      <article class="plan" data-plan="basic" data-credits="2000" data-price-usd="19" data-period-months="1">
+        <div class="plan-label">A focused search</div><h2>Starter</h2><div class="price"><strong>$19</strong><span>/ month</span></div><div class="credits">2,000 Orbit Credits each month</div>
+        <ul><li>Personalized recruiting research and outreach</li><li>Credits refresh monthly</li><li>Manage or cancel through Stripe</li></ul><a class="cta" href="/#download">Choose Starter in Orbit</a>
+      </article>
+      <article class="plan featured" data-plan="pro" data-credits="6000" data-price-usd="39" data-period-months="1">
+        <div class="plan-label">Room to keep going</div><h2>Pro</h2><div class="price"><strong>$39</strong><span>/ month</span></div><div class="credits">6,000 Orbit Credits each month</div>
+        <ul><li>Three times the Starter credit allowance</li><li>Built for an active recruiting month</li><li>Credits refresh monthly</li><li>Manage or cancel through Stripe</li></ul><a class="cta" href="/#download">Choose Pro in Orbit</a>
+      </article>
+      <article class="plan secondary-plan" data-plan="power" data-credits="30000" data-price-usd="149" data-period-months="1">
+        <div class="plan-label">High volume</div><h2>Power</h2><div class="price"><strong>$149</strong><span>/ month</span></div><div class="credits">30,000 Orbit Credits each month</div>
+        <ul><li>For sustained recruiting research and outreach</li><li>Credits refresh monthly</li><li>Manage or cancel through Stripe</li></ul><a class="cta" href="/#download">Choose Power in Orbit</a>
+      </article>
+      <article class="plan secondary-plan" data-plan="jobpass" data-credits="20000" data-price-usd="99" data-period-months="3">
+        <div class="plan-label">One recruiting season</div><h2>Recruiting Season Pass</h2><div class="price"><strong>$99</strong><span>/ 3 months</span></div><div class="credits">20,000 Orbit Credits per three-month period</div>
+        <ul><li>One allowance for the whole three-month period</li><li>Renews every three months until canceled</li><li>Manage or cancel through Stripe</li></ul><a class="cta" href="/#download">Choose the Season Pass in Orbit</a>
+      </article>
+    </section>
+    <section class="credit-explainer" id="how-credits-work" aria-labelledby="credit-heading">
+      <div class="eyebrow">Orbit Credits · V2</div><h2 id="credit-heading">A clear price for each outcome.</h2>
+      <p>Credits are charged when Orbit records a completed work outcome, not for every click, token or lookup attempt. Research and contact discovery can use credits before an email is sent.</p>
+      <div class="credit-stages">
+        <article class="credit-stage" data-credit-kind="candidate_found" data-credit-cost="2"><div class="plan-label">01 / Qualified research</div><div class="stage-price">2 <small>Orbit Credits</small></div><h3>A qualified candidate found</h3><p>Orbit finds and qualifies someone relevant to your task.</p></article>
+        <article class="credit-stage" data-credit-kind="contact_obtained" data-credit-cost="3"><div class="plan-label">02 / Contact discovery</div><div class="stage-price">3 <small>Orbit Credits</small></div><h3>Contact information obtained</h3><p>Orbit obtains contact information for that prospect. A lookup attempt alone is not this outcome.</p></article>
+        <article class="credit-stage" data-credit-kind="outreach" data-credit-cost="5"><div class="plan-label">03 / Completed outreach</div><div class="stage-price">5 <small>Orbit Credits</small></div><h3>An outreach task completed</h3><p>Orbit records the outreach outcome for the prospect. Credits measure completed work, not guaranteed delivery, replies or offers.</p></article>
+      </div>
+      <div class="credit-example"><strong>2 + 3 + 5 = 10 Orbit Credits</strong><p>One prospect who completes all three stages uses 10 credits. This is a worked example, not a fixed price for every email: candidates researched or contacts found may use credits even when you do not complete outreach to them.</p><p>For example: 100 qualified candidates × 2 + 60 contacts obtained × 3 + 40 completed outreach tasks × 5 = <b>580 Orbit Credits</b>, not 400.</p></div>
+      <div class="credit-faq">
+        <details><summary>Why did my balance change before I sent anything?</summary><p>Qualified research and contact discovery are separately metered outcomes. Preparing a draft-only task is therefore not a free-research mode, and a credit balance is not a count of sent emails.</p></details>
+        <details><summary>What happens if no email address is found?</summary><p>A lookup that does not obtain contact information does not earn the 3-credit contact charge. An earlier qualified-candidate outcome still costs 2 credits. A later failed or skipped stage does not erase work already completed.</p></details>
+        <details><summary>Are the larger credit balances ten times as much capacity?</summary><p>No. Credit V2 uses a 10× denomination compared with the earlier beta, and splits charges across research, contacts and outreach. The higher displayed balance is a unit change, not a promise of ten times as many emails.</p></details>
+        <details><summary>Do credits roll over, and how do I cancel?</summary><p>Monthly plan credits refresh each billing period and do not roll over. The Recruiting Season Pass provides one allowance for each three-month subscription period. Paid plans renew automatically until canceled. Open Manage billing in Orbit to manage your subscription through Stripe.</p></details>
+      </div>
+    </section>
+    <section class="pricing-note" aria-label="Billing details">
+      <article><h3>One shared balance</h3><p>Research, contact discovery and completed outreach draw from the same Orbit Credit allowance. Orbit Credits are not interchangeable with email counts.</p></article>
+      <article><h3>Recurring billing</h3><p>Paid plans renew automatically at the interval shown until canceled. Any applicable taxes are shown before you pay.</p></article>
+      <article><h3>Payment and control</h3><p>Stripe securely processes payment. Choose your plan and manage billing in Orbit. Review the amount and billing interval at checkout.</p></article>
+    </section>
+  </main>
+  <footer><div class="shell footer-inner"><span>© 2026 Orbit · Operated by Angelic</span><div class="footer-links"><a href="/terms/">Terms</a><a href="/privacy/">Privacy</a><a href="/refunds/">Refunds</a><a href="/support/">Support</a></div></div></footer>
+</body>
 </html>

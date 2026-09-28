@@ -1,14 +1,7 @@
 name: Deploy site
 
-# Publishes this repo to GitHub Pages — the download page students are sent to.
-# It reads the latest release from this repo's public API at view time, so a
-# new app version needs no redeploy here.
-#
-# ONE-TIME SETUP: Settings → Pages → Build and deployment → Source =
-# "GitHub Actions". Until that is done every run fails at configure-pages with
-# "Get Pages site failed"; it cannot be automated, because the Actions token is
-# not allowed to create the Pages site.
-
+# Website-only deployment. Refuse to advertise plan allowances the production
+# account service does not return. This does not deploy or modify the backend.
 on:
   push:
     branches: [main]
@@ -31,11 +24,14 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Require production and website pricing to agree
+        run: node test/pricing-production-parity.mjs
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
-          # The site is the repo root; releases are attached to Releases, not
-          # committed, so there is nothing to exclude.
           path: .
       - id: deployment
         uses: actions/deploy-pages@v4
