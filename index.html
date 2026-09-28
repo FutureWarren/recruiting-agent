@@ -163,11 +163,11 @@
 
       .hero {
         display: grid;
-        grid-template-columns: minmax(0, .86fr) minmax(520px, 1.14fr);
+        grid-template-columns: minmax(0, .82fr) minmax(540px, 1.18fr);
         align-items: center;
-        gap: 76px;
+        gap: 68px;
         min-height: 760px;
-        padding: 104px 0 92px;
+        padding: 96px 0 76px;
       }
       .hero h1 {
         max-width: 680px;
@@ -233,6 +233,69 @@
         cursor: pointer;
       }
       .dl-alt:hover { color: var(--ink); }
+
+      .hero-note {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        margin-top: 16px;
+        color: var(--ink-3);
+        font-size: 11.5px;
+      }
+      .hero-note::before {
+        content: "";
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: var(--success);
+        box-shadow: 0 0 0 5px rgba(25,121,83,.08);
+      }
+      .demo-stage { position: relative; min-height: 520px; }
+      .demo-stage::before {
+        content: "";
+        position: absolute;
+        inset: 8% 2% 0 4%;
+        border-radius: 50%;
+        background: rgba(92,92,242,.12);
+        filter: blur(85px);
+      }
+      .demo-frame {
+        position: absolute;
+        inset: 18px 0 28px;
+        overflow: hidden;
+        border: 1px solid rgba(255,255,255,.78);
+        border-radius: 24px;
+        background: #fff;
+        box-shadow: 0 30px 90px rgba(25,25,35,.16);
+        transform: rotateY(-3deg) rotateX(1.3deg);
+        transform-origin: center;
+      }
+      .demo-top {
+        display: flex;
+        height: 46px;
+        align-items: center;
+        gap: 7px;
+        padding: 0 15px;
+        border-bottom: 1px solid var(--line);
+        background: rgba(250,250,247,.96);
+      }
+      .demo-top i { width: 7px; height: 7px; border-radius: 50%; background: #d2d2cd; }
+      .demo-top span { margin: 0 auto; transform: translateX(-18px); color: var(--ink-3); font-size: 10px; }
+      .demo-video-wrap { position: relative; background: #f2f2ee; aspect-ratio: 16 / 9; }
+      .demo-video { display:block; width:100%; height:100%; object-fit:cover; background:#f2f2ee; }
+      .demo-badge {
+        position:absolute; left:16px; top:16px; display:inline-flex; align-items:center; gap:7px;
+        padding:7px 10px; border:1px solid rgba(255,255,255,.45); border-radius:999px;
+        background:rgba(18,18,22,.72); backdrop-filter:blur(12px); color:#fff;
+        font:650 9px/1 var(--mono); letter-spacing:.08em; text-transform:uppercase;
+      }
+      .demo-badge i { width:6px; height:6px; border-radius:50%; background:#6dd5a9; box-shadow:0 0 0 4px rgba(109,213,169,.16); }
+      .demo-caption { display:grid; grid-template-columns:1fr auto; gap:18px; align-items:center; padding:16px 18px 17px; border-top:1px solid var(--line); background:rgba(255,255,255,.97); }
+      .demo-caption strong { display:block; font-size:13px; letter-spacing:-.02em; }
+      .demo-caption p { margin:3px 0 0; color:var(--ink-3); font-size:10.5px; }
+      .demo-caption .watch { color:var(--signal-ink); font-size:11px; font-weight:700; text-decoration:none; white-space:nowrap; }
+      .demo-proof { display:flex; flex-wrap:wrap; gap:8px; margin-top:10px; }
+      .demo-proof span { padding:5px 8px; border:1px solid var(--line); border-radius:999px; background:rgba(255,255,255,.55); color:var(--ink-2); font-size:10px; }
 
       /* Hero CG stage ----------------------------------------------------- */
       .cg-stage {
@@ -721,7 +784,11 @@
         .hero-copy > p { font-size: 16px; }
         .actions { align-items: stretch; flex-direction: column; }
         .btn { width: 100%; }
-        .cg-stage { min-height: 440px; }
+        .demo-stage { min-height: 390px; }
+        .demo-frame { inset: 0; transform: none; border-radius: 18px; }
+        .demo-caption { grid-template-columns: 1fr; gap: 8px; }
+        .demo-caption .watch { justify-self: start; }
+        .cg-stage { display: none; }
         .cg-shell { inset: 0; transform: none; }
         .cg-canvas { min-height: 395px; }
         .cg-orbit { width: 140px; height: 140px; margin: -70px 0 0 -70px; }
@@ -771,26 +838,49 @@
       <div class="shell">
         <header class="hero">
           <div class="hero-copy">
-            <div class="kicker">AI recruiting agent</div>
-            <h1>Find the right people. Reach out with context.</h1>
+            <div class="kicker">Your AI recruiting employee</div>
+            <h1>Tell Orbit who you want. Watch it do the recruiting work.</h1>
             <p>
-              Orbit researches relevant professionals, verifies contact information, and prepares
-              personalized outreach grounded in your real background. It works in a visible browser,
-              so you can watch, redirect, pause, or stop the work.
+              Orbit researches the right people, finds contact information, and prepares personalized
+              outreach from your real background — in a browser you can watch, redirect, pause, or stop.
             </p>
             <div class="actions">
               <a class="btn" id="dl-btn" href="https://github.com/FutureWarren/recruiting-agent/releases/latest">
                 Download Orbit <span class="arrow" aria-hidden="true">↘</span>
               </a>
-              <a class="btn btn-secondary" href="#how">See the system</a>
+              <a class="btn btn-secondary" href="#demo">Watch Orbit work</a>
             </div>
             <div class="download-info">
-              <div class="dl-meta" id="dl-meta">Apple Silicon Mac · 30 free credits</div>
+              <div class="dl-meta" id="dl-meta">Apple Silicon Mac · 300 free Orbit Credits</div>
               <div class="dl-alts" id="dl-alts"></div>
+            </div>
+            <div class="hero-note">Built by NYU students · free to try</div>
+          </div>
+
+          <div class="demo-stage" id="demo" aria-label="Real Orbit product demo">
+            <div class="demo-frame">
+              <div class="demo-top">
+                <i></i><i></i><i></i>
+                <span>Orbit · real product demo</span>
+              </div>
+              <div class="demo-video-wrap">
+                <video class="demo-video" autoplay muted loop playsinline preload="metadata" poster="media/orbit-demo-poster.jpg" controlslist="nodownload noplaybackrate" aria-label="Orbit product demo">
+                  <source src="media/orbit-demo.mp4" type="video/mp4" />
+                </video>
+                <div class="demo-badge"><i></i> real workflow</div>
+              </div>
+              <div class="demo-caption">
+                <div>
+                  <strong>Orbit searches LinkedIn, evaluates fit, and moves prospect by prospect.</strong>
+                  <p>This is the actual product — not a mockup.</p>
+                  <div class="demo-proof"><span>Research</span><span>Fit scoring</span><span>Contact discovery</span><span>Personalized outreach</span></div>
+                </div>
+                <a class="watch" href="media/orbit-demo.mp4">Open full demo ↗</a>
+              </div>
             </div>
           </div>
 
-          <div class="cg-stage" aria-label="Animation showing Orbit researching a professional, organizing context, and drafting a tailored message">
+          <div class="cg-stage" hidden aria-hidden="true">
             <div class="cg-shell">
               <div class="cg-top">
                 <i class="cg-dot"></i><i class="cg-dot"></i><i class="cg-dot"></i>
@@ -1145,7 +1235,9 @@
         }
 
         if (os === 'mobile') {
-          disableDownload('Orbit for Apple Silicon Mac', 'Orbit is a desktop app — reopen this page on an Apple Silicon Mac')
+          disableDownload('Watch now · download on Mac', 'Orbit is a desktop app — watch the demo here, then reopen orbit-reaches.com on an Apple Silicon Mac')
+          const demo = document.querySelector('.demo-video')
+          if (demo) demo.setAttribute('controls','')
           return
         }
 
