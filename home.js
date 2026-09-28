@@ -13,7 +13,7 @@ async function initDownload(){
  if(os==='mobile'){
   buttons.forEach(b=>{b.href='#demo';b.removeAttribute('aria-disabled');b.dataset.downloadState='demo';label(b,'Watch Orbit work','Watch demo');b.setAttribute('aria-label','Watch the Orbit product demo')});
   const secondary=document.querySelector('.hero-copy .btn-secondary');secondary.href='#how';secondary.textContent='Explore workflow';secondary.removeAttribute('data-watch-demo');
-  meta.textContent='Apple Silicon Mac · '+allowance+' · watch here, then open on your Mac';return;
+  meta.textContent='Mac & Windows · '+allowance+' · watch here, then open on your computer';return;
  }
  if(os!=='mac'){disable('Orbit for Apple Silicon Mac','Orbit currently supports Apple Silicon Mac only');return}
  const arch=await detectArch();
@@ -106,4 +106,3 @@ document.querySelectorAll('[data-orbit-download]').forEach(button=>button.addEve
  reduced.addEventListener('change',()=>{if(reduced.matches)video.pause()});toggle.addEventListener('click',()=>{if(!enabled)video.pause()});
  settings();if(!enabled){video.autoplay=false;video.pause()}layout();
 })();
-
