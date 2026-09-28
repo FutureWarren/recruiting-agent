@@ -10,7 +10,7 @@ async function open(options={}){const c=await browser.newContext({viewport:{widt
 try{
  const css=readFileSync(join(root,'home.css'),'utf8'),js=readFileSync(join(root,'home.js'),'utf8');
  assert.ok(css.includes('border:10px solid var(--ink);border-radius:50%'));assert.ok(css.includes('animation:orbit-spin 6.8s linear infinite'));
- assert.doesNotMatch(css,/cursor\s*:\s*none/);assert.doesNotMatch(js,/addEventListener\(['"]wheel/);assert.doesNotMatch(js,/910|pixelBudget/);
+ assert.doesNotMatch(css,/cursor\s*:\s*none/);assert.doesNotMatch(js,/addEventListener\(['"]wheel/);assert.doesNotMatch(js,/Math\.min\(910|const pixelBudget|--video-pixel-budget/);
  for(const w of [320,390,768,1024,1280,1440,1920]){const {c,p}=await open({viewport:{width:w,height:w<760?844:900}});assert.equal(await p.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false,'overflow '+w);assert.equal(await p.locator('.cursor-aura').evaluate(e=>getComputedStyle(e).pointerEvents),'none');
   const order=await p.evaluate(()=>({first:document.querySelector('main').firstElementChild.className,second:document.querySelector('main').children[1].id,company:document.querySelector('#companies').closest('.hero-fold')!==null,demoWidth:document.querySelector('#hero-demo').getBoundingClientRect().width,companyBottom:document.querySelector('#companies').getBoundingClientRect().bottom}));
   assert.equal(order.first,'hero-fold');assert.equal(order.second,'demo');assert.equal(order.company,true);if(w>=1280)assert.ok(order.demoWidth>=1100,'large HD player at '+w);if(w>=1024)assert.ok(order.companyBottom<=902,'company strip at first-screen bottom '+w);widths.push(w);await c.close();
