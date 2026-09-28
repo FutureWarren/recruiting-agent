@@ -3,9 +3,10 @@
   "private": true,
   "description": "The download page. index.html is the whole site; the test is here because this page is the only funnel every user passes through.",
   "scripts": {
-    "test": "node test/download-page.mjs",
+    "test": "node test/download-page.mjs && node test/hero-quality.mjs",
     "test:live": "node test/download-page.mjs --live",
-    "test:commercial": "node test/commercial-pages.mjs"
+    "test:commercial": "node test/commercial-pages.mjs",
+    "test:hero": "node test/hero-quality.mjs"
   },
   "devDependencies": {
     "playwright": "^1.49.0"
