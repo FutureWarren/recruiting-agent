@@ -1,0 +1,67 @@
+name: Verify launch Credit V2 parity
+on:
+  push:
+    branches: [verify/launch-credit-parity-20260928]
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Unit-test the parity check
+        run: node --test test/pricing-parity.test.mjs
+      - name: Read-only wait for exact healthy production contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p artifacts
+          node --input-type=module <<'JS'
+          import { writeFileSync } from 'node:fs';
+          import assert from 'node:assert/strict';
+          import { assertPricingParity, endpoint } from './test/pricing-production-parity.mjs';
+          const origin = new URL(endpoint).origin;
+          const expectedCommit = '840928a7192ae433eed4c82fbb80016d7b27e086';
+          let passed = false;
+          for (let attempt=1; attempt<=36; attempt++) {
+            const report={capturedAt:new Date().toISOString(),readOnly:true,expectedCommit,attempt};
+            try {
+              const get=async path=>{const r=await fetch(origin+path,{signal:AbortSignal.timeout(12000),headers:{'cache-control':'no-cache'}}); assert.equal(r.status,200,path+' HTTP '+r.status); return r.json()};
+              const [health, caps, data]=await Promise.all([get('/health'),get('/api/openclaw/capabilities'),get('/api/auth/config')]);
+              Object.assign(report,{healthStatus:200,buildCommit:caps.buildCommit,creditProtocol:caps.creditProtocol,creditWeights:caps.creditWeights,accountsEnabled:data.accountsEnabled,billingEnabled:data.billingEnabled,billingProvider:data.billingProvider,stripeCheckoutEnabled:data.stripeCheckoutEnabled,freeLaunch:data.freeLaunch,creditSystem:data.creditSystem,plans:data.plans});
+              assert.equal(caps.buildCommit,expectedCommit,'serving commit not the approved merge');
+              assert.equal(caps.creditProtocol,'orbit-credits-v2');
+              assert.deepEqual(caps.creditWeights,{candidate_found:2,contact_obtained:3,outreach:5});
+              assert.equal(data.accountsEnabled,true);assert.equal(data.stripeCheckoutEnabled,true);
+              assertPricingParity(data);
+              report.passed=true; passed=true;
+            } catch (e) { report.passed=false; report.reason=e.message; }
+            writeFileSync('artifacts/production-credit-parity.json',JSON.stringify(report,null,2));
+            console.log(JSON.stringify(report));
+            if (passed) break;
+            if (attempt<36) await new Promise(r=>setTimeout(r,20000));
+          }
+          assert.ok(passed,'Production parity is not proven. Do not publish pricing.');
+          JS
+      - name: Install website test dependencies
+        run: npm install --no-audit --no-fund
+      - name: Install test browser
+        run: npx playwright install --with-deps chromium
+      - name: Website and commercial page regression tests
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm test 2>&1 | tee artifacts/website-tests.log
+          npm run test:commercial 2>&1 | tee artifacts/commercial-tests.log
+          printf '%s\n' '860fb32d25598e3a90b189169c0d832e49f57171' > artifacts/approved-site-head.txt
+          sha256sum pricing/index.html terms/index.html pricing/credit-v2.json > artifacts/approved-site-files.sha256
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: launch-credit-parity
+          path: artifacts/
+          retention-days: 7
