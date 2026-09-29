@@ -8,26 +8,35 @@ async function initDownload(){
  const buttons=[...document.querySelectorAll('[data-orbit-download]')];
  const meta=document.getElementById('dl-meta'),os=detectOS(),allowance='300 free Orbit Credits';
  const label=(b,text,navText)=>{b.textContent=b.id==='nav-download'?(navText||text):text};
- const disable=(text,message)=>{buttons.forEach(b=>{b.removeAttribute('href');b.setAttribute('aria-disabled','true');b.dataset.downloadState='unsupported';label(b,text,'Mac only');b.setAttribute('aria-label',message)});meta.textContent=message};
+ const disable=(text,message,navText='Desktop only')=>{buttons.forEach(b=>{b.removeAttribute('href');b.setAttribute('aria-disabled','true');b.dataset.downloadState='unsupported';label(b,text,navText);b.setAttribute('aria-label',message)});meta.textContent=message};
  buttons.forEach(b=>{b.dataset.downloadState='loading'});
  if(os==='mobile'){
   buttons.forEach(b=>{b.href='#demo';b.removeAttribute('aria-disabled');b.dataset.downloadState='demo';label(b,'Watch Orbit work','Watch demo');b.setAttribute('aria-label','Watch the Orbit product demo')});
   const secondary=document.querySelector('.hero-copy .btn-secondary');secondary.href='#how';secondary.textContent='Explore workflow';secondary.removeAttribute('data-watch-demo');
-  meta.textContent='Apple Silicon Mac only · '+allowance+' · watch here, then open on your Mac';return;
+  meta.textContent='Apple Silicon Mac or Windows x64 · '+allowance+' · watch here, then open on your computer';return;
  }
- if(os!=='mac'){disable('Orbit for Apple Silicon Mac','Orbit currently supports Apple Silicon Mac only'+(os==='win'?'. Windows is not available yet.':''));return}
+ if(os!=='mac'&&os!=='win'){disable('Orbit for Mac or Windows','Orbit currently supports Apple Silicon Mac and Windows x64 only');return}
  const arch=await detectArch();
- if(arch==='x64'){disable('Orbit requires Apple Silicon','Orbit currently supports Apple Silicon Mac only');return}
+ if(os==='mac'&&arch==='x64'){disable('Orbit requires Apple Silicon','Orbit currently supports Apple Silicon Mac (M1 and later) and Windows x64');return}
+ if(os==='win'&&arch==='arm64'){disable('Orbit requires Windows x64','Orbit currently supports Windows x64, not Windows on ARM');return}
  const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),5000);
  try{
   const response=await fetch('https://api.github.com/repos/'+REPO+'/releases/latest',{signal:controller.signal});
   if(!response.ok)throw Error('Release unavailable');const release=await response.json();
-  const asset=(release.assets||[]).find(a=>/arm64.*\.dmg$/i.test(a.name||'')&&/^https:\/\//.test(a.browser_download_url||''));
-  if(!asset)throw Error('Apple Silicon build unavailable');
-  buttons.forEach(b=>{b.href=asset.browser_download_url;b.removeAttribute('aria-disabled');b.dataset.downloadState='ready';label(b,'Download for Mac (Apple Silicon) ↗','Get Orbit ↗');b.setAttribute('aria-label','Download Orbit for Apple Silicon Mac')});
+  const asset=os==='win'
+   ?(release.assets||[]).find(a=>/^Orbit-\d+\.\d+\.\d+-x64-Setup\.exe$/i.test(a.name||'')&&/^https:\/\//.test(a.browser_download_url||''))
+   :(release.assets||[]).find(a=>/arm64.*\.dmg$/i.test(a.name||'')&&/^https:\/\//.test(a.browser_download_url||''));
+  if(!asset){
+   if(os==='win'){disable('Windows download temporarily unavailable','The signed Windows x64 build is not available in the latest release yet','Windows pending');return}
+   throw Error('Apple Silicon build unavailable');
+  }
+  const platform=os==='win'?'Windows x64':'Apple Silicon Mac';
+  const buttonText=os==='win'?'Download for Windows (x64) ↗':'Download for Mac (Apple Silicon) ↗';
+  buttons.forEach(b=>{b.href=asset.browser_download_url;b.removeAttribute('aria-disabled');b.dataset.downloadState='ready';label(b,buttonText,'Get Orbit ↗');b.setAttribute('aria-label','Download Orbit for '+platform)});
   const v=asset.name.match(/\d+\.\d+\.\d+/)?.[0]||String(release.tag_name||'').replace(/^v/,'');
-  meta.textContent='Version '+v+' · '+Math.round(asset.size/1048576)+' MB · Apple Silicon Mac · '+allowance+(arch?'':' · check your Mac chip');
+  meta.textContent='Version '+v+' · '+Math.round(asset.size/1048576)+' MB · '+platform+' · '+allowance+(arch?'':' · confirm your computer architecture');
  }catch(_){
+  if(os==='win'){disable('Windows download temporarily unavailable','The signed Windows x64 download could not be verified right now. Please try again shortly.','Windows pending');return}
   buttons.forEach(b=>{b.href='https://github.com/'+REPO+'/releases/latest';b.dataset.downloadState='fallback';label(b,'View Mac downloads ↗','Get Orbit ↗')});
   meta.textContent='Apple Silicon Mac · '+allowance+' · open releases to choose the latest Mac installer';
  }finally{clearTimeout(timer)}
