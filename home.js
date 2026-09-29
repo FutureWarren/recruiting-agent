@@ -13,9 +13,9 @@ async function initDownload(){
  if(os==='mobile'){
   buttons.forEach(b=>{b.href='#demo';b.removeAttribute('aria-disabled');b.dataset.downloadState='demo';label(b,'Watch Orbit work','Watch demo');b.setAttribute('aria-label','Watch the Orbit product demo')});
   const secondary=document.querySelector('.hero-copy .btn-secondary');secondary.href='#how';secondary.textContent='Explore workflow';secondary.removeAttribute('data-watch-demo');
-  meta.textContent='Mac & Windows · '+allowance+' · watch here, then open on your computer';return;
+  meta.textContent='Apple Silicon Mac only · '+allowance+' · watch here, then open on your Mac';return;
  }
- if(os!=='mac'){disable('Orbit for Apple Silicon Mac','Orbit currently supports Apple Silicon Mac only');return}
+ if(os!=='mac'){disable('Orbit for Apple Silicon Mac','Orbit currently supports Apple Silicon Mac only'+(os==='win'?'. Windows is not available yet.':''));return}
  const arch=await detectArch();
  if(arch==='x64'){disable('Orbit requires Apple Silicon','Orbit currently supports Apple Silicon Mac only');return}
  const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),5000);
@@ -26,7 +26,7 @@ async function initDownload(){
   if(!asset)throw Error('Apple Silicon build unavailable');
   buttons.forEach(b=>{b.href=asset.browser_download_url;b.removeAttribute('aria-disabled');b.dataset.downloadState='ready';label(b,'Download for Mac (Apple Silicon) ↗','Get Orbit ↗');b.setAttribute('aria-label','Download Orbit for Apple Silicon Mac')});
   const v=asset.name.match(/\d+\.\d+\.\d+/)?.[0]||String(release.tag_name||'').replace(/^v/,'');
-  meta.textContent='Version '+v+' · '+Math.round(asset.size/1048576)+' MB · Mac · '+allowance+(arch?'':' · check your Mac chip');
+  meta.textContent='Version '+v+' · '+Math.round(asset.size/1048576)+' MB · Apple Silicon Mac · '+allowance+(arch?'':' · check your Mac chip');
  }catch(_){
   buttons.forEach(b=>{b.href='https://github.com/'+REPO+'/releases/latest';b.dataset.downloadState='fallback';label(b,'View Mac downloads ↗','Get Orbit ↗')});
   meta.textContent='Apple Silicon Mac · '+allowance+' · open releases to choose the latest Mac installer';
