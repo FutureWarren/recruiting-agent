@@ -1,0 +1,41 @@
+name: Verify live Mac-only website
+on:
+  push:
+    branches: ['fix/mac-only-availability-20260929']
+    paths: ['.github/workflows/mac-only-live-check.yml']
+permissions:
+  contents: read
+jobs:
+  public-page-check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: 8547542f8ec5840608afcfc21b7d401192b83c43
+          persist-credentials: false
+      - name: Verify four public files against the exact published source
+        run: |
+          node --input-type=module <<'JS'
+          import assert from 'node:assert/strict';
+          import { readFileSync } from 'node:fs';
+          import { createHash } from 'node:crypto';
+          const commit='8547542f8ec5840608afcfc21b7d401192b83c43';
+          const paths=[['/','index.html'],['/home.js?v=mac-only-20260929','home.js'],['/pricing/','pricing/index.html'],['/support/','support/index.html']];
+          const hash=b=>createHash('sha256').update(b).digest('hex');
+          const results=[];
+          for(const [urlPath,file] of paths){
+            const expected=hash(readFileSync(file)); let result;
+            for(let attempt=0;attempt<8;attempt++){
+              try{
+                const r=await fetch('https://orbit-reaches.com'+urlPath,{signal:AbortSignal.timeout(15000),headers:{'Cache-Control':'no-cache'}});
+                const bytes=Buffer.from(await r.arrayBuffer());
+                result={path:urlPath,status:r.status,sha256:hash(bytes),matchesTestedSource:r.ok&&hash(bytes)===expected};
+                if(result.matchesTestedSource)break;
+              }catch(e){result={path:urlPath,error:e.name,matchesTestedSource:false};}
+              await new Promise(resolve=>setTimeout(resolve,10000));
+            }
+            console.log(JSON.stringify(result));assert.equal(result.matchesTestedSource,true,'Public file must match the tested Mac-only source: '+file);results.push(result);
+          }
+          console.log(JSON.stringify({passed:true,commit,verifiedAt:new Date().toISOString(),publicFiles:results.length,customerDataRead:0,backendChanges:0}));
+          JS
