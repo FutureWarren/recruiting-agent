@@ -1,0 +1,74 @@
+name: Mac-only website copy preflight
+on:
+  push:
+    branches: ['fix/mac-only-availability-20260929']
+    paths: ['.github/workflows/mac-only-copy-preflight.yml']
+permissions:
+  contents: write
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - name: Apply narrowly scoped website copy and regression updates
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          def replace(path, old, new, count=1):
+              p=Path(path); text=p.read_text()
+              assert text.count(old)==count, (path, old, text.count(old))
+              p.write_text(text.replace(old,new))
+          replace('index.html','Orbit runs on your computer.','Orbit runs on your Mac.')
+          replace('index.html','then open this site on your Mac or Windows computer to get started.','then open this site on a Mac with an M-series chip to get started.')
+          replace('index.html','Mac &amp; Windows · 300 free Orbit Credits','Apple Silicon Mac only · 300 free Orbit Credits')
+          replace('index.html','Desktop app for Mac &amp; Windows.<br>Not available on phones or tablets.','Available now for Apple Silicon Mac (M1 and later).<br>Windows, Intel Macs, phones and tablets are not supported.')
+          replace('index.html','home.js?v=desktop-20260928','home.js?v=mac-only-20260929')
+          replace('home.js',"'Mac & Windows · '+allowance+' · watch here, then open on your computer'","'Apple Silicon Mac only · '+allowance+' · watch here, then open on your Mac'")
+          replace('home.js',"if(os!=='mac'){disable('Orbit for Apple Silicon Mac','Orbit currently supports Apple Silicon Mac only');return}","if(os!=='mac'){disable('Orbit for Apple Silicon Mac','Orbit currently supports Apple Silicon Mac only'+(os==='win'?'. Windows is not available yet.':''));return}")
+          replace('home.js',"' MB · Mac · '+allowance","' MB · Apple Silicon Mac · '+allowance")
+          notice='Available now for Apple Silicon Mac (M1 and later). Windows, Intel Macs, phones and tablets are not supported.'
+          replace('pricing/index.html','      <div class="hero-meta">','      <p class="credit-intro" data-platform-availability>'+notice+'</p>\n      <div class="hero-meta">')
+          replace('support/index.html','        <h2>Billing and subscriptions</h2>','        <h2>Supported computers</h2><p data-platform-availability>'+notice+' On a phone or tablet, <a href="/#demo">watch the demo</a>, then return on a supported Mac to get started.</p>\n        <h2>Billing and subscriptions</h2>')
+          replace('test/download-page.mjs',r'/Desktop app for Mac & Windows.*Not available on phones or tablets/',r'/Apple Silicon Mac \(M1 and later\).*Windows, Intel Macs, phones and tablets are not supported/')
+          replace('test/download-page.mjs',r'/Mac & Windows.*300 free Orbit Credits.*your computer/',r'/Apple Silicon Mac only.*300 free Orbit Credits.*your Mac/')
+          replace('test/download-page.mjs',r'/Orbit runs on your computer.*Not on phones or tablets.*Watch the demo here.*Mac or Windows computer/',r'/Orbit runs on your Mac.*Not on phones or tablets.*Watch the demo here.*Mac with an M-series chip/')
+          replace('test/download-page.mjs',r'/Mac or Windows computer/',r'/Mac with an M-series chip/')
+          replace('test/download-page.mjs',"assert.match(s.meta,/Apple Silicon Mac only/);assert.equal(s.instructions,0)","assert.match(s.meta,/Apple Silicon Mac only/);if(name.startsWith('Windows'))assert.match(s.meta,/Windows is not available yet/);assert.equal(s.instructions,0)")
+          replace('test/download-page.mjs',"assert.equal(s.noticeAfterActions,true,'The device reminder belongs directly below the first-screen actions');","assert.equal(s.noticeAfterActions,true,'The device reminder belongs directly below the first-screen actions');\n  assert.doesNotMatch(s.meta+' '+s.noticeText+' '+s.finalNotice,/Mac (?:&|or) Windows/,'Never advertise an unavailable Windows version');")
+          replace('test/download-page.mjs','phone/iPad Mac and Windows reminder','phone/iPad Mac-only reminder')
+          replace('test/commercial-pages.mjs',"'/pricing/': ['300 free Orbit Credits',","'/pricing/': ['Available now for Apple Silicon Mac (M1 and later).', 'Windows, Intel Macs, phones and tablets are not supported.', '300 free Orbit Credits',")
+          replace('test/commercial-pages.mjs',"'/support/': ['lw3405@nyu.edu', 'Credits did not update']","'/support/': ['Supported computers', 'Available now for Apple Silicon Mac (M1 and later).', 'Windows, Intel Macs, phones and tablets are not supported.', 'lw3405@nyu.edu', 'Credits did not update']")
+          for path in ['index.html','home.js','pricing/index.html','support/index.html']:
+              text=Path(path).read_text()
+              for retired in ['Mac &amp; Windows','Mac & Windows','Mac or Windows computer']:
+                  assert retired not in text,(path,retired)
+          print('Updated four public website files and two existing regression tests; no app, backend, billing or download-routing changes.')
+          PY
+          git diff --check
+          node --check home.js
+          node --check test/download-page.mjs
+          node --check test/commercial-pages.mjs
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm ci --no-audit --no-fund
+      - run: npx playwright install --with-deps chromium
+      - name: Installer, mobile, motion and commercial page regressions
+        run: |
+          npm test
+          npm run test:commercial
+      - name: Commit only the verified website changes
+        run: |
+          git config user.name FutureWarren
+          git config user.email lw3405@nyu.edu
+          git add index.html home.js pricing/index.html support/index.html test/download-page.mjs test/commercial-pages.mjs
+          git commit -m 'fix(site): advertise the currently available Apple Silicon Mac version only'
+          git push origin HEAD:fix/mac-only-availability-20260929
+          git rev-parse HEAD
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mac-only-website-review
+          retention-days: 2
+          path: artifacts/
