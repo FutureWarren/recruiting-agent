@@ -39,7 +39,7 @@ try{
  await p.route('https://backend-production-2b40.up.railway.app/api/handoff/**',route=>route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({firstName:'Future',goal:'',detail:''})}))
  await p.route('https://api.github.com/**',route=>route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({assets:[{name:'Orbit-0.1.99-arm64.dmg',browser_download_url:'https://example.test/orbit.dmg'}]})}))
  await p.goto(server.base+'/continue/?token=abcdefghijklmnopqrstuvwx.abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQ')
- await p.waitForSelector('#receipt:not([hidden])')
+ await p.waitForSelector('#actions:not([hidden])')
  assert.equal(await p.locator('#title').textContent(),'Welcome, Future.')
  assert.equal(await p.locator('#receipt').isHidden(),true)
  const resolveReq=requests.find(r=>r.url.endsWith('/resolve'))
