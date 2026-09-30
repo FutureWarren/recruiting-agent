@@ -8,11 +8,11 @@ async function latestAsset(platform){const r=await fetch('https://api.github.com
 async function init(){
  if(!/^[A-Za-z0-9_-]{32,120}$/.test(token)){ $('title').textContent='This handoff link is incomplete.';$('lede').textContent='Open the newest link Orbit sent you, or set up Orbit again from your phone.';return}
  try{
-  const lead=await post('/api/handoff/resolve',{token});void post('/api/handoff/event',{stage:'desktop_link_opened',token}).catch(()=>{});
+  const lead=await post('/api/handoff/resolve',{token});const platform=os();if(platform!=='mobile')void post('/api/handoff/event',{stage:'desktop_link_opened',token}).catch(()=>{});
   $('goal').textContent=lead.goal;$('detail').textContent=lead.detail||'';$('receipt').hidden=false;$('actions').hidden=false;
   $('title').textContent='Your Orbit is ready.';$('lede').textContent='You already told us what you’re recruiting for. Continue from here — no retyping.';
-  const platform=os(),download=$('download-orbit'),open=$('open-orbit'),status=$('status');
-  open.onclick=()=>{void post('/api/handoff/event',{stage:'desktop_app_opened',token,metadata:{attempt:'protocol'}}).catch(()=>{});status.textContent='Opening Orbit… If nothing happens, install it below and come back to this page.';location.href='orbit://handoff?token='+encodeURIComponent(token)};
+  const download=$('download-orbit'),open=$('open-orbit'),status=$('status');
+  open.onclick=()=>{status.textContent='Opening Orbit… If nothing happens, install it below and come back to this page.';location.href='orbit://handoff?token='+encodeURIComponent(token)};
   if(platform==='mobile'){download.setAttribute('aria-disabled','true');download.querySelector('span').textContent='Open this page on your computer';open.disabled=true;status.textContent='This continuation step needs your computer. Keep this email or copy the link below.';return}
   try{
    const asset=await latestAsset(platform);
