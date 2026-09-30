@@ -13,15 +13,16 @@ function fail(message){document.body.classList.add('error');$('eyebrow').textCon
  if(!/^[A-Za-z0-9_-]{20,40}\.[A-Za-z0-9_-]{40,60}$/.test(token)){fail('The desktop handoff token is missing or invalid.');return}
  try{
   const data=await api('/api/handoff/resolve',{method:'POST',body:JSON.stringify({token})});
-  $('title').textContent='Welcome back.';
-  $('copy').textContent='Your phone setup made it here. Finish on your computer — no need to type the recruiting goal again.';
-  $('goal').textContent=data.goal;$('detail').textContent=data.detail||'';$('detail').hidden=!data.detail;$('receipt').hidden=false;$('actions').hidden=false;
+  $('title').textContent=data.firstName?'Welcome, '+data.firstName+'.':'Welcome back.';
+  $('copy').textContent='Your phone handoff made it here. Finish on your computer and put Orbit to work.';
+  if(data.goal){$('goal').textContent=data.goal;$('detail').textContent=data.detail||'';$('detail').hidden=!data.detail;$('receipt').hidden=false}else{$('receipt').hidden=true}
+  $('actions').hidden=false;
   const open='orbit://handoff?token='+encodeURIComponent(token);$('open-app').href=open;
   const platform=os();
   if(platform==='mac'){
     $('download').textContent='Finding the latest Mac build…';
     try{const url=await installer();$('download').href=url;$('download').innerHTML='Download Orbit for Mac <b>↗</b>'}catch(_){$('download').href='https://github.com/'+REPO+'/releases/latest';$('download').innerHTML='View Mac downloads <b>↗</b>'}
-    $('status').textContent='After installing, open Orbit from this page so it can pick up the saved goal.';
+    $('status').textContent='After installing, open Orbit from this page so it can pick up your saved handoff.';
   }else if(platform==='win'){
     $('download').removeAttribute('href');$('download').classList.add('disabled');$('download').innerHTML='Windows build not released yet <b>·</b>';
     $('status').textContent='Your setup is saved. Keep this link — Windows support is not public yet.';
