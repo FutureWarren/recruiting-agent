@@ -1,6 +1,7 @@
 'use strict';
 // Website only. No analytics payloads, account access, or product automation.
 const REPO='FutureWarren/recruiting-agent';
+function mobileStartUrl(){const q=new URLSearchParams(location.search);if(!q.get('source'))q.set('source','website_mobile');return '/start/?'+q.toString()}
 function detectOS(){const ua=navigator.userAgent||'';if(/Android|iPhone|iPad|iPod/i.test(ua)||(/Macintosh/.test(ua)&&(navigator.maxTouchPoints||0)>1))return'mobile';const p=navigator.userAgentData?.platform||'';if(/windows/i.test(p)||/Windows|Win64|Win32|WOW64/i.test(ua))return'win';if(/macos|mac os/i.test(p)||/Macintosh|Mac OS X/i.test(ua))return'mac';return null}
 async function detectArch(){try{const v=await navigator.userAgentData?.getHighEntropyValues?.(['architecture']);if(v?.architecture==='arm')return'arm64';if(v?.architecture==='x86')return'x64'}catch(_){}try{const g=document.createElement('canvas').getContext('webgl'),d=g?.getExtension('WEBGL_debug_renderer_info'),r=d?String(g.getParameter(d.UNMASKED_RENDERER_WEBGL)):'';if(/apple/i.test(r))return'arm64';if(/intel|radeon|amd|nvidia/i.test(r))return'x64'}catch(_){}return null}
 // Every download CTA, including navigation, shares one resolution state.
@@ -11,9 +12,10 @@ async function initDownload(){
  const disable=(text,message)=>{buttons.forEach(b=>{b.removeAttribute('href');b.setAttribute('aria-disabled','true');b.dataset.downloadState='unsupported';label(b,text,'Mac only');b.setAttribute('aria-label',message)});meta.textContent=message};
  buttons.forEach(b=>{b.dataset.downloadState='loading'});
  if(os==='mobile'){
-  buttons.forEach(b=>{b.href='#demo';b.removeAttribute('aria-disabled');b.dataset.downloadState='demo';label(b,'Watch Orbit work','Watch demo');b.setAttribute('aria-label','Watch the Orbit product demo')});
-  const secondary=document.querySelector('.hero-copy .btn-secondary');secondary.href='#how';secondary.textContent='Explore workflow';secondary.removeAttribute('data-watch-demo');
-  meta.textContent='Apple Silicon Mac only · '+allowance+' · watch here, then open on your Mac';return;
+  const start=mobileStartUrl();
+  buttons.forEach(b=>{b.href=start;b.removeAttribute('aria-disabled');b.dataset.downloadState='handoff';label(b,'Start on your phone →','Start');b.setAttribute('aria-label','Start Orbit on your phone and continue on desktop')});
+  const secondary=document.querySelector('.hero-copy .btn-secondary');secondary.href='#demo';secondary.textContent='Watch Orbit work';secondary.setAttribute('data-watch-demo','');
+  meta.textContent='20-second phone setup · '+allowance+' · continue on desktop later';return;
  }
  if(os!=='mac'){disable('Orbit for Apple Silicon Mac','Orbit currently supports Apple Silicon Mac only'+(os==='win'?'. Windows is not available yet.':''));return}
  const arch=await detectArch();
