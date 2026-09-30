@@ -58,7 +58,7 @@ function initMobileHandoffModal(){
  if(detectOS()!=='mobile')return;
  const modal=document.getElementById('mobile-handoff-modal'),form=document.getElementById('mobile-handoff-form');
  if(!modal||!form)return;
- const email=document.getElementById('mobile-handoff-email'),goal=document.getElementById('mobile-handoff-goal'),error=document.getElementById('mobile-handoff-error'),submit=document.getElementById('mobile-handoff-submit'),success=document.getElementById('mobile-handoff-success'),formState=document.getElementById('mobile-handoff-form-state'),copy=document.getElementById('mobile-handoff-copy'),toast=document.getElementById('mobile-handoff-toast');
+ const firstName=document.getElementById('mobile-handoff-first-name'),email=document.getElementById('mobile-handoff-email'),error=document.getElementById('mobile-handoff-error'),submit=document.getElementById('mobile-handoff-submit'),success=document.getElementById('mobile-handoff-success'),formState=document.getElementById('mobile-handoff-form-state'),copy=document.getElementById('mobile-handoff-copy'),toast=document.getElementById('mobile-handoff-toast');
  const attribution=handoffAttribution(),visitorId=handoffVisitor();
  let continueUrl='',started=false,closeTimer=0;
  const markerKey='orbit_handoff_captured_v1',dismissKey='orbit_handoff_dismissed_v1';
@@ -66,7 +66,7 @@ function initMobileHandoffModal(){
  const openModal=()=>{
   if(closeTimer)clearTimeout(closeTimer);
   modal.hidden=false;modal.setAttribute('aria-hidden','false');document.body.classList.add('handoff-modal-open');
-  requestAnimationFrame(()=>{modal.classList.add('is-open');setTimeout(()=>email.focus({preventScroll:true}),180)});
+  requestAnimationFrame(()=>{modal.classList.add('is-open');setTimeout(()=>firstName.focus({preventScroll:true}),180)});
  };
  const closeModal=()=>{
   modal.classList.remove('is-open');document.body.classList.remove('handoff-modal-open');
@@ -78,19 +78,15 @@ function initMobileHandoffModal(){
  }));
  document.querySelectorAll('[data-handoff-close]').forEach(button=>button.addEventListener('click',()=>{try{sessionStorage.setItem(dismissKey,'1')}catch(_){}closeModal()}));
  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!modal.hidden)closeModal()});
- email.addEventListener('focus',markStarted);
- document.querySelectorAll('[data-mobile-goal]').forEach(button=>button.addEventListener('click',()=>{
-  markStarted();goal.value=button.dataset.mobileGoal||'';
-  document.querySelectorAll('[data-mobile-goal]').forEach(x=>x.classList.toggle('active',x===button));
- }));
+ firstName.addEventListener('focus',markStarted);email.addEventListener('focus',markStarted);
  form.addEventListener('submit',async e=>{
   e.preventDefault();error.hidden=true;
-  const address=email.value.trim(),target=goal.value.trim();
+  const name=firstName.value.trim(),address=email.value.trim();
+  if(!name){error.textContent='Enter your first name.';error.hidden=false;firstName.focus();return}
   if(!/^\S+@\S+\.\S+$/.test(address)){error.textContent='Enter a valid email.';error.hidden=false;email.focus();return}
-  if(!target){error.textContent='Pick what you’re recruiting for.';error.hidden=false;return}
   submit.disabled=true;submit.classList.add('loading');submit.querySelector('span').textContent='Saving your Orbit…';
   try{
-   const data=await handoffApi('/api/handoff/start',{email:address,goal:target,detail:'',visitorId,...attribution});
+   const data=await handoffApi('/api/handoff/start',{firstName:name,email:address,visitorId,...attribution});
    continueUrl=data.continueUrl||'';try{localStorage.setItem('orbit_handoff_continue',continueUrl)}catch(_){}
    formState.hidden=true;success.hidden=false;
    const delivered=data.emailStatus==='delivered';
