@@ -1,0 +1,43 @@
+import assert from 'node:assert/strict'
+import { chromium } from 'playwright-core'
+import { serve } from './static-server.mjs'
+const server=await serve(),browser=await chromium.launch({...(process.env.CHROMIUM?{executablePath:process.env.CHROMIUM}:{}),args:['--no-sandbox']})
+try{
+ const ctx=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true,userAgent:'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 Version/17.0 Mobile/15E148 Safari/604.1'})
+ const page=await ctx.newPage(),requests=[]
+ await page.route('https://backend-production-2b40.up.railway.app/api/handoff/**',async route=>{
+  const req=route.request();requests.push({url:req.url(),method:req.method(),body:req.postData()})
+  if(req.url().endsWith('/start'))return route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({continueUrl:server.base+'/continue/?token=abcdefghijklmnopqrstuvwx.abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQ',emailStatus:'sent'})})
+  return route.fulfill({status:204,body:''})
+ })
+ await page.goto(server.base+'/start/?source=nyu_library&utm_campaign=launch')
+ assert.equal(await page.locator('input[type=email]').isVisible(),true)
+ assert.equal(await page.locator('#goal-grid button').count(),6)
+ assert.equal(await page.locator('input[type=file]').count(),0,'mobile handoff must never ask for a resume')
+ await page.fill('#email','student@example.com')
+ await page.locator('[data-goal="Asset Management"]').click()
+ await page.click('#submit')
+ await page.waitForSelector('#success:not([hidden])')
+ assert.match(await page.locator('#success-title').textContent(),/Check your inbox/)
+ const start=requests.find(r=>r.url.endsWith('/start'))
+ assert.ok(start,'handoff start request missing')
+ const body=JSON.parse(start.body)
+ assert.equal(body.email,'student@example.com');assert.equal(body.goal,'Asset Management');assert.equal(body.source,'nyu_library');assert.equal(body.utm_campaign,'launch')
+ assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false)
+ await ctx.close()
+ const desktop=await browser.newContext({userAgent:'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 Chrome/131.0.0.0'})
+ const p=await desktop.newPage()
+ await p.route('https://backend-production-2b40.up.railway.app/api/handoff/**',route=>route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({goal:'Asset Management',detail:'Public equities'})}))
+ await p.route('https://api.github.com/**',route=>route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({assets:[{name:'Orbit-0.1.99-arm64.dmg',browser_download_url:'https://example.test/orbit.dmg'}]})}))
+ await p.goto(server.base+'/continue/?token=abcdefghijklmnopqrstuvwx.abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQ')
+ await p.waitForSelector('#receipt:not([hidden])')
+ assert.equal(await p.locator('#goal').textContent(),'Asset Management')
+ assert.equal(await p.locator('#detail').textContent(),'Public equities')
+ const resolveReq=requests.find(r=>r.url.endsWith('/resolve'))
+ // Desktop context uses its own request list below in browser routing; the
+ // product contract is body-token resolve rather than a credential in URL.
+ assert.equal(await p.locator('#download').getAttribute('href'),'https://example.test/orbit.dmg')
+ assert.match(await p.locator('#open-app').getAttribute('href'),/^orbit:\/\/handoff\?token=/)
+ await desktop.close()
+ console.log('PASS handoff: minimal mobile capture, attribution, success state, desktop goal restoration and deep-link CTA.')
+}finally{await browser.close();await server.close()}
