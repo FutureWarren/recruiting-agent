@@ -32,4 +32,5 @@ jobs:
             home.css
             home.js
             media/
+            continue/
             docs/launch-motion-and-claims.md
