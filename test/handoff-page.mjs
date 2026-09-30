@@ -33,6 +33,9 @@ try{
  await p.waitForSelector('#receipt:not([hidden])')
  assert.equal(await p.locator('#goal').textContent(),'Asset Management')
  assert.equal(await p.locator('#detail').textContent(),'Public equities')
+ const resolveReq=requests.find(r=>r.url.endsWith('/resolve'))
+ // Desktop context uses its own request list below in browser routing; the
+ // product contract is body-token resolve rather than a credential in URL.
  assert.equal(await p.locator('#download').getAttribute('href'),'https://example.test/orbit.dmg')
  assert.match(await p.locator('#open-app').getAttribute('href'),/^orbit:\/\/handoff\?token=/)
  await desktop.close()
