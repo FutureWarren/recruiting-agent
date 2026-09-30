@@ -11,9 +11,8 @@ async function initDownload(){
  const disable=(text,message)=>{buttons.forEach(b=>{b.removeAttribute('href');b.setAttribute('aria-disabled','true');b.dataset.downloadState='unsupported';label(b,text,'Mac only');b.setAttribute('aria-label',message)});meta.textContent=message};
  buttons.forEach(b=>{b.dataset.downloadState='loading'});
  if(os==='mobile'){
-  buttons.forEach(b=>{b.href='#demo';b.removeAttribute('aria-disabled');b.dataset.downloadState='demo';label(b,'Watch Orbit work','Watch demo');b.setAttribute('aria-label','Watch the Orbit product demo')});
-  const secondary=document.querySelector('.hero-copy .btn-secondary');secondary.href='#how';secondary.textContent='Explore workflow';secondary.removeAttribute('data-watch-demo');
-  meta.textContent='Apple Silicon Mac only · '+allowance+' · watch here, then open on your Mac';return;
+  buttons.forEach(b=>{b.href='#mobile-handoff';b.removeAttribute('aria-disabled');b.dataset.downloadState='handoff';label(b,'Set up Orbit →','Get Orbit');b.setAttribute('aria-label','Set up Orbit now and continue later on your computer')});
+  meta.textContent=allowance+' · takes about 20 seconds on your phone';return;
  }
  if(os!=='mac'){disable('Orbit for Apple Silicon Mac','Orbit currently supports Apple Silicon Mac only'+(os==='win'?'. Windows is not available yet.':''));return}
  const arch=await detectArch();
@@ -32,7 +31,62 @@ async function initDownload(){
   meta.textContent='Apple Silicon Mac · '+allowance+' · open releases to choose the latest Mac installer';
  }finally{clearTimeout(timer)}
 }
+
+const HANDOFF_API='https://backend-production-2b40.up.railway.app';
+function handoffSource(){
+ const q=new URLSearchParams(location.search),raw=(q.get('source')||q.get('utm_source')||'').toLowerCase();
+ if(raw)return raw.replace(/[^a-z0-9_-]/g,'').slice(0,80)||'direct';
+ const ref=(document.referrer||'').toLowerCase();
+ if(ref.includes('instagram'))return'instagram';if(ref.includes('tiktok'))return'tiktok';if(ref.includes('xiaohongshu'))return'xiaohongshu';if(ref.includes('linkedin'))return'linkedin';
+ return'direct';
+}
+function handoffVisitor(){
+ try{let id=localStorage.getItem('orbit_handoff_visitor');if(!id){id=(crypto.randomUUID?.()||('v_'+Date.now().toString(36)+Math.random().toString(36).slice(2))).replace(/[^A-Za-z0-9_-]/g,'');localStorage.setItem('orbit_handoff_visitor',id)}return id}catch(_){return('v_'+Date.now().toString(36)+Math.random().toString(36).slice(2)).replace(/[^A-Za-z0-9_-]/g,'')}
+}
+async function handoffPost(path,payload){
+ const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),7000);
+ try{
+  const r=await fetch(HANDOFF_API+path,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(payload),signal:controller.signal});
+  if(r.status===204)return{};const body=await r.json().catch(()=>({}));
+  if(!r.ok)throw new Error(body.error||'Orbit could not save that yet.');
+  return body;
+ }finally{clearTimeout(timer)}
+}
+function initMobileHandoff(){
+ if(detectOS()!=='mobile')return;
+ const wrap=document.getElementById('mobile-handoff'),form=document.getElementById('mobile-handoff-form');if(!wrap||!form)return;
+ wrap.hidden=false;
+ const source=handoffSource(),visitorId=handoffVisitor();
+ void handoffPost('/api/handoff/event',{stage:'mobile_landing',source,visitorId}).catch(()=>{});
+ let started=false;
+ const markStarted=()=>{if(started)return;started=true;void handoffPost('/api/handoff/event',{stage:'form_started',source,visitorId}).catch(()=>{})};
+ form.addEventListener('focusin',markStarted,{once:true});form.addEventListener('pointerdown',markStarted,{once:true});
+ form.addEventListener('submit',async e=>{
+  e.preventDefault();const email=document.getElementById('handoff-email'),detail=document.getElementById('handoff-detail'),selected=form.querySelector('input[name="handoff-goal"]:checked'),error=document.getElementById('handoff-error'),button=document.getElementById('handoff-submit');
+  error.hidden=true;
+  if(!email.checkValidity()){email.reportValidity();return}
+  if(!selected){error.textContent='Choose what you’re recruiting for.';error.hidden=false;return}
+  button.disabled=true;button.classList.add('loading');button.querySelector('span').textContent='Saving your Orbit…';
+  try{
+   const goal=selected.value,result=await handoffPost('/api/handoff/start',{email:email.value.trim(),goal,detail:detail.value.trim(),source,visitorId});
+   const formState=document.getElementById('mh-form-state'),success=document.getElementById('mh-success'),copy=document.getElementById('mh-success-copy'),receipt=document.getElementById('mh-goal-receipt'),mail=document.getElementById('mh-mail-link');
+   formState.hidden=true;success.hidden=false;receipt.textContent=goal;
+   copy.textContent=result.emailStatus==='sent'?'We sent your desktop link to '+email.value.trim()+'.':'Your desktop link is ready. Use the button below to send it to yourself.';
+   const subject=encodeURIComponent('Your Orbit is ready'),body=encodeURIComponent('Continue setting up Orbit on your computer:\n\n'+result.continueUrl);
+   mail.href='mailto:'+encodeURIComponent(email.value.trim())+'?subject='+subject+'&body='+body;
+   mail.dataset.continueUrl=result.continueUrl;
+   document.getElementById('mh-copy-link').dataset.continueUrl=result.continueUrl;
+   wrap.classList.add('is-complete');wrap.scrollIntoView({behavior:'smooth',block:'center'});
+  }catch(err){error.textContent=err.message||'Orbit could not save that yet. Try once more.';error.hidden=false;button.disabled=false;button.classList.remove('loading');button.querySelector('span').textContent='Set up my Orbit'}
+ });
+ document.getElementById('mh-copy-link')?.addEventListener('click',async e=>{
+  const b=e.currentTarget,url=b.dataset.continueUrl;if(!url)return;
+  try{await navigator.clipboard.writeText(url);b.textContent='Copied ✓'}catch(_){b.textContent='Long-press the link above to copy'}
+ });
+}
+
 const downloadReady=initDownload();
+initMobileHandoff();
 document.querySelectorAll('[data-orbit-download]').forEach(button=>button.addEventListener('click',async event=>{
  if(button.getAttribute('aria-disabled')==='true'){event.preventDefault();return}
  if(button.dataset.downloadState!=='loading')return;
