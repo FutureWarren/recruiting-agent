@@ -63,19 +63,11 @@ body:has([data-orbit-download][data-download-state="handoff"]) .mobile-desktop-r
     <button class="mobile-handoff-close" type="button" aria-label="Close setup" data-handoff-close>×</button>
     <div class="mobile-handoff-form-state" id="mobile-handoff-form-state">
       <div class="mobile-handoff-kicker">ORBIT / PHONE SETUP</div>
-      <h2 id="mobile-handoff-title">What are you recruiting for?</h2>
-      <p>Give Orbit two things now. We’ll send the rest to your computer.</p>
+      <h2 id="mobile-handoff-title">Start your Orbit.</h2>
+      <p>Just your first name and email. We’ll send the rest to your computer.</p>
       <form id="mobile-handoff-form" novalidate>
+        <label class="mobile-handoff-field" for="mobile-handoff-first-name"><span>First name</span><input id="mobile-handoff-first-name" type="text" autocomplete="given-name" placeholder="Future" maxlength="80" required></label>
         <label class="mobile-handoff-field" for="mobile-handoff-email"><span>Email</span><input id="mobile-handoff-email" type="email" inputmode="email" autocomplete="email" placeholder="you@email.com" maxlength="254" required></label>
-        <fieldset class="mobile-handoff-goals"><legend>Recruiting interest</legend>
-          <button type="button" data-mobile-goal="Investment Banking">Investment Banking</button>
-          <button type="button" data-mobile-goal="Asset Management">Asset Management</button>
-          <button type="button" data-mobile-goal="Private Equity">Private Equity</button>
-          <button type="button" data-mobile-goal="Consulting">Consulting</button>
-          <button type="button" data-mobile-goal="Tech">Tech</button>
-          <button type="button" data-mobile-goal="Other">Other</button>
-          <input id="mobile-handoff-goal" type="hidden" required>
-        </fieldset>
         <p class="mobile-handoff-error" id="mobile-handoff-error" role="alert" hidden></p>
         <button class="mobile-handoff-submit" id="mobile-handoff-submit" type="submit"><span>Send Orbit to my computer</span><b>→</b></button>
         <p class="mobile-handoff-fine">No .edu email required. No résumé upload on your phone.</p>
@@ -93,6 +85,6 @@ body:has([data-orbit-download][data-download-state="handoff"]) .mobile-desktop-r
 <div class="mobile-handoff-toast" id="mobile-handoff-toast" hidden role="status">Orbit is ready — check your inbox.</div>
 <div class="cursor-aura" aria-hidden="true"></div>
 
-<script src="home.js?v=mobile-handoff-20260930-1" defer></script>
+<script src="home.js?v=mobile-handoff-20260930-2" defer></script>
 </body>
 </html>
