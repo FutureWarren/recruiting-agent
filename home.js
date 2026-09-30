@@ -55,7 +55,7 @@ async function handoffPost(path,payload){
 function initMobileHandoff(){
  if(detectOS()!=='mobile')return;
  const wrap=document.getElementById('mobile-handoff'),form=document.getElementById('mobile-handoff-form');if(!wrap||!form)return;
- wrap.hidden=false;
+ wrap.hidden=false;wrap.classList.add('is-active');
  const source=handoffSource(),visitorId=handoffVisitor();
  void handoffPost('/api/handoff/event',{stage:'mobile_landing',source,visitorId}).catch(()=>{});
  let started=false;
