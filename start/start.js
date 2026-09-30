@@ -29,10 +29,19 @@ form.addEventListener('submit',async e=>{
   const data=await api('/api/handoff/start',{method:'POST',body:JSON.stringify({email:address,goal:target,detail:detail.value.trim(),visitorId,...attribution})});
   document.getElementById('goal-receipt').textContent=target+(detail.value.trim()?' · '+detail.value.trim():'');
   const link=document.getElementById('desktop-link');link.href=data.continueUrl;link.dataset.url=data.continueUrl;
-  const delivered=data.emailStatus==='sent';
-  document.getElementById('success-title').textContent=delivered?'Check your inbox.':'Your Orbit is ready.';
-  document.getElementById('success-copy').textContent=delivered?'We sent your desktop handoff to '+address+'. Open it when you are back at your computer.':'Your setup is saved. Send or save this link, then open it from your computer.';
-  document.getElementById('delivery-note').textContent=delivered?'No need to scan the QR code again.':'Automatic email delivery is not available right now, so this link is your handoff.';
+  const delivered=data.emailStatus==='delivered';
+  const accepted=data.emailStatus==='accepted'||data.emailStatus==='sent';
+  document.getElementById('success-title').textContent=delivered?'Check your inbox.':accepted?'Email is on its way.':'Your Orbit is ready.';
+  document.getElementById('success-copy').textContent=delivered
+   ?'Your desktop handoff was delivered to '+address+'. Open it when you are back at your computer.'
+   :accepted
+    ?'Your email provider accepted the handoff for '+address+'. Keep the desktop link below as a backup until it arrives.'
+    :'Your setup is saved. Use the desktop link below now — you do not need to wait for email.';
+  document.getElementById('delivery-note').textContent=delivered
+   ?'No need to scan the QR code again.'
+   :accepted
+    ?'The link below works immediately even while email delivery is still being confirmed.'
+    :'Automatic email delivery is unavailable right now, so this link is your handoff.';
   form.hidden=true;success.hidden=false;stepLabel.textContent='READY ON DESKTOP';
   history.replaceState(null,'',location.pathname+'?saved=1');
   try{localStorage.setItem('orbit_handoff_continue',data.continueUrl)}catch(_){}
