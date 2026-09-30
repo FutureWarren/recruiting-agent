@@ -7,7 +7,7 @@ try{
  const page=await ctx.newPage(),requests=[]
  await page.route('https://backend-production-2b40.up.railway.app/api/handoff/**',async route=>{
   const req=route.request();requests.push({url:req.url(),method:req.method(),body:req.postData()})
-  if(req.url().endsWith('/start'))return route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({continueUrl:server.base+'/continue/?token=abcdefghijklmnopqrstuvwxyz012345',emailStatus:'sent'})})
+  if(req.url().endsWith('/start'))return route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({continueUrl:server.base+'/continue/?token=abcdefghijklmnopqrstuvwx.abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQ',emailStatus:'sent'})})
   return route.fulfill({status:204,body:''})
  })
  await page.goto(server.base+'/start/?source=nyu_library&utm_campaign=launch')
@@ -29,7 +29,7 @@ try{
  const p=await desktop.newPage()
  await p.route('https://backend-production-2b40.up.railway.app/api/handoff/**',route=>route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({goal:'Asset Management',detail:'Public equities'})}))
  await p.route('https://api.github.com/**',route=>route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({assets:[{name:'Orbit-0.1.99-arm64.dmg',browser_download_url:'https://example.test/orbit.dmg'}]})}))
- await p.goto(server.base+'/continue/?token=abcdefghijklmnopqrstuvwxyz012345')
+ await p.goto(server.base+'/continue/?token=abcdefghijklmnopqrstuvwx.abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQ')
  await p.waitForSelector('#receipt:not([hidden])')
  assert.equal(await p.locator('#goal').textContent(),'Asset Management')
  assert.equal(await p.locator('#detail').textContent(),'Public equities')
