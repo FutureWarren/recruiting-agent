@@ -16,7 +16,6 @@ async function initDownload(){
    const secondary=document.querySelector('.hero-copy .btn-secondary');secondary.href='#demo';secondary.textContent='Watch Orbit work';secondary.setAttribute('data-watch-demo','');
    meta.textContent='20-second phone setup · '+allowance+' · continue on desktop later';return;
   }
- }
  if(os!=='mac'){disable('Orbit for Apple Silicon Mac','Orbit currently supports Apple Silicon Mac only'+(os==='win'?'. Windows is not available yet.':''));return}
  const arch=await detectArch();
  if(arch==='x64'){disable('Orbit requires Apple Silicon','Orbit currently supports Apple Silicon Mac only');return}
