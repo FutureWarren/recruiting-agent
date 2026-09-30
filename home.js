@@ -11,11 +11,11 @@ async function initDownload(){
  const label=(b,text,navText)=>{b.textContent=b.id==='nav-download'?(navText||text):text};
  const disable=(text,message)=>{buttons.forEach(b=>{b.removeAttribute('href');b.setAttribute('aria-disabled','true');b.dataset.downloadState='unsupported';label(b,text,'Mac only');b.setAttribute('aria-label',message)});meta.textContent=message};
  buttons.forEach(b=>{b.dataset.downloadState='loading'});
- if(os==='mobile'){
-  const start=mobileStartUrl();
-  buttons.forEach(b=>{b.href=start;b.removeAttribute('aria-disabled');b.dataset.downloadState='handoff';label(b,'Start on your phone →','Start');b.setAttribute('aria-label','Start Orbit on your phone and continue on desktop')});
-  const secondary=document.querySelector('.hero-copy .btn-secondary');secondary.href='#demo';secondary.textContent='Watch Orbit work';secondary.setAttribute('data-watch-demo','');
-  meta.textContent='20-second phone setup · '+allowance+' · continue on desktop later';return;
+  if(os==='mobile'){
+   buttons.forEach(b=>{b.href='#mobile-handoff-modal';b.removeAttribute('aria-disabled');b.dataset.downloadState='handoff';label(b,'Get Orbit →','Get Orbit');b.setAttribute('aria-label','Set up Orbit now and continue on desktop')});
+   const secondary=document.querySelector('.hero-copy .btn-secondary');secondary.href='#demo';secondary.textContent='Watch Orbit work';secondary.setAttribute('data-watch-demo','');
+   meta.textContent='20-second phone setup · '+allowance+' · continue on desktop later';return;
+  }
  }
  if(os!=='mac'){disable('Orbit for Apple Silicon Mac','Orbit currently supports Apple Silicon Mac only'+(os==='win'?'. Windows is not available yet.':''));return}
  const arch=await detectArch();
