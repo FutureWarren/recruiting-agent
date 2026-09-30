@@ -4,7 +4,7 @@
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#f5f5f0"><meta name="robots" content="index,follow">
 <title>Start Orbit — 20 seconds now, continue on desktop</title>
-<meta name="description" content="Tell Orbit what you're recruiting for. We'll save your setup and hand it off to your computer.">
+<meta name="description" content="Start Orbit with your first name and email, then continue on your computer.">
 <link rel="canonical" href="https://orbit-reaches.com/start/">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='21' fill='none' stroke='%2317171c' stroke-width='6'/%3E%3Ccircle cx='32' cy='10' r='7' fill='%235c5cf2'/%3E%3C/svg%3E">
 <link rel="stylesheet" href="start.css?v=handoff-20260929">
@@ -15,8 +15,8 @@
 <main class="shell">
   <section class="intro">
     <div class="eyebrow"><span></span>Start on your phone</div>
-    <h1>Tell Orbit where<br>you want to go.</h1>
-    <p>Two quick details now. We’ll keep your place and hand everything off to your computer.</p>
+    <h1>Start here.<br>Orbit takes it from there.</h1>
+    <p>Your first name and email. That’s it — we’ll hand everything off to your computer.</p>
     <div class="handoff-line" aria-hidden="true"><span class="device phone">▯</span><i></i><span class="pulse-dot"></span><i></i><span class="device laptop">⌁</span></div>
     <div class="promise"><span>01</span><div><b>No résumé on your phone.</b><small>Upload it later from your computer.</small></div></div>
     <div class="promise"><span>02</span><div><b>No password to invent.</b><small>Orbit keeps its normal Google sign-in on desktop.</small></div></div>
@@ -27,26 +27,14 @@
       <div class="card-top"><span>ORBIT / HANDOFF</span><span id="step-label">READY</span></div>
       <form id="handoff-form" novalidate>
         <div class="field">
+          <label for="first-name">What should Orbit call you?</label>
+          <input id="first-name" name="firstName" type="text" autocomplete="given-name" placeholder="Future" maxlength="80" required>
+        </div>
+        <div class="field">
           <label for="email">Where should we send your Orbit?</label>
           <input id="email" name="email" type="email" inputmode="email" autocomplete="email" placeholder="you@email.com" maxlength="254" required>
           <div class="field-hint">Any email works — school, Gmail, Outlook, anything you use.</div>
         </div>
-        <fieldset class="field">
-          <legend>What are you recruiting for?</legend>
-          <div class="goal-grid" id="goal-grid">
-            <button type="button" data-goal="Investment Banking">Investment Banking</button>
-            <button type="button" data-goal="Asset Management">Asset Management</button>
-            <button type="button" data-goal="Private Equity">Private Equity</button>
-            <button type="button" data-goal="Consulting">Consulting</button>
-            <button type="button" data-goal="Tech">Tech</button>
-            <button type="button" data-goal="Other">Other</button>
-          </div>
-          <input id="goal" name="goal" type="hidden" required>
-        </fieldset>
-        <details class="optional">
-          <summary>Add one detail <span>optional</span></summary>
-          <textarea id="detail" name="detail" maxlength="500" rows="3" placeholder="e.g. NYC investment banking internships, alumni preferred"></textarea>
-        </details>
         <div class="error" id="form-error" role="alert" hidden></div>
         <button class="submit" id="submit" type="submit"><span>Get Orbit</span><b aria-hidden="true">→</b></button>
         <p class="fine">By continuing, you agree to Orbit’s <a href="/terms/">Terms</a> and acknowledge the <a href="/privacy/">Privacy Policy</a>.</p>
@@ -57,7 +45,7 @@
         <div class="success-kicker">YOUR PLACE IS SAVED</div>
         <h2 id="success-title">Your Orbit is ready.</h2>
         <p id="success-copy">Open the link we sent when you’re back at your computer.</p>
-        <div class="goal-receipt"><small>RECRUITING FOR</small><strong id="goal-receipt"></strong></div>
+        <div class="goal-receipt"><small>WELCOME TO ORBIT</small><strong id="name-receipt"></strong></div>
         <a class="desktop-link" id="desktop-link" href="#"><span>Continue on this device</span><b>↗</b></a>
         <button class="share" id="share-link" type="button">Send / save desktop link</button>
         <button class="restart" id="restart" type="button">Change my setup</button>
@@ -67,6 +55,6 @@
     <div class="privacy-note"><span>●</span> We use this only to save your Orbit setup, deliver the handoff, and measure where the setup flow breaks.</div>
   </section>
 </main>
-<script src="start.js?v=handoff-20260929" defer></script>
+<script src="start.js?v=handoff-20260930-name" defer></script>
 </body>
 </html>

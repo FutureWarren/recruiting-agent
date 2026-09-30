@@ -1,6 +1,6 @@
 'use strict';
 const API='https://backend-production-2b40.up.railway.app';
-const form=document.getElementById('handoff-form'),email=document.getElementById('email'),goal=document.getElementById('goal'),detail=document.getElementById('detail');
+const form=document.getElementById('handoff-form'),firstName=document.getElementById('first-name'),email=document.getElementById('email');
 const errorBox=document.getElementById('form-error'),submit=document.getElementById('submit'),success=document.getElementById('success'),stepLabel=document.getElementById('step-label');
 const sourceParams=['source','utm_source','utm_medium','utm_campaign','utm_content'];
 const query=new URLSearchParams(location.search);
@@ -14,20 +14,17 @@ function api(path,options={}){return fetch(API+path,{...options,headers:{'conten
 function event(stage,token=''){void api('/api/handoff/event',{method:'POST',body:JSON.stringify({visitorId,stage,token,...attribution})}).catch(()=>{})}
 event('landing');
 function markStarted(){if(started)return;started=true;stepLabel.textContent='IN PROGRESS';event('started')}
+firstName.addEventListener('focus',markStarted);
 email.addEventListener('focus',markStarted);
-document.getElementById('goal-grid').addEventListener('click',e=>{
- const b=e.target.closest('[data-goal]');if(!b)return;markStarted();goal.value=b.dataset.goal;document.querySelectorAll('[data-goal]').forEach(x=>x.classList.toggle('active',x===b));b.animate?.([{transform:'scale(.97)'},{transform:'scale(1)'}],{duration:180,easing:'ease-out'})
-});
-detail.addEventListener('focus',markStarted);
 form.addEventListener('submit',async e=>{
  e.preventDefault();errorBox.hidden=true;
- const address=email.value.trim(),target=goal.value.trim();
+ const name=firstName.value.trim(),address=email.value.trim();
+ if(!name){errorBox.textContent='Enter your first name.';errorBox.hidden=false;firstName.focus();return}
  if(!/^\S+@\S+\.\S+$/.test(address)){errorBox.textContent='Enter a valid email so we can hand Orbit back to you.';errorBox.hidden=false;email.focus();return}
- if(!target){errorBox.textContent='Pick what you are recruiting for.';errorBox.hidden=false;return}
  submit.disabled=true;submit.classList.add('loading');submit.querySelector('span').textContent='Saving your Orbit…';stepLabel.textContent='SAVING';
  try{
-  const data=await api('/api/handoff/start',{method:'POST',body:JSON.stringify({email:address,goal:target,detail:detail.value.trim(),visitorId,...attribution})});
-  document.getElementById('goal-receipt').textContent=target+(detail.value.trim()?' · '+detail.value.trim():'');
+  const data=await api('/api/handoff/start',{method:'POST',body:JSON.stringify({firstName:name,email:address,visitorId,...attribution})});
+  document.getElementById('name-receipt').textContent=name;
   const link=document.getElementById('desktop-link');link.href=data.continueUrl;link.dataset.url=data.continueUrl;
   const delivered=data.emailStatus==='delivered';
   const accepted=data.emailStatus==='accepted'||data.emailStatus==='sent';
@@ -53,4 +50,4 @@ document.getElementById('share-link').addEventListener('click',async()=>{
  const url=document.getElementById('desktop-link').dataset.url;if(!url)return;
  try{if(navigator.share){await navigator.share({title:'My Orbit setup',text:'Continue setting up Orbit on my computer',url});return}await navigator.clipboard.writeText(url);document.getElementById('share-link').textContent='Desktop link copied ✓'}catch(_){}
 });
-document.getElementById('restart').addEventListener('click',()=>{success.hidden=true;form.hidden=false;stepLabel.textContent='IN PROGRESS';email.focus()});
+document.getElementById('restart').addEventListener('click',()=>{success.hidden=true;form.hidden=false;stepLabel.textContent='IN PROGRESS';firstName.focus()});
