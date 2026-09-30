@@ -20,6 +20,12 @@ body:has([data-orbit-download][data-download-state="demo"]) .mobile-desktop-remi
 /* Visible on small/touch screens even before JavaScript has initialized. */
 @media(max-width:899px),(hover:none) and (pointer:coarse){.hero-copy .mobile-desktop-reminder{display:flex}}
 </style>
+<noscript id="no-js-mobile-fallback"><style>
+@media(max-width:899px),(hover:none) and (pointer:coarse){
+  .hero-copy .mobile-desktop-reminder{display:flex!important}
+  .mobile-handoff{display:none!important}
+}
+</style></noscript>
 </head>
 
 <body>
