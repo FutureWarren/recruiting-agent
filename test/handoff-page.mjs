@@ -20,7 +20,7 @@ try{
  await page.click('#mobile-handoff-submit')
  await page.waitForSelector('#mobile-handoff-success:not([hidden])')
  assert.match(await page.locator('#mobile-handoff-success-title').textContent(),/You’re in/)
- await page.waitForSelector('#mobile-handoff-modal[hidden]',{timeout:4000})
+ await page.waitForFunction(()=>document.getElementById('mobile-handoff-modal')?.hidden===true,{timeout:4000})
  const start=requests.find(r=>r.url.endsWith('/start'))
  assert.ok(start,'handoff start request missing')
  const body=JSON.parse(start.body)
