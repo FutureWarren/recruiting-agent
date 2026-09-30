@@ -49,7 +49,7 @@ section{padding:94px 0}.section-head{display:flex;justify-content:space-between;
 
 /* Mobile handoff capture */
 .mobile-handoff{display:none;position:relative;margin:20px 0 8px;border:1px solid rgba(92,92,242,.22);border-radius:24px;background:linear-gradient(145deg,rgba(255,255,255,.96),rgba(238,238,255,.82));overflow:hidden;box-shadow:0 24px 70px -32px rgba(42,38,112,.35)}
-.mobile-handoff[hidden]{display:none!important}.mobile-desktop-reminder{display:none!important}
+.mobile-handoff[hidden]{display:none!important}.mobile-handoff.is-active{display:block}.mobile-desktop-reminder{display:none!important}
 .mh-visual{position:relative;height:168px;overflow:hidden;border-bottom:1px solid rgba(92,92,242,.12);background:radial-gradient(circle at 50% 48%,rgba(92,92,242,.16),transparent 36%),linear-gradient(180deg,#f7f7ff,#f1f1fb)}
 .mh-halo{position:absolute;width:270px;height:270px;border:1px solid rgba(92,92,242,.11);border-radius:50%;left:50%;top:50%;transform:translate(-50%,-50%);box-shadow:0 0 0 34px rgba(92,92,242,.035),0 0 0 72px rgba(92,92,242,.02)}
 .mh-orbit{position:absolute;width:104px;height:104px;left:50%;top:47%;transform:translate(-50%,-50%)}.mh-ring{position:absolute;inset:12px;border:7px solid var(--ink);border-radius:50%;box-shadow:0 15px 35px rgba(20,20,35,.1)}.mh-satellite{position:absolute;width:17px;height:17px;left:calc(50% - 8px);top:0;border-radius:50%;background:var(--purple);box-shadow:0 0 0 7px rgba(92,92,242,.1);transform-origin:8px 52px;animation:mh-spin 5.8s linear infinite}.mh-core{position:absolute;inset:0;display:grid;place-items:center;font-size:12px;font-weight:750}
