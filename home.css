@@ -46,3 +46,32 @@ section{padding:94px 0}.section-head{display:flex;justify-content:space-between;
 .nav-download[aria-disabled=true]{opacity:.6;cursor:default}
 @media(min-width:761px) and (max-height:800px){.hero{padding:20px 0}.hero-canvas{height:365px}.hero h1{font-size:clamp(46px,4.8vw,66px);margin:15px 0 18px}.hero-note{margin-top:13px}}
 @media(max-width:760px){.hero-fold{min-height:0}.hero-fold>.shell{display:block}.hero{padding:32px 0 23px;gap:20px}.hero-canvas{height:320px}.hero-companies{padding:13px 0 12px}.hero-companies .company-head>div:first-child{display:block}.hero-companies .company-head p{margin-top:3px;font-size:10px}.hero-companies .company-set{padding-block:15px;gap:34px}.hero-companies .company-note{font-size:8px}.demo-section{padding:42px 0 55px}.demo-showcase .demo-copy{margin-bottom:23px}.demo-showcase .demo-copy p{font-size:13px}.demo-showcase .video-top,.demo-showcase .video-caption{padding:10px 12px;font-size:9px}.demo-showcase .video-frame{border-radius:12px}}
+
+/* Auto mobile handoff modal */
+body.handoff-modal-open{overflow:hidden}
+.mobile-handoff-modal{position:fixed;inset:0;z-index:1000;display:grid;place-items:center;padding:18px;opacity:0;pointer-events:none;transition:opacity .22s ease}
+.mobile-handoff-modal[hidden]{display:none!important}.mobile-handoff-modal.is-open{opacity:1;pointer-events:auto}
+.mobile-handoff-backdrop{position:absolute;inset:0;background:rgba(19,19,25,.34);backdrop-filter:blur(10px)}
+.mobile-handoff-dialog{position:relative;width:min(100%,430px);max-height:min(760px,calc(100svh - 28px));overflow:auto;border:1px solid rgba(23,23,28,.12);border-radius:24px;background:rgba(250,250,247,.96);box-shadow:0 34px 100px -38px rgba(20,20,30,.52);padding:24px 20px 21px;transform:translateY(16px) scale(.985);transition:transform .28s cubic-bezier(.22,1,.36,1)}
+.mobile-handoff-modal.is-open .mobile-handoff-dialog{transform:none}
+.mobile-handoff-close{position:absolute;right:14px;top:12px;width:34px;height:34px;border:1px solid rgba(23,23,28,.09);border-radius:50%;background:rgba(255,255,255,.7);color:#777780;font-size:22px;line-height:1;cursor:pointer}
+.mobile-handoff-kicker{font:700 9px ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.13em;color:var(--purple);text-transform:uppercase;margin-bottom:10px}
+.mobile-handoff-dialog h2{font-size:32px;line-height:1.04;letter-spacing:-.045em;margin:0 42px 9px 0;font-weight:630}
+.mobile-handoff-dialog>div>p{font-size:13px;line-height:1.6;color:var(--muted);margin:0 0 20px}
+.mobile-handoff-field{display:grid;gap:7px;margin-top:18px}.mobile-handoff-field span,.mobile-handoff-goals legend{font-size:11px;font-weight:680;color:#56565f}
+.mobile-handoff-field input{width:100%;height:50px;border:1px solid var(--line);border-radius:12px;background:#fff;padding:0 14px;font-size:16px;outline:none}
+.mobile-handoff-field input:focus{border-color:rgba(92,92,242,.58);box-shadow:0 0 0 4px rgba(92,92,242,.08)}
+.mobile-handoff-goals{border:0;margin:18px 0 0;padding:0;display:grid;grid-template-columns:1fr 1fr;gap:8px}.mobile-handoff-goals legend{grid-column:1/-1;margin-bottom:1px}
+.mobile-handoff-goals button{border:1px solid var(--line);border-radius:11px;background:rgba(255,255,255,.78);padding:11px 10px;text-align:left;font-size:11px;color:#54545e;cursor:pointer;transition:.16s}
+.mobile-handoff-goals button.active{border-color:rgba(92,92,242,.55);background:#eeeeff;color:#4242c5;box-shadow:inset 0 0 0 1px rgba(92,92,242,.07)}
+.mobile-handoff-submit{width:100%;border:0;border-radius:12px;background:var(--ink);color:#fff;margin-top:18px;min-height:50px;padding:0 15px;display:flex;align-items:center;justify-content:space-between;font-size:12px;font-weight:700;cursor:pointer}
+.mobile-handoff-submit:disabled{opacity:.58;cursor:wait}.mobile-handoff-submit.loading b{animation:handoff-nudge .8s ease-in-out infinite}
+.mobile-handoff-fine{font-size:9px!important;color:#9898a0!important;text-align:center;margin:9px 10px 0!important}.mobile-handoff-error{font-size:11px!important;color:#a43f3f!important;background:#fff1f1;border:1px solid #efd6d6;border-radius:9px;padding:9px 10px;margin:12px 0 0!important}
+.mobile-handoff-success{text-align:center;padding:27px 8px 17px;animation:handoff-enter .4s cubic-bezier(.22,1,.36,1) both}.mobile-handoff-check{width:72px;height:72px;border-radius:50%;display:grid;place-items:center;margin:0 auto 18px;background:#ededff;color:#4b4bd2;font-size:30px;box-shadow:0 0 0 10px rgba(92,92,242,.055);animation:handoff-pop .45s cubic-bezier(.22,1.4,.36,1)}
+.mobile-handoff-success h2{margin:6px 0 8px;font-size:35px}.mobile-handoff-success p{font-size:13px;line-height:1.6;color:var(--muted);margin:0 auto;max-width:310px}
+.mobile-handoff-copy{margin-top:18px;border:1px solid var(--line);border-radius:11px;background:#fff;color:var(--ink);padding:12px 15px;font-size:11px;cursor:pointer}
+.mobile-handoff-toast{position:fixed;left:50%;bottom:22px;z-index:1001;transform:translate(-50%,14px);opacity:0;background:#17171c;color:#fff;border-radius:999px;padding:11px 15px;font-size:11px;box-shadow:0 18px 40px -18px rgba(0,0,0,.45);transition:.22s}.mobile-handoff-toast.is-visible{transform:translate(-50%,0);opacity:1}
+@keyframes handoff-enter{from{opacity:0;transform:translateY(8px)}}@keyframes handoff-pop{from{transform:scale(.7);opacity:0}}@keyframes handoff-nudge{50%{transform:translateX(4px)}}
+@media(min-width:900px) and (hover:hover) and (pointer:fine){.mobile-handoff-modal{display:none!important}}
+@media(max-width:390px){.mobile-handoff-dialog{padding-inline:16px;border-radius:20px}.mobile-handoff-goals button{font-size:10px;padding:10px 8px}}
+@media(prefers-reduced-motion:reduce){.mobile-handoff-modal,.mobile-handoff-dialog,.mobile-handoff-success,.mobile-handoff-check,.mobile-handoff-toast,.mobile-handoff-submit.loading b{transition:none!important;animation:none!important}}
