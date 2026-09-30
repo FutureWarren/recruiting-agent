@@ -11,12 +11,11 @@ async function initDownload(){
  const label=(b,text,navText)=>{b.textContent=b.id==='nav-download'?(navText||text):text};
  const disable=(text,message)=>{buttons.forEach(b=>{b.removeAttribute('href');b.setAttribute('aria-disabled','true');b.dataset.downloadState='unsupported';label(b,text,'Mac only');b.setAttribute('aria-label',message)});meta.textContent=message};
  buttons.forEach(b=>{b.dataset.downloadState='loading'});
- if(os==='mobile'){
-  const start=mobileStartUrl();
-  buttons.forEach(b=>{b.href=start;b.removeAttribute('aria-disabled');b.dataset.downloadState='handoff';label(b,'Start on your phone →','Start');b.setAttribute('aria-label','Start Orbit on your phone and continue on desktop')});
-  const secondary=document.querySelector('.hero-copy .btn-secondary');secondary.href='#demo';secondary.textContent='Watch Orbit work';secondary.setAttribute('data-watch-demo','');
-  meta.textContent='20-second phone setup · '+allowance+' · continue on desktop later';return;
- }
+  if(os==='mobile'){
+   buttons.forEach(b=>{b.href='#mobile-handoff-modal';b.removeAttribute('aria-disabled');b.dataset.downloadState='handoff';label(b,'Get Orbit →','Get Orbit');b.setAttribute('aria-label','Set up Orbit now and continue on desktop')});
+   const secondary=document.querySelector('.hero-copy .btn-secondary');secondary.href='#demo';secondary.textContent='Watch Orbit work';secondary.setAttribute('data-watch-demo','');
+   meta.textContent='20-second phone setup · '+allowance+' · continue on desktop later';return;
+  }
  if(os!=='mac'){disable('Orbit for Apple Silicon Mac','Orbit currently supports Apple Silicon Mac only'+(os==='win'?'. Windows is not available yet.':''));return}
  const arch=await detectArch();
  if(arch==='x64'){disable('Orbit requires Apple Silicon','Orbit currently supports Apple Silicon Mac only');return}
@@ -34,7 +33,86 @@ async function initDownload(){
   meta.textContent='Apple Silicon Mac · '+allowance+' · open releases to choose the latest Mac installer';
  }finally{clearTimeout(timer)}
 }
+
+const HANDOFF_API='https://backend-production-2b40.up.railway.app';
+function handoffAttribution(){
+ const q=new URLSearchParams(location.search),keys=['source','utm_source','utm_medium','utm_campaign','utm_content'],out={};
+ for(const k of keys)out[k]=(q.get(k)||'').slice(0,120);
+ if(!out.source)out.source='website_mobile';
+ return out;
+}
+function handoffVisitor(){
+ const key='orbit_handoff_visitor_v1';
+ try{let id=sessionStorage.getItem(key)||'';if(!id){id=crypto.randomUUID();sessionStorage.setItem(key,id)}return id}catch(_){return'v_'+Math.random().toString(36).slice(2)+Date.now().toString(36)}
+}
+async function handoffApi(path,payload){
+ const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),8000);
+ try{
+  const r=await fetch(HANDOFF_API+path,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(payload),signal:controller.signal});
+  const body=await r.json().catch(()=>({}));
+  if(!r.ok)throw new Error(body.error||'Orbit could not save this yet.');
+  return body;
+ }finally{clearTimeout(timer)}
+}
+function initMobileHandoffModal(){
+ if(detectOS()!=='mobile')return;
+ const modal=document.getElementById('mobile-handoff-modal'),form=document.getElementById('mobile-handoff-form');
+ if(!modal||!form)return;
+ const email=document.getElementById('mobile-handoff-email'),goal=document.getElementById('mobile-handoff-goal'),error=document.getElementById('mobile-handoff-error'),submit=document.getElementById('mobile-handoff-submit'),success=document.getElementById('mobile-handoff-success'),formState=document.getElementById('mobile-handoff-form-state'),copy=document.getElementById('mobile-handoff-copy'),toast=document.getElementById('mobile-handoff-toast');
+ const attribution=handoffAttribution(),visitorId=handoffVisitor();
+ let continueUrl='',started=false,closeTimer=0;
+ const markerKey='orbit_handoff_captured_v1',dismissKey='orbit_handoff_dismissed_v1';
+ const markStarted=()=>{if(started)return;started=true;void handoffApi('/api/handoff/event',{visitorId,stage:'started',...attribution}).catch(()=>{})};
+ const openModal=()=>{
+  if(closeTimer)clearTimeout(closeTimer);
+  modal.hidden=false;modal.setAttribute('aria-hidden','false');document.body.classList.add('handoff-modal-open');
+  requestAnimationFrame(()=>{modal.classList.add('is-open');setTimeout(()=>email.focus({preventScroll:true}),180)});
+ };
+ const closeModal=()=>{
+  modal.classList.remove('is-open');document.body.classList.remove('handoff-modal-open');
+  setTimeout(()=>{modal.hidden=true;modal.setAttribute('aria-hidden','true')},220);
+ };
+ document.querySelectorAll('[data-orbit-download]').forEach(button=>button.addEventListener('click',e=>{
+  if(button.dataset.downloadState!=='handoff')return;
+  e.preventDefault();openModal();
+ }));
+ document.querySelectorAll('[data-handoff-close]').forEach(button=>button.addEventListener('click',()=>{try{sessionStorage.setItem(dismissKey,'1')}catch(_){}closeModal()}));
+ document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!modal.hidden)closeModal()});
+ email.addEventListener('focus',markStarted);
+ document.querySelectorAll('[data-mobile-goal]').forEach(button=>button.addEventListener('click',()=>{
+  markStarted();goal.value=button.dataset.mobileGoal||'';
+  document.querySelectorAll('[data-mobile-goal]').forEach(x=>x.classList.toggle('active',x===button));
+ }));
+ form.addEventListener('submit',async e=>{
+  e.preventDefault();error.hidden=true;
+  const address=email.value.trim(),target=goal.value.trim();
+  if(!/^\S+@\S+\.\S+$/.test(address)){error.textContent='Enter a valid email.';error.hidden=false;email.focus();return}
+  if(!target){error.textContent='Pick what you’re recruiting for.';error.hidden=false;return}
+  submit.disabled=true;submit.classList.add('loading');submit.querySelector('span').textContent='Saving your Orbit…';
+  try{
+   const data=await handoffApi('/api/handoff/start',{email:address,goal:target,detail:'',visitorId,...attribution});
+   continueUrl=data.continueUrl||'';try{localStorage.setItem('orbit_handoff_continue',continueUrl)}catch(_){}
+   formState.hidden=true;success.hidden=false;
+   const delivered=data.emailStatus==='sent';
+   document.getElementById('mobile-handoff-success-title').textContent=delivered?'You’re in.':'Your Orbit is saved.';
+   document.getElementById('mobile-handoff-success-copy').textContent=delivered?'We sent your desktop link to '+address+'.':'Email delivery is unavailable right now. Copy the desktop link below.';
+   copy.hidden=delivered||!continueUrl;
+   if(delivered){
+    try{localStorage.setItem(markerKey,String(Date.now()))}catch(_){}
+    closeTimer=setTimeout(()=>{closeModal();toast.hidden=false;toast.classList.add('is-visible');setTimeout(()=>{toast.classList.remove('is-visible');setTimeout(()=>{toast.hidden=true},220)},2800)},1350);
+   }
+  }catch(err){error.textContent=err.message||'Orbit could not save this yet.';error.hidden=false}
+  finally{submit.disabled=false;submit.classList.remove('loading');submit.querySelector('span').textContent='Send Orbit to my computer'}
+ });
+ copy.addEventListener('click',async()=>{if(!continueUrl)return;try{await navigator.clipboard.writeText(continueUrl);copy.textContent='Desktop link copied ✓'}catch(_){}});
+ void handoffApi('/api/handoff/event',{visitorId,stage:'landing',...attribution}).catch(()=>{});
+ let completed=false,dismissed=false;
+ try{completed=Boolean(localStorage.getItem(markerKey));dismissed=sessionStorage.getItem(dismissKey)==='1'}catch(_){}
+ if(!completed&&!dismissed)setTimeout(openModal,180);
+}
+
 const downloadReady=initDownload();
+initMobileHandoffModal();
 document.querySelectorAll('[data-orbit-download]').forEach(button=>button.addEventListener('click',async event=>{
  if(button.getAttribute('aria-disabled')==='true'){event.preventDefault();return}
  if(button.dataset.downloadState!=='loading')return;
