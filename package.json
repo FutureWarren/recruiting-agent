@@ -3,7 +3,7 @@
   "private": true,
   "description": "Orbit public website with tested download and whole-page motion behavior.",
   "scripts": {
-    "test": "node test/download-page.mjs && node test/hero-quality.mjs && node test/scroll-legibility.mjs",
+    "test": "node test/download-page.mjs && node test/handoff-page.mjs && node test/hero-quality.mjs && node test/scroll-legibility.mjs",
     "test:live": "node test/download-page.mjs --live",
     "test:commercial": "node --test test/pricing-parity.test.mjs && node test/commercial-pages.mjs",
     "test:hero": "node test/hero-quality.mjs && node test/scroll-legibility.mjs"
