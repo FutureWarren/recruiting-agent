@@ -10,7 +10,7 @@ async function installer(){
 }
 function fail(message){document.body.classList.add('error');$('eyebrow').textContent='HANDOFF UNAVAILABLE';$('title').textContent='This link needs a refresh.';$('copy').textContent=message;$('status').textContent='You can start again from the Orbit website.'}
 (async()=>{
- if(!/^[A-Za-z0-9_-]{24,200}$/.test(token)){fail('The desktop handoff token is missing or invalid.');return}
+ if(!/^[A-Za-z0-9_-]{20,40}\\.[A-Za-z0-9_-]{40,60}$/.test(token)){fail('The desktop handoff token is missing or invalid.');return}
  try{
   const data=await api('/api/handoff/'+encodeURIComponent(token));
   $('title').textContent='Welcome back.';
