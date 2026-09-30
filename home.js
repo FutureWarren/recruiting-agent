@@ -93,10 +93,15 @@ function initMobileHandoffModal(){
    const data=await handoffApi('/api/handoff/start',{email:address,goal:target,detail:'',visitorId,...attribution});
    continueUrl=data.continueUrl||'';try{localStorage.setItem('orbit_handoff_continue',continueUrl)}catch(_){}
    formState.hidden=true;success.hidden=false;
-   const delivered=data.emailStatus==='sent';
-   document.getElementById('mobile-handoff-success-title').textContent=delivered?'You’re in.':'Your Orbit is saved.';
-   document.getElementById('mobile-handoff-success-copy').textContent=delivered?'We sent your desktop link to '+address+'.':'Email delivery is unavailable right now. Copy the desktop link below.';
-   copy.hidden=delivered||!continueUrl;
+   const delivered=data.emailStatus==='delivered';
+   const accepted=data.emailStatus==='accepted'||data.emailStatus==='sent';
+   document.getElementById('mobile-handoff-success-title').textContent=delivered?'You’re in.':accepted?'Email is on its way.':'Your Orbit is saved.';
+   document.getElementById('mobile-handoff-success-copy').textContent=delivered
+    ?'Your desktop link was delivered to '+address+'.'
+    :accepted
+     ?'Your email provider accepted the handoff for '+address+'. Keep the desktop link below as a backup until it arrives.'
+     :'Email delivery is unavailable right now. Use the desktop link below immediately.';
+   copy.hidden=!continueUrl;
    if(delivered){
     try{localStorage.setItem(markerKey,String(Date.now()))}catch(_){}
     closeTimer=setTimeout(()=>{closeModal();toast.hidden=false;toast.classList.add('is-visible');setTimeout(()=>{toast.classList.remove('is-visible');setTimeout(()=>{toast.hidden=true},220)},2800)},1350);

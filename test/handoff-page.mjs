@@ -7,7 +7,7 @@ try{
  const page=await ctx.newPage(),requests=[]
  await page.route('https://backend-production-2b40.up.railway.app/api/handoff/**',async route=>{
   const req=route.request();requests.push({url:req.url(),method:req.method(),body:req.postData()})
-  if(req.url().endsWith('/start'))return route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({continueUrl:server.base+'/continue/?token=abcdefghijklmnopqrstuvwx.abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQ',emailStatus:'sent'})})
+  if(req.url().endsWith('/start'))return route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({continueUrl:server.base+'/continue/?token=abcdefghijklmnopqrstuvwx.abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQ',emailStatus:'delivered'})})
   return route.fulfill({status:204,body:''})
  })
  await page.goto(server.base+'/?source=nyu_library&utm_campaign=launch')
