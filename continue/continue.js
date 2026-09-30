@@ -12,7 +12,7 @@ function fail(message){document.body.classList.add('error');$('eyebrow').textCon
 (async()=>{
  if(!/^[A-Za-z0-9_-]{20,40}\.[A-Za-z0-9_-]{40,60}$/.test(token)){fail('The desktop handoff token is missing or invalid.');return}
  try{
-  const data=await api('/api/handoff/'+encodeURIComponent(token));
+  const data=await api('/api/handoff/resolve',{method:'POST',body:JSON.stringify({token})});
   $('title').textContent='Welcome back.';
   $('copy').textContent='Your phone setup made it here. Finish on your computer — no need to type the recruiting goal again.';
   $('goal').textContent=data.goal;$('detail').textContent=data.detail||'';$('detail').hidden=!data.detail;$('receipt').hidden=false;$('actions').hidden=false;
