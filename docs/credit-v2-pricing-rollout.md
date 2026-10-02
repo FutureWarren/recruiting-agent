@@ -8,6 +8,9 @@ The public contract is `pricing/credit-v2.json`. The static rendered cards, visi
 ## Publication blocker discovered September 28, 2026
 A read-only request to the production public account configuration at 05:52:56 UTC still returned allowances 30 / 200 / 600 / 3000 / 2000, while the intended V2 configuration is 300 / 2000 / 6000 / 30000 / 20000. Dollar prices matched. Public Stripe billing was enabled. Do not multiply the live values in the website to conceal this mismatch.
 
+## October 2, 2026 free-tier adjustment
+The Free plan allowance is now 100 Orbit Credits for new users. Paid plan allowances and the 2/3/5 Credit V2 metering weights are unchanged. Production must return 100 for `free` before the website publishes the same number.
+
 Keep this change in a DRAFT PR. Before publication, the failed backend migration/deployment must be repaired and the actual production configuration verified. Code merged into an application repository and a successfully signed desktop build do not prove the backend was upgraded.
 
 ## Release checks
