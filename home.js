@@ -7,7 +7,7 @@ async function detectArch(){try{const v=await navigator.userAgentData?.getHighEn
 // Every download CTA, including navigation, shares one resolution state.
 async function initDownload(){
  const buttons=[...document.querySelectorAll('[data-orbit-download]')];
- const meta=document.getElementById('dl-meta'),os=detectOS(),allowance='300 free Orbit Credits';
+ const meta=document.getElementById('dl-meta'),os=detectOS(),allowance='100 free Orbit Credits';
  const label=(b,text,navText)=>{b.textContent=b.id==='nav-download'?(navText||text):text};
  const disable=(text,message)=>{buttons.forEach(b=>{b.removeAttribute('href');b.setAttribute('aria-disabled','true');b.dataset.downloadState='unsupported';label(b,text,'Mac only');b.setAttribute('aria-label',message)});meta.textContent=message};
  buttons.forEach(b=>{b.dataset.downloadState='loading'});
