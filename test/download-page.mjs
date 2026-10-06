@@ -11,7 +11,7 @@ const release={tag_name:'v9.9.9',assets:[asset('Orbit-9.9.9-arm64.dmg','mac-arm6
 async function visit(ua,arch,data=release,touch=0,status=200,downloadClick=false,delay=0,viewport){
  const context=await browser.newContext({userAgent:ua,acceptDownloads:true,...(viewport?{viewport}:{})});
  await context.addInitScript(({arch,touch})=>{Object.defineProperty(navigator,'maxTouchPoints',{configurable:true,get:()=>touch});if(arch)Object.defineProperty(navigator,'userAgentData',{configurable:true,get:()=>({platform:/Windows/.test(navigator.userAgent)?'Windows':'macOS',getHighEntropyValues:async()=>({architecture:arch})})})},{arch,touch});
- await context.route('**/api.github.com/**',async r=>{if(delay)await new Promise(resolve=>setTimeout(resolve,delay));await r.fulfill({status,contentType:'application/json',body:JSON.stringify(data)})});
+ await context.route('**/api.github.com/**',async r=>{if(delay)await new Promise(resolve=>setTimeout(resolve,delay));const payload=Array.isArray(data)?data:[data];await r.fulfill({status,contentType:'application/json',body:JSON.stringify(payload)})});
  await context.route('https://example.test/**',r=>r.fulfill({status:200,headers:{'content-type':'application/octet-stream','content-disposition':'attachment; filename="Orbit-test-arm64.dmg"'},body:'test-installer-fixture'}));
  const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));
  try{
@@ -43,8 +43,14 @@ try{
  const noJs=await browser.newContext({userAgent:UA.phone,viewport:{width:390,height:844},javaScriptEnabled:false});
  try{const page=await noJs.newPage();await page.goto(base,{waitUntil:'domcontentloaded'});assert.equal(await page.locator('#mobile-desktop-reminder').isVisible(),true,'The phone reminder must not depend on JavaScript');assert.match(await page.locator('#mobile-desktop-reminder').textContent(),/Continue on your computer.*no résumé upload/i)}finally{await noJs.close()}
  const mixed={tag_name:'v0.1.35',assets:[asset('Orbit-0.1.34-arm64.dmg','mac-old.dmg'),asset('Orbit-0.1.35-x64-Setup.exe','new-win.exe')]};const m=await visit(UA.mac,'arm',mixed);assert.deepEqual(m.links,Array(3).fill('https://example.test/mac-old.dmg'));assert.match(m.meta,/Version 0\.1\.34/);
- const historical={tag_name:'v0.1.19',assets:[asset('Recruiting-Agent-0.1.19-arm64.dmg','mac-arm64.dmg'),asset('Recruiting-Agent-Setup-0.1.19.exe','universal.exe')]};const oldWin=await visit(UA.win,'x86',historical);oldWin.links.forEach(h=>assert.match(h,/releases\/latest$/));assert.match(oldWin.meta,/Windows x64 beta/);
- for(const [data,status] of [[{tag_name:'v1.0.0',assets:[asset('Orbit-x64.dmg','wrong.dmg')]},200],[{},403]]){const s=await visit(UA.mac,'arm',data,0,status);s.links.forEach(h=>assert.match(h,/releases\/latest$/));assert.match(s.meta,/100 free Orbit Credits/)}
+ const historical={tag_name:'v0.1.19',assets:[asset('Recruiting-Agent-0.1.19-arm64.dmg','mac-arm64.dmg'),asset('Recruiting-Agent-Setup-0.1.19.exe','universal.exe')]};const oldWin=await visit(UA.win,'x86',historical);oldWin.links.forEach(h=>assert.match(h,/\/releases$/));assert.match(oldWin.meta,/Windows x64 beta/);
+ const split=[
+  {tag_name:'v0.1.95',assets:[asset('Orbit-0.1.95-arm64.dmg','mac-095.dmg')]},
+  {tag_name:'v0.1.93',assets:[asset('Orbit-0.1.93-x64-Setup.exe','win-093.exe')]}
+ ];
+ const splitWin=await visit(UA.win,'x86',split);assert.deepEqual(splitWin.links,Array(3).fill('https://example.test/win-093.exe'));assert.match(splitWin.meta,/Version 0\.1\.93/);
+ const splitMac=await visit(UA.mac,'arm',split);assert.deepEqual(splitMac.links,Array(3).fill('https://example.test/mac-095.dmg'));assert.match(splitMac.meta,/Version 0\.1\.95/);
+ for(const [data,status] of [[{tag_name:'v1.0.0',assets:[asset('Orbit-x64.dmg','wrong.dmg')]},200],[{},403]]){const s=await visit(UA.mac,'arm',data,0,status);s.links.forEach(h=>assert.match(h,/\/releases$/));assert.match(s.meta,/100 free Orbit Credits/)}
 
- console.log('PASS download: Mac + Windows x64 installers, Windows unsigned warning, unsupported ARM/Intel/Linux routing, phone/iPad handoff, API fallback, and tutorial removal.');
+ console.log('PASS download: platform-specific newest installers across split releases, Windows unsigned warning, unsupported ARM/Intel/Linux routing, phone/iPad handoff, API fallback, and tutorial removal.');
 }finally{await browser.close();await server?.close()}
