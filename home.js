@@ -22,13 +22,17 @@ async function initDownload(){
  if(os==='win'&&arch==='arm64'){disable('Orbit requires Windows x64','Orbit currently supports Windows x64, not Windows on ARM.');return}
  const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),5000);
  try{
-  const response=await fetch('https://api.github.com/repos/'+REPO+'/releases/latest',{signal:controller.signal});
-  if(!response.ok)throw Error('Release unavailable');const release=await response.json();
-  const assets=release.assets||[];
-  const asset=os==='win'
-   ? assets.find(a=>/-x64-Setup\.exe$/i.test(a.name||'')&&/^https:\/\//.test(a.browser_download_url||''))
-   : assets.find(a=>/arm64.*\.dmg$/i.test(a.name||'')&&/^https:\/\//.test(a.browser_download_url||''));
-  if(!asset)throw Error(os==='win'?'Windows x64 build unavailable':'Apple Silicon build unavailable');
+  const response=await fetch('https://api.github.com/repos/'+REPO+'/releases?per_page=10',{signal:controller.signal});
+  if(!response.ok)throw Error('Release unavailable');const releases=await response.json();
+  if(!Array.isArray(releases))throw Error('Release unavailable');
+  const matcher=os==='win'?/-x64-Setup\.exe$/i:/arm64.*\.dmg$/i;
+  let release=null,asset=null;
+  for(const candidate of releases){
+   if(candidate?.draft)continue;
+   const found=(candidate.assets||[]).find(a=>matcher.test(a.name||'')&&/^https:\/\//.test(a.browser_download_url||''));
+   if(found){release=candidate;asset=found;break}
+  }
+  if(!asset||!release)throw Error(os==='win'?'Windows x64 build unavailable':'Apple Silicon build unavailable');
   const v=asset.name.match(/\d+\.\d+\.\d+/)?.[0]||String(release.tag_name||'').replace(/^v/,'');
   if(os==='win'){
    buttons.forEach(b=>{b.href=asset.browser_download_url;b.removeAttribute('aria-disabled');b.dataset.downloadState='ready';label(b,'Download for Windows (x64) ↗','Get Orbit ↗');b.setAttribute('aria-label','Download Orbit for Windows x64 beta')});
@@ -38,7 +42,7 @@ async function initDownload(){
    meta.textContent='Version '+v+' · '+Math.round(asset.size/1048576)+' MB · Apple Silicon Mac · '+allowance+(arch?'':' · check your Mac chip');
   }
  }catch(_){
-  buttons.forEach(b=>{b.href='https://github.com/'+REPO+'/releases/latest';b.removeAttribute('aria-disabled');b.dataset.downloadState='fallback';label(b,os==='win'?'View Windows downloads ↗':'View Mac downloads ↗','Get Orbit ↗')});
+  buttons.forEach(b=>{b.href='https://github.com/'+REPO+'/releases';b.removeAttribute('aria-disabled');b.dataset.downloadState='fallback';label(b,os==='win'?'View Windows downloads ↗':'View Mac downloads ↗','Get Orbit ↗')});
   meta.textContent=(os==='win'?'Windows x64 beta · unsigned installer (SmartScreen may warn)':'Apple Silicon Mac')+' · '+allowance+' · open releases to choose the latest installer';
  }finally{clearTimeout(timer)}
 }
