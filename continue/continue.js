@@ -21,7 +21,19 @@ function fail(message){document.body.classList.add('error');$('eyebrow').textCon
   if(data.goal){$('goal').textContent=data.goal;$('detail').textContent=data.detail||'';$('detail').hidden=!data.detail;$('receipt').hidden=false}else{$('receipt').hidden=true}
   $('actions').hidden=false;
   const open='orbit://handoff?token='+encodeURIComponent(token);$('open-app').href=open;
-  const platform=os();
+  const platform=os(),download=$('download'),openApp=$('open-app'),actions=$('actions'),status=$('status');
+  const progressKey='orbit_handoff_download_started_v1:'+token.split('.')[0];
+  let downloadStarted=false;
+  const promoteOpenApp=()=>{
+    if(platform!=='mac'&&platform!=='win')return;
+    downloadStarted=true;
+    try{sessionStorage.setItem(progressKey,'1')}catch(_){}
+    openApp.classList.remove('secondary');openApp.classList.add('primary');
+    download.classList.remove('primary');download.classList.add('secondary');
+    openApp.innerHTML='Open Orbit and continue <b>→</b>';
+    if(actions.firstElementChild!==openApp)actions.prepend(openApp);
+    status.textContent='Finish installing Orbit, then open it here. Your saved setup will carry over automatically.';
+  };
   if(platform==='mac'){
     $('download').textContent='Finding the latest Mac build…';
     try{const url=await installer('mac');$('download').href=url;$('download').innerHTML='Download Orbit for Mac <b>↗</b>'}catch(_){$('download').href='https://github.com/'+REPO+'/releases/latest';$('download').innerHTML='View Mac downloads <b>↗</b>'}
@@ -34,7 +46,12 @@ function fail(message){document.body.classList.add('error');$('eyebrow').textCon
     $('download').href='/start/';$('download').innerHTML='Open this page on your computer <b>→</b>';
     $('status').textContent='This handoff is meant for a desktop computer. Your setup will stay available until the link expires.';
   }
-  $('download').addEventListener('click',()=>{void api('/api/handoff/event',{method:'POST',body:JSON.stringify({stage:'download_clicked',token})}).catch(()=>{})});
-  $('open-app').addEventListener('click',()=>{void api('/api/handoff/event',{method:'POST',body:JSON.stringify({stage:'open_app_clicked',token})}).catch(()=>{})});
+  try{if(sessionStorage.getItem(progressKey)==='1')promoteOpenApp()}catch(_){}
+  download.addEventListener('click',()=>{
+    void api('/api/handoff/event',{method:'POST',body:JSON.stringify({stage:'download_clicked',token})}).catch(()=>{});
+    promoteOpenApp();
+  });
+  openApp.addEventListener('click',()=>{void api('/api/handoff/event',{method:'POST',body:JSON.stringify({stage:'open_app_clicked',token})}).catch(()=>{})});
+  window.addEventListener('focus',()=>{if(downloadStarted)promoteOpenApp()});
  }catch(err){fail(err.message||'The link may have expired.')}
 })();
