@@ -47,11 +47,22 @@ function fail(message){document.body.classList.add('error');$('eyebrow').textCon
     try{const url=await installer('win');$('download').href=url;$('download').classList.remove('disabled');$('download').innerHTML='Download Orbit for Windows <b>↗</b>'}catch(_){$('download').href='https://github.com/'+REPO+'/releases';$('download').classList.remove('disabled');$('download').innerHTML='View Windows downloads <b>↗</b>'}
     $('status').textContent='Windows x64 beta is currently unsigned, so SmartScreen may show an Unknown Publisher warning. After installing, return here and open Orbit to continue your saved setup.';
   }else{
-    $('download').href='/start/';$('download').innerHTML='Open this page on your computer <b>→</b>';
-    $('status').textContent='This handoff is meant for a desktop computer. Your setup will stay available until the link expires.';
+    download.removeAttribute('href');download.innerHTML='Copy / share desktop link <b>↗</b>';
+    openApp.hidden=true;
+    status.textContent='Orbit is a Mac and Windows app. Open this same link on your computer to download and install it.';
+    download.addEventListener('click',async event=>{
+      event.preventDefault();
+      const link=location.href;
+      try{
+        if(navigator.share){await navigator.share({title:'Get Orbit on my computer',url:link});return}
+        await navigator.clipboard.writeText(link);
+        status.textContent='Link copied. Open it on your Mac or Windows computer.';
+      }catch(_){status.textContent='Could not share automatically. Copy the address from your browser and open it on your computer.'}
+    });
   }
   try{if(sessionStorage.getItem(progressKey)==='1')promoteOpenApp()}catch(_){}
   download.addEventListener('click',()=>{
+    if(platform!=='mac'&&platform!=='win')return;
     void api('/api/handoff/event',{method:'POST',body:JSON.stringify({stage:'download_clicked',token})}).catch(()=>{});
     promoteOpenApp();
   });
