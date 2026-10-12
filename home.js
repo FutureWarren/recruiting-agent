@@ -14,7 +14,7 @@ async function initDownload(){
  if(os==='mobile'){
   buttons.forEach(b=>{b.href='#mobile-handoff-modal';b.removeAttribute('aria-disabled');b.dataset.downloadState='handoff';label(b,'Get Orbit →','Get Orbit');b.setAttribute('aria-label','Set up Orbit now and continue on desktop')});
   const secondary=document.querySelector('.hero-copy .btn-secondary');secondary.href='#demo';secondary.textContent='Watch Orbit work';secondary.setAttribute('data-watch-demo','');
-  meta.textContent='20-second phone setup · '+allowance+' · continue on desktop later';return;
+  meta.textContent='One email · '+allowance+' · Mac + Windows desktop app';return;
  }
  if(os!=='mac'&&os!=='win'){disable('Orbit for Mac & Windows','Orbit currently supports Apple Silicon Mac and Windows x64 only.');return}
  const arch=await detectArch();
@@ -59,7 +59,7 @@ function handoffVisitor(){
  try{let id=sessionStorage.getItem(key)||'';if(!id){id=crypto.randomUUID();sessionStorage.setItem(key,id)}return id}catch(_){return'v_'+Math.random().toString(36).slice(2)+Date.now().toString(36)}
 }
 async function handoffApi(path,payload){
- const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),8000);
+ const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),35000);
  try{
   const r=await fetch(HANDOFF_API+path,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(payload),signal:controller.signal});
   const body=await r.json().catch(()=>({}));
@@ -71,15 +71,13 @@ function initMobileHandoffModal(){
  if(detectOS()!=='mobile')return;
  const modal=document.getElementById('mobile-handoff-modal'),form=document.getElementById('mobile-handoff-form');
  if(!modal||!form)return;
- const firstName=document.getElementById('mobile-handoff-first-name'),email=document.getElementById('mobile-handoff-email'),error=document.getElementById('mobile-handoff-error'),submit=document.getElementById('mobile-handoff-submit'),success=document.getElementById('mobile-handoff-success'),formState=document.getElementById('mobile-handoff-form-state'),copy=document.getElementById('mobile-handoff-copy'),toast=document.getElementById('mobile-handoff-toast');
+ const email=document.getElementById('mobile-handoff-email'),error=document.getElementById('mobile-handoff-error'),submit=document.getElementById('mobile-handoff-submit'),success=document.getElementById('mobile-handoff-success'),formState=document.getElementById('mobile-handoff-form-state'),copy=document.getElementById('mobile-handoff-copy'),again=document.getElementById('mobile-handoff-again');
  const attribution=handoffAttribution(),visitorId=handoffVisitor();
- let continueUrl='',started=false,closeTimer=0;
- const markerKey='orbit_handoff_captured_v1',dismissKey='orbit_handoff_dismissed_v1';
+ let continueUrl='',started=false;
  const markStarted=()=>{if(started)return;started=true;void handoffApi('/api/handoff/event',{visitorId,stage:'started',...attribution}).catch(()=>{})};
  const openModal=()=>{
-  if(closeTimer)clearTimeout(closeTimer);
   modal.hidden=false;modal.setAttribute('aria-hidden','false');document.body.classList.add('handoff-modal-open');
-  requestAnimationFrame(()=>{modal.classList.add('is-open');setTimeout(()=>firstName.focus({preventScroll:true}),180)});
+  requestAnimationFrame(()=>{modal.classList.add('is-open');setTimeout(()=>email.focus({preventScroll:true}),180)});
  };
  const closeModal=()=>{
   modal.classList.remove('is-open');document.body.classList.remove('handoff-modal-open');
@@ -89,40 +87,34 @@ function initMobileHandoffModal(){
   if(button.dataset.downloadState!=='handoff')return;
   e.preventDefault();openModal();
  }));
- document.querySelectorAll('[data-handoff-close]').forEach(button=>button.addEventListener('click',()=>{try{sessionStorage.setItem(dismissKey,'1')}catch(_){}closeModal()}));
+ document.querySelectorAll('[data-handoff-close]').forEach(button=>button.addEventListener('click',closeModal));
  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!modal.hidden)closeModal()});
- firstName.addEventListener('focus',markStarted);email.addEventListener('focus',markStarted);
+ email.addEventListener('focus',markStarted);
  form.addEventListener('submit',async e=>{
   e.preventDefault();error.hidden=true;
-  const name=firstName.value.trim(),address=email.value.trim();
-  if(!name){error.textContent='Enter your first name.';error.hidden=false;firstName.focus();return}
+  const address=email.value.trim();
   if(!/^\S+@\S+\.\S+$/.test(address)){error.textContent='Enter a valid email.';error.hidden=false;email.focus();return}
-  submit.disabled=true;submit.classList.add('loading');submit.querySelector('span').textContent='Saving your Orbit…';
+  submit.disabled=true;submit.classList.add('loading');submit.querySelector('span').textContent='Sending your link…';
   try{
-   const data=await handoffApi('/api/handoff/start',{firstName:name,email:address,visitorId,...attribution});
+   const data=await handoffApi('/api/handoff/start',{email:address,visitorId,...attribution});
    continueUrl=data.continueUrl||'';try{localStorage.setItem('orbit_handoff_continue',continueUrl)}catch(_){}
    formState.hidden=true;success.hidden=false;
    const delivered=data.emailStatus==='delivered';
    const accepted=data.emailStatus==='accepted'||data.emailStatus==='sent';
-   document.getElementById('mobile-handoff-success-title').textContent=delivered?'You’re in.':accepted?'Email is on its way.':'Your Orbit is saved.';
+   document.getElementById('mobile-handoff-success-title').textContent=delivered?'Check your inbox.':accepted?'Your link is on its way.':'Your desktop link is ready.';
    document.getElementById('mobile-handoff-success-copy').textContent=delivered
-    ?'Your desktop link was delivered to '+address+'.'
+    ?'We delivered your link to '+address+'. Open it on your Mac or Windows computer to download and install Orbit.'
     :accepted
-     ?'Your email provider accepted the handoff for '+address+'. Keep the desktop link below as a backup until it arrives.'
-     :'Email delivery is unavailable right now. Use the desktop link below immediately.';
+     ?'Your email provider accepted the message for '+address+'. Open it on your computer when it arrives; keep the link below as a backup.'
+     :'Email delivery could not be confirmed. Copy this link and open it on your Mac or Windows computer.';
    copy.hidden=!continueUrl;
-   if(delivered){
-    try{localStorage.setItem(markerKey,String(Date.now()))}catch(_){}
-    closeTimer=setTimeout(()=>{closeModal();toast.hidden=false;toast.classList.add('is-visible');setTimeout(()=>{toast.classList.remove('is-visible');setTimeout(()=>{toast.hidden=true},220)},2800)},1350);
-   }
   }catch(err){error.textContent=err.message||'Orbit could not save this yet.';error.hidden=false}
-  finally{submit.disabled=false;submit.classList.remove('loading');submit.querySelector('span').textContent='Send Orbit to my computer'}
+  finally{submit.disabled=false;submit.classList.remove('loading');submit.querySelector('span').textContent='Email me the desktop link'}
  });
- copy.addEventListener('click',async()=>{if(!continueUrl)return;try{await navigator.clipboard.writeText(continueUrl);copy.textContent='Desktop link copied ✓'}catch(_){}});
+ copy.addEventListener('click',async()=>{if(!continueUrl)return;try{await navigator.clipboard.writeText(continueUrl);copy.textContent='Desktop link copied ✓'}catch(_){copy.textContent='Could not copy — try again'}});
+ again?.addEventListener('click',()=>{success.hidden=true;formState.hidden=false;error.hidden=true;email.focus()});
  void handoffApi('/api/handoff/event',{visitorId,stage:'landing',...attribution}).catch(()=>{});
- let completed=false,dismissed=false;
- try{completed=Boolean(localStorage.getItem(markerKey));dismissed=sessionStorage.getItem(dismissKey)==='1'}catch(_){}
- if(!completed&&!dismissed)setTimeout(openModal,180);
+ // Show the mobile handoff only after Get Orbit is tapped. Visitors can explore the website first.
 }
 
 const downloadReady=initDownload();
