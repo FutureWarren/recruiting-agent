@@ -5,7 +5,7 @@ const server=await serve(),browser=await chromium.launch({...(process.env.CHROMI
 try{
  const ctx=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true,userAgent:'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 Version/17.0 Mobile/15E148 Safari/604.1'})
  const page=await ctx.newPage(),requests=[]
- await page.route('https://backend-production-2b40.up.railway.app/api/handoff/**',async route=>{
+ await ctx.route('https://backend-production-2b40.up.railway.app/api/handoff/**',async route=>{
   const req=route.request();requests.push({url:req.url(),method:req.method(),body:req.postData()})
   if(req.url().endsWith('/start'))return route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({continueUrl:server.base+'/continue/?token=abcdefghijklmnopqrstuvwx.abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQ',emailStatus:'delivered'})})
   if(req.url().endsWith('/resolve'))return route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({firstName:'',goal:'',detail:''})})
@@ -47,7 +47,7 @@ try{
  await phoneContinue.waitForSelector('#actions:not([hidden])')
  assert.equal(await phoneContinue.locator('#title').textContent(),'Welcome to Orbit.')
  assert.equal(await phoneContinue.locator('#open-app').isHidden(),true)
- assert.equal(await phoneContinue.locator('#download').getAttribute('href'),null,'phone link must not restart the signup')
+ assert.equal(await phoneContinue.locator('#download').getAttribute('href'),'#','phone link must be keyboard-focusable and must not restart the signup')
  await phoneContinue.locator('#download').click()
  assert.equal(await phoneContinue.evaluate(()=>window.__orbitSharedUrl),mobileUrl)
  assert.equal(requests.some(r=>r.url.endsWith('/event')&&JSON.parse(r.body||'{}').stage==='download_clicked'),false,'sharing on phone is not an installer download')
