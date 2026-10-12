@@ -47,7 +47,7 @@ function fail(message){document.body.classList.add('error');$('eyebrow').textCon
     try{const url=await installer('win');$('download').href=url;$('download').classList.remove('disabled');$('download').innerHTML='Download Orbit for Windows <b>↗</b>'}catch(_){$('download').href='https://github.com/'+REPO+'/releases';$('download').classList.remove('disabled');$('download').innerHTML='View Windows downloads <b>↗</b>'}
     $('status').textContent='Windows x64 beta is currently unsigned, so SmartScreen may show an Unknown Publisher warning. After installing, return here and open Orbit to continue your saved setup.';
   }else{
-    download.removeAttribute('href');download.innerHTML='Copy / share desktop link <b>↗</b>';
+    download.href='#';download.innerHTML='Copy / share desktop link <b>↗</b>';
     openApp.hidden=true;
     status.textContent='Orbit is a Mac and Windows app. Open this same link on your computer to download and install it.';
     download.addEventListener('click',async event=>{
