@@ -20,7 +20,7 @@ function fail(message){document.body.classList.add('error');$('eyebrow').textCon
  if(!/^[A-Za-z0-9_-]{20,40}\.[A-Za-z0-9_-]{40,60}$/.test(token)){fail('The desktop handoff token is missing or invalid.');return}
  try{
   const data=await api('/api/handoff/resolve',{method:'POST',body:JSON.stringify({token})});
-  $('title').textContent=data.firstName?'Welcome, '+data.firstName+'.':'Welcome back.';
+  $('title').textContent=data.firstName?'Welcome, '+data.firstName+'.':'Welcome to Orbit.';
   $('copy').textContent='Your phone handoff made it here. Finish on your computer and put Orbit to work.';
   if(data.goal){$('goal').textContent=data.goal;$('detail').textContent=data.detail||'';$('detail').hidden=!data.detail;$('receipt').hidden=false}else{$('receipt').hidden=true}
   $('actions').hidden=false;
