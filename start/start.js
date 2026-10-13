@@ -12,7 +12,7 @@ const visitorKey='orbit_handoff_visitor_v1';
 let visitorId='';
 try{visitorId=sessionStorage.getItem(visitorKey)||'';if(!visitorId){visitorId=crypto.randomUUID();sessionStorage.setItem(visitorKey,visitorId)}}catch(_){visitorId='v_'+Math.random().toString(36).slice(2)+Date.now().toString(36)}
 let started=false;
-function api(path,options={}){return fetch(API+path,{...options,headers:{'content-type':'application/json',...(options.headers||{})}}).then(async r=>{const body=await r.json().catch(()=>({}));if(!r.ok)throw new Error(body.error||'Orbit could not save this yet.');return body})}
+function api(path,options={}){return fetch(API+path,{...options,keepalive:path==='/api/handoff/event',headers:{'content-type':'application/json',...(options.headers||{})}}).then(async r=>{const body=await r.json().catch(()=>({}));if(!r.ok)throw new Error(body.error||'Orbit could not save this yet.');return body})}
 function event(stage,token=''){void api('/api/handoff/event',{method:'POST',body:JSON.stringify({visitorId,stage,token,...attribution})}).catch(()=>{})}
 event('site_visit_v2');
 function markStarted(){if(started)return;started=true;stepLabel.textContent='IN PROGRESS';event('email_started_v2')}
