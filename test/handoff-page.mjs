@@ -28,7 +28,7 @@ try{
  const start=requests.find(r=>r.url.endsWith('/start'))
  assert.ok(start,'handoff start request missing')
  const body=JSON.parse(start.body)
- assert.equal(body.firstName,undefined);assert.equal(body.email,'student@example.com');assert.equal(body.goal,undefined);assert.equal(body.source,'nyu_library');assert.equal(body.utm_campaign,'launch')
+ assert.equal(body.funnelVersion,2);assert.equal(body.platform,'mobile');assert.equal(body.firstName,undefined);assert.equal(body.email,'student@example.com');assert.equal(body.goal,undefined);assert.equal(body.source,'nyu_library');assert.equal(body.utm_campaign,'launch')
  assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false)
  const fallback=await ctx.newPage()
  await fallback.goto(server.base+'/start/?source=nyu_library')

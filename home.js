@@ -51,7 +51,9 @@ const HANDOFF_API='https://backend-production-2b40.up.railway.app';
 function handoffAttribution(){
  const q=new URLSearchParams(location.search),keys=['source','utm_source','utm_medium','utm_campaign','utm_content'],out={};
  for(const k of keys)out[k]=(q.get(k)||'').slice(0,120);
- if(!out.source)out.source='website_mobile';
+ if(!out.source)out.source=out.utm_source||'direct';
+ out.platform=detectOS()||'other';
+ out.funnelVersion=2;
  return out;
 }
 function handoffVisitor(){
@@ -61,7 +63,7 @@ function handoffVisitor(){
 async function handoffApi(path,payload){
  const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),35000);
  try{
-  const r=await fetch(HANDOFF_API+path,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(payload),signal:controller.signal});
+  const r=await fetch(HANDOFF_API+path,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(payload),signal:controller.signal,keepalive:path==='/api/handoff/event'});
   const body=await r.json().catch(()=>({}));
   if(!r.ok)throw new Error(body.error||'Orbit could not save this yet.');
   return body;
@@ -74,10 +76,11 @@ function initMobileHandoffModal(){
  const email=document.getElementById('mobile-handoff-email'),error=document.getElementById('mobile-handoff-error'),submit=document.getElementById('mobile-handoff-submit'),success=document.getElementById('mobile-handoff-success'),formState=document.getElementById('mobile-handoff-form-state'),copy=document.getElementById('mobile-handoff-copy'),again=document.getElementById('mobile-handoff-again');
  const attribution=handoffAttribution(),visitorId=handoffVisitor();
  let continueUrl='',started=false;
- const markStarted=()=>{if(started)return;started=true;void handoffApi('/api/handoff/event',{visitorId,stage:'started',...attribution}).catch(()=>{})};
+ const markStarted=()=>{if(started)return;started=true;void handoffApi('/api/handoff/event',{visitorId,stage:'email_started_v2',...attribution}).catch(()=>{})};
  const openModal=()=>{
   modal.hidden=false;modal.setAttribute('aria-hidden','false');document.body.classList.add('handoff-modal-open');
-  requestAnimationFrame(()=>{modal.classList.add('is-open');setTimeout(()=>email.focus({preventScroll:true}),180)});
+  // Opening a modal is not a form-start event. Only a user focusing the email field counts.
+  requestAnimationFrame(()=>{modal.classList.add('is-open')});
  };
  const closeModal=()=>{
   modal.classList.remove('is-open');document.body.classList.remove('handoff-modal-open');
@@ -113,10 +116,23 @@ function initMobileHandoffModal(){
  });
  copy.addEventListener('click',async()=>{if(!continueUrl)return;try{await navigator.clipboard.writeText(continueUrl);copy.textContent='Desktop link copied ✓'}catch(_){copy.textContent='Could not copy — try again'}});
  again?.addEventListener('click',()=>{success.hidden=true;formState.hidden=false;error.hidden=true;email.focus()});
- void handoffApi('/api/handoff/event',{visitorId,stage:'landing',...attribution}).catch(()=>{});
+ // Visit/CTA tracking runs across all devices in initSiteAttribution below.
  // Show the mobile handoff only after Get Orbit is tapped. Visitors can explore the website first.
 }
 
+// These counts represent device/browser sessions, not known unique humans.
+function initSiteAttribution(){
+ const context=handoffAttribution(),visitorId=handoffVisitor();
+ const send=(stage,token='')=>{void handoffApi('/api/handoff/event',{visitorId,stage,token,...context}).catch(()=>{})};
+ send('site_visit_v2');
+ document.querySelectorAll('[data-orbit-download]').forEach(button=>button.addEventListener('click',()=>{
+  if(button.getAttribute('aria-disabled')==='true')return;
+  send('cta_clicked_v2');
+  if(button.dataset.downloadState==='ready')send('installer_clicked_v2');
+ },{capture:true}));
+ return {send};
+}
+const siteTracking=initSiteAttribution();
 const downloadReady=initDownload();
 initMobileHandoffModal();
 document.querySelectorAll('[data-orbit-download]').forEach(button=>button.addEventListener('click',async event=>{
@@ -124,7 +140,10 @@ document.querySelectorAll('[data-orbit-download]').forEach(button=>button.addEve
  if(button.dataset.downloadState!=='loading')return;
  // A click during release lookup waits for the actual installer instead of jumping to a tutorial.
  event.preventDefault();await downloadReady;
- const href=button.getAttribute('href');if(href&&button.getAttribute('aria-disabled')!=='true')window.location.assign(href);
+ const href=button.getAttribute('href');if(href&&button.getAttribute('aria-disabled')!=='true'){
+  if(button.dataset.downloadState==='ready')siteTracking.send('installer_clicked_v2');
+  window.location.assign(href);
+ }
 }));
 (()=>{
  const $=s=>document.querySelector(s),all=s=>[...document.querySelectorAll(s)],clamp=(v,a=0,b=1)=>Math.min(b,Math.max(a,v));

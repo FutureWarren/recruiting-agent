@@ -5,6 +5,7 @@ import {serve} from './static-server.mjs';
 const server=await serve(),browser=await chromium.launch({...(process.env.CHROMIUM?{executablePath:process.env.CHROMIUM}:{}),args:['--no-sandbox']});
 try{
  const page=await browser.newPage({viewport:{width:1440,height:900}});
+ await page.route('https://backend-production-2b40.up.railway.app/api/handoff/**',r=>r.fulfill({status:204,body:''}));
  await page.route('**/api.github.com/**',r=>r.fulfill({status:503,body:'{}'}));
  await page.goto(server.base);
  const geo=await page.locator('.story').evaluate(e=>({top:e.getBoundingClientRect().top+scrollY,height:e.offsetHeight}));
