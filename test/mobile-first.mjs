@@ -83,21 +83,31 @@ try{
    const denied=await setup(browser);
    await denied.page.goto(server.base+'/?source=internal_test&email=must-not-leak@example.com&token=must-not-leak');await denied.page.evaluate(()=>Object.defineProperty(navigator,'clipboard',{configurable:true,value:{writeText:async()=>{throw Error('denied')}}}));await denied.page.locator('#mobile-copy-before').click();
    assert.equal(await denied.page.locator('#mobile-copy-backup').isVisible(),true);assert.doesNotMatch(await denied.page.locator('#mobile-copy-backup').inputValue(),/must-not-leak/);assert.equal(denied.requests.some(r=>r.url.endsWith('/start')),false);await denied.ctx.close();
-   // Freeze the existing carousel at a shared frame; compare every static pixel exactly.
+   // Verify carousel geometry/content/styles separately from nondeterministic composited text.
+   // Compare the rest of the desktop pixels exactly; the existing interaction suite tests motion.
    if(engineName==='chromium')for(const ua of [UA.mac,UA.win])for(const width of [640,1440]){
     const platform=/Windows/.test(ua)?'windows':'mac';
     console.log('CHECK desktop exact pixels '+platform+' '+width);
     const t=await setup(browser,{userAgent:ua,isMobile:false,hasTouch:false,viewport:{width,height:900}});
     await t.ctx.addInitScript(()=>Object.defineProperty(navigator,'userAgentData',{get:()=>({platform:/Windows/.test(navigator.userAgent)?'Windows':'macOS',getHighEntropyValues:async()=>({architecture:/Windows/.test(navigator.userAgent)?'x86':'arm'})})}));
     await t.ctx.route('**/baseline.html*',r=>r.fulfill({contentType:'text/html',body:baseline}));
-    const images=[];
+    const images=[],carousels=[];
     for(const url of [server.base+'/baseline.html?source=internal_test',server.base+'/?source=internal_test']){
      await t.page.goto(url);await t.page.waitForFunction(()=>document.getElementById('dl-btn').dataset.downloadState==='ready');
      assert.equal(await t.page.locator('#mobile-handoff-modal').isVisible(),false);assert.equal(await t.page.locator('#hero-demo').evaluate(e=>!!e.closest('#demo')),true);
-     await t.page.addStyleTag({content:'video{visibility:hidden!important}.company-track{transform:translate3d(0,0,0)!important}'});await t.page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));images.push(await t.page.screenshot({fullPage:true,animations:'disabled'}));
+     await t.page.addStyleTag({content:'video{visibility:hidden!important}.company-track{transform:translate3d(0,0,0)!important}'});
+     await t.page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
+     carousels.push(await t.page.evaluate(()=>[...document.querySelectorAll('.company-window,.company-track,.company-name')].map(el=>{
+      const r=el.getBoundingClientRect(),s=getComputedStyle(el);
+      return {text:el.textContent,x:r.x,y:r.y,w:r.width,h:r.height,font:s.font,color:s.color,spacing:s.letterSpacing,opacity:s.opacity,transform:s.transform,mask:s.maskImage};
+     })));
+     // The unchanged carousel can differ only in GPU text rasterization between navigations.
+     await t.page.addStyleTag({content:'.company-track{visibility:hidden!important}'});
+     images.push(await t.page.screenshot({fullPage:true,animations:'disabled'}));
     }
     writeFileSync(join(root,'artifacts','desktop-'+platform+'-'+width+'-before.png'),images[0]);
     writeFileSync(join(root,'artifacts','desktop-'+platform+'-'+width+'-after.png'),images[1]);
+    assert.deepEqual(carousels[0],carousels[1],'desktop carousel geometry/content/styles changed');
     assert.equal(images[0].equals(images[1]),true,'desktop pixels changed: '+platform+' '+width+'px; see before/after artifacts');assert.deepEqual(t.errors,[]);await t.ctx.close();
    }
    console.log('PASS '+engineName+': immediate email without CTA, one-field capture, real demo in hero, no-email copy/fallback, errors, phone/iPad layout and desktop isolation.');
