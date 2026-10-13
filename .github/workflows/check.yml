@@ -15,11 +15,23 @@ jobs:
         with:
           node-version: 22
       - run: npm install --no-audit --no-fund
-      - run: npx playwright install --with-deps chromium
-      - name: Installer and whole-page motion contracts
-        run: npm test
+      - run: npx playwright install --with-deps chromium webkit
+      - name: Installer, mobile first-paint and desktop isolation contracts
+        shell: bash
+        run: |
+          mkdir -p artifacts
+          set -o pipefail
+          npm test 2>&1 | tee artifacts/test-results.log
       - name: Commercial page regressions
         run: npm run test:commercial
+      - name: Verify live delivery after the main-branch Pages deployment
+        if: github.ref == 'refs/heads/main'
+        run: |
+          for attempt in $(seq 1 8); do
+            npm run test:live && exit 0
+            sleep 15
+          done
+          exit 1
       - name: Preserve review screenshots and exact tested website
         if: always()
         uses: actions/upload-artifact@v4
@@ -31,5 +43,7 @@ jobs:
             index.html
             home.css
             home.js
+            mobile.css
+            mobile.js
             media/
             docs/launch-motion-and-claims.md
