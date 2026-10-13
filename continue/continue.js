@@ -19,13 +19,14 @@ function fail(message){document.body.classList.add('error');$('eyebrow').textCon
 (async()=>{
  if(!/^[A-Za-z0-9_-]{20,40}\.[A-Za-z0-9_-]{40,60}$/.test(token)){fail('The desktop handoff token is missing or invalid.');return}
  try{
-  const data=await api('/api/handoff/resolve',{method:'POST',body:JSON.stringify({token})});
+  const platform=os();
+  const data=await api('/api/handoff/resolve',{method:'POST',body:JSON.stringify({token,platform})});
   $('title').textContent=data.firstName?'Welcome, '+data.firstName+'.':'Welcome to Orbit.';
   $('copy').textContent='Your phone handoff made it here. Finish on your computer and put Orbit to work.';
   if(data.goal){$('goal').textContent=data.goal;$('detail').textContent=data.detail||'';$('detail').hidden=!data.detail;$('receipt').hidden=false}else{$('receipt').hidden=true}
   $('actions').hidden=false;
   const open='orbit://handoff?token='+encodeURIComponent(token);$('open-app').href=open;
-  const platform=os(),download=$('download'),openApp=$('open-app'),actions=$('actions'),status=$('status');
+  const download=$('download'),openApp=$('open-app'),actions=$('actions'),status=$('status');
   const progressKey='orbit_handoff_download_started_v1:'+token.split('.')[0];
   let downloadStarted=false;
   const promoteOpenApp=()=>{
@@ -63,7 +64,12 @@ function fail(message){document.body.classList.add('error');$('eyebrow').textCon
   try{if(sessionStorage.getItem(progressKey)==='1')promoteOpenApp()}catch(_){}
   download.addEventListener('click',()=>{
     if(platform!=='mac'&&platform!=='win')return;
-    void api('/api/handoff/event',{method:'POST',body:JSON.stringify({stage:'download_clicked',token})}).catch(()=>{});
+    // Count installer intent, not an installation. Release-index fallback is not a binary click.
+    const url=download.getAttribute('href')||'';
+    if (/\.(dmg|exe)(?:[?#]|$)/i.test(url)) {
+      void api('/api/handoff/event',{method:'POST',body:JSON.stringify({stage:'installer_clicked_v2',token,platform})}).catch(()=>{});
+    }
+    void api('/api/handoff/event',{method:'POST',body:JSON.stringify({stage:'download_clicked',token,platform})}).catch(()=>{});
     promoteOpenApp();
   });
   openApp.addEventListener('click',()=>{void api('/api/handoff/event',{method:'POST',body:JSON.stringify({stage:'open_app_clicked',token})}).catch(()=>{})});
