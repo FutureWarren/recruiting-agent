@@ -80,6 +80,14 @@ try {
             await page.locator('.story-step').nth(i).click();
             await page.waitForFunction(n=>document.querySelector('.story-stage').dataset.step===String(n),i);
             assert.equal(await page.locator('.scene-layer[aria-hidden="false"]').count(),1);
+            const fits=await page.locator('.scene-layer[aria-hidden="false"]').evaluate(el=>{
+              const outer=el.closest('.story-scene').getBoundingClientRect();
+              return [...el.children].every(child=>{
+                const r=child.getBoundingClientRect();
+                return r.bottom<=outer.bottom+1&&r.right<=outer.right+1;
+              });
+            });
+            assert.equal(fits,true,'workflow chapter '+i+' must not crop its text on '+device);
           }
           await page.evaluate(()=>scrollTo(0,0));
           assert.deepEqual(errors,[]);
