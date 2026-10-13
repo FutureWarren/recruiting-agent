@@ -14,7 +14,7 @@ html.orbit-mobile .hero h1{font-size:clamp(32px,9vw,48px);font-weight:640;line-h
 html.orbit-mobile .hero h1 span{display:inline}
 html.orbit-mobile .hero h1 span::after{content:' '}
 html.orbit-mobile .hero-copy>p:not(.hero-note){font-size:14px;line-height:1.5;margin:0 0 20px;max-width:none;letter-spacing:-.015em}
-html.orbit-mobile .hero-playground,html.orbit-mobile #companies,html.orbit-mobile #how,html.orbit-mobile #numbers,html.orbit-mobile #profile,html.orbit-mobile #security,html.orbit-mobile #download,html.orbit-mobile .hero-note,html.orbit-mobile #mobile-desktop-reminder,html.orbit-mobile .reading-progress,html.orbit-mobile .cursor-aura{display:none!important}
+html.orbit-mobile .hero-playground,html.orbit-mobile .hero-note,html.orbit-mobile #mobile-desktop-reminder,html.orbit-mobile .reading-progress,html.orbit-mobile .cursor-aura{display:none!important}
 html.orbit-mobile.mobile-ready #demo{display:none!important}
 html.orbit-mobile .hero-copy .video-frame{position:relative;width:100%;max-width:none;margin:0;border:1px solid var(--line);border-radius:16px;overflow:hidden;background:#eeeef1;box-shadow:0 12px 36px -25px rgba(21,21,26,.24)}
 html.orbit-mobile .hero-copy .video-top,html.orbit-mobile .hero-copy .video-caption{display:none}
@@ -67,3 +67,9 @@ html.orbit-mobile .mobile-handoff-copy{display:block;min-height:46px;width:100%;
 html.orbit-mobile .mobile-handoff-again{min-height:40px;margin:6px auto 0;font-size:12px}
 @media(max-height:500px){html.orbit-mobile .mobile-sheet-brand{display:none}html.orbit-mobile .mobile-handoff-dialog{padding-top:16px}html.orbit-mobile .mobile-handoff-dialog h2{font-size:23px;margin-right:34px}}
 @media(prefers-reduced-motion:reduce){html.orbit-mobile .mobile-handoff-modal{transition:none}}
+
+/* Restored phone workflow: keep the tallest chapter in flow so text is never cropped. */
+@media(max-width:760px){
+ html.orbit-mobile .story-scene{display:grid}
+ html.orbit-mobile .scene-layer{position:relative;inset:auto;grid-area:1/1;min-width:0;align-self:start}
+}
