@@ -5,15 +5,17 @@ const errorBox=document.getElementById('form-error'),submit=document.getElementB
 const sourceParams=['source','utm_source','utm_medium','utm_campaign','utm_content'];
 const query=new URLSearchParams(location.search);
 const attribution=Object.fromEntries(sourceParams.map(k=>[k,(query.get(k)||'').slice(0,120)]));
-if(!attribution.source)attribution.source='website_mobile';
+if(!attribution.source)attribution.source=attribution.utm_source||'direct';
+attribution.funnelVersion=2;
+attribution.platform=/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)?'mobile':/Windows/i.test(navigator.userAgent)?'win':/Macintosh|Mac OS X/i.test(navigator.userAgent)?'mac':'other';
 const visitorKey='orbit_handoff_visitor_v1';
 let visitorId='';
 try{visitorId=sessionStorage.getItem(visitorKey)||'';if(!visitorId){visitorId=crypto.randomUUID();sessionStorage.setItem(visitorKey,visitorId)}}catch(_){visitorId='v_'+Math.random().toString(36).slice(2)+Date.now().toString(36)}
 let started=false;
 function api(path,options={}){return fetch(API+path,{...options,headers:{'content-type':'application/json',...(options.headers||{})}}).then(async r=>{const body=await r.json().catch(()=>({}));if(!r.ok)throw new Error(body.error||'Orbit could not save this yet.');return body})}
 function event(stage,token=''){void api('/api/handoff/event',{method:'POST',body:JSON.stringify({visitorId,stage,token,...attribution})}).catch(()=>{})}
-event('landing');
-function markStarted(){if(started)return;started=true;stepLabel.textContent='IN PROGRESS';event('started')}
+event('site_visit_v2');
+function markStarted(){if(started)return;started=true;stepLabel.textContent='IN PROGRESS';event('email_started_v2')}
 email.addEventListener('focus',markStarted);
 form.addEventListener('submit',async e=>{
  e.preventDefault();errorBox.hidden=true;
@@ -21,6 +23,7 @@ form.addEventListener('submit',async e=>{
  if(!/^\S+@\S+\.\S+$/.test(address)){errorBox.textContent='Enter a valid email so we can hand Orbit back to you.';errorBox.hidden=false;email.focus();return}
  submit.disabled=true;submit.classList.add('loading');submit.querySelector('span').textContent='Sending the link…';stepLabel.textContent='SENDING';
  try{
+  event('cta_clicked_v2');
   const data=await api('/api/handoff/start',{method:'POST',body:JSON.stringify({email:address,visitorId,...attribution})});
   const link=document.getElementById('desktop-link');link.href=data.continueUrl;link.dataset.url=data.continueUrl;
   const delivered=data.emailStatus==='delivered';
