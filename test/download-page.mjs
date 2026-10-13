@@ -11,6 +11,8 @@ const release={tag_name:'v9.9.9',assets:[asset('Orbit-9.9.9-arm64.dmg','mac-arm6
 async function visit(ua,arch,data=release,touch=0,status=200,downloadClick=false,delay=0,viewport){
  const context=await browser.newContext({userAgent:ua,acceptDownloads:true,...(viewport?{viewport}:{})});
  await context.addInitScript(({arch,touch})=>{Object.defineProperty(navigator,'maxTouchPoints',{configurable:true,get:()=>touch});if(arch)Object.defineProperty(navigator,'userAgentData',{configurable:true,get:()=>({platform:/Windows/.test(navigator.userAgent)?'Windows':'macOS',getHighEntropyValues:async()=>({architecture:arch})})})},{arch,touch});
+ // All telemetry is mocked: regression runs must never pollute production acquisition.
+ await context.route('https://backend-production-2b40.up.railway.app/api/handoff/**',r=>r.fulfill({status:204,body:''}));
  await context.route('**/api.github.com/**',async r=>{if(delay)await new Promise(resolve=>setTimeout(resolve,delay));const payload=Array.isArray(data)?data:[data];await r.fulfill({status,contentType:'application/json',body:JSON.stringify(payload)})});
  await context.route('https://example.test/**',r=>r.fulfill({status:200,headers:{'content-type':'application/octet-stream','content-disposition':'attachment; filename="Orbit-test-arm64.dmg"'},body:'test-installer-fixture'}));
  const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));
