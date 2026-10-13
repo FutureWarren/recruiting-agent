@@ -21,6 +21,11 @@ function fail(message){document.body.classList.add('error');$('eyebrow').textCon
  try{
   const platform=os();
   const data=await api('/api/handoff/resolve',{method:'POST',body:JSON.stringify({token,platform})});
+  // Only the signed handoff's server response can name an inviter. Never use
+  // URL parameters or HTML, and keep ordinary/non-referral handoffs unchanged.
+  if(typeof data.inviter==='string'&&data.inviter.trim()){
+    $('eyebrow').textContent=data.inviter.trim().slice(0,80)+' invited you to Orbit.';
+  }
   $('title').textContent=data.firstName?'Welcome, '+data.firstName+'.':'Welcome to Orbit.';
   $('copy').textContent='Your phone handoff made it here. Finish on your computer and put Orbit to work.';
   if(data.goal){$('goal').textContent=data.goal;$('detail').textContent=data.detail||'';$('detail').hidden=!data.detail;$('receipt').hidden=false}else{$('receipt').hidden=true}
