@@ -14,7 +14,7 @@ html.orbit-mobile .hero h1{font-size:clamp(32px,9vw,48px);font-weight:640;line-h
 html.orbit-mobile .hero h1 span{display:inline}
 html.orbit-mobile .hero h1 span::after{content:' '}
 html.orbit-mobile .hero-copy>p:not(.hero-note){font-size:14px;line-height:1.5;margin:0 0 20px;max-width:none;letter-spacing:-.015em}
-html.orbit-mobile .hero-playground,html.orbit-mobile #companies,html.orbit-mobile #how,html.orbit-mobile #numbers,html.orbit-mobile #profile,html.orbit-mobile #security,html.orbit-mobile #download,html.orbit-mobile .hero-note,html.orbit-mobile #mobile-desktop-reminder,html.orbit-mobile .reading-progress,html.orbit-mobile .cursor-aura{display:none!important}
+html.orbit-mobile .hero-playground,html.orbit-mobile .hero-note,html.orbit-mobile #mobile-desktop-reminder,html.orbit-mobile .reading-progress,html.orbit-mobile .cursor-aura{display:none!important}
 html.orbit-mobile.mobile-ready #demo{display:none!important}
 html.orbit-mobile .hero-copy .video-frame{position:relative;width:100%;max-width:none;margin:0;border:1px solid var(--line);border-radius:16px;overflow:hidden;background:#eeeef1;box-shadow:0 12px 36px -25px rgba(21,21,26,.24)}
 html.orbit-mobile .hero-copy .video-top,html.orbit-mobile .hero-copy .video-caption{display:none}
