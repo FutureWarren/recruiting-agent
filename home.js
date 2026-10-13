@@ -63,7 +63,7 @@ function handoffVisitor(){
 async function handoffApi(path,payload){
  const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),35000);
  try{
-  const r=await fetch(HANDOFF_API+path,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(payload),signal:controller.signal});
+  const r=await fetch(HANDOFF_API+path,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(payload),signal:controller.signal,keepalive:path==='/api/handoff/event'});
   const body=await r.json().catch(()=>({}));
   if(!r.ok)throw new Error(body.error||'Orbit could not save this yet.');
   return body;
