@@ -2,7 +2,7 @@
 const API='https://backend-production-2b40.up.railway.app',REPO='FutureWarren/recruiting-agent';
 const token=new URLSearchParams(location.search).get('token')||'';
 const $=id=>document.getElementById(id);
-function os(){const ua=navigator.userAgent||'',p=navigator.userAgentData?.platform||'';if(/windows/i.test(p)||/Windows|Win64|Win32|WOW64/i.test(ua))return'win';if(/macos|mac os/i.test(p)||/Macintosh|Mac OS X/i.test(ua))return'mac';if(/Android|iPhone|iPad|iPod/i.test(ua))return'mobile';return'other'}
+function os(){const ua=navigator.userAgent||'',p=navigator.userAgentData?.platform||'';if(/Android|iPhone|iPad|iPod/i.test(ua)||(/Macintosh/.test(ua)&&(navigator.maxTouchPoints||0)>1))return'mobile';if(/windows/i.test(p)||/Windows|Win64|Win32|WOW64/i.test(ua))return'win';if(/macos|mac os/i.test(p)||/Macintosh|Mac OS X/i.test(ua))return'mac';return'other'}
 async function api(path,options={}){const r=await fetch(API+path,{...options,headers:{'content-type':'application/json',...(options.headers||{})}});const b=await r.json().catch(()=>({}));if(!r.ok)throw new Error(b.error||'This handoff could not be opened.');return b}
 async function installer(platform){
  const r=await fetch('https://api.github.com/repos/'+REPO+'/releases?per_page=10');if(!r.ok)throw new Error('release unavailable');const releases=await r.json();
@@ -20,7 +20,7 @@ function fail(message){document.body.classList.add('error');$('eyebrow').textCon
  if(!/^[A-Za-z0-9_-]{20,40}\.[A-Za-z0-9_-]{40,60}$/.test(token)){fail('The desktop handoff token is missing or invalid.');return}
  try{
   const data=await api('/api/handoff/resolve',{method:'POST',body:JSON.stringify({token})});
-  $('title').textContent=data.firstName?'Welcome, '+data.firstName+'.':'Welcome back.';
+  $('title').textContent=data.firstName?'Welcome, '+data.firstName+'.':'Welcome to Orbit.';
   $('copy').textContent='Your phone handoff made it here. Finish on your computer and put Orbit to work.';
   if(data.goal){$('goal').textContent=data.goal;$('detail').textContent=data.detail||'';$('detail').hidden=!data.detail;$('receipt').hidden=false}else{$('receipt').hidden=true}
   $('actions').hidden=false;
@@ -47,11 +47,22 @@ function fail(message){document.body.classList.add('error');$('eyebrow').textCon
     try{const url=await installer('win');$('download').href=url;$('download').classList.remove('disabled');$('download').innerHTML='Download Orbit for Windows <b>↗</b>'}catch(_){$('download').href='https://github.com/'+REPO+'/releases';$('download').classList.remove('disabled');$('download').innerHTML='View Windows downloads <b>↗</b>'}
     $('status').textContent='Windows x64 beta is currently unsigned, so SmartScreen may show an Unknown Publisher warning. After installing, return here and open Orbit to continue your saved setup.';
   }else{
-    $('download').href='/start/';$('download').innerHTML='Open this page on your computer <b>→</b>';
-    $('status').textContent='This handoff is meant for a desktop computer. Your setup will stay available until the link expires.';
+    download.href='#';download.innerHTML='Copy / share desktop link <b>↗</b>';
+    openApp.hidden=true;
+    status.textContent='Orbit is a Mac and Windows app. Open this same link on your computer to download and install it.';
+    download.addEventListener('click',async event=>{
+      event.preventDefault();
+      const link=location.href;
+      try{
+        if(navigator.share){await navigator.share({title:'Get Orbit on my computer',url:link});return}
+        await navigator.clipboard.writeText(link);
+        status.textContent='Link copied. Open it on your Mac or Windows computer.';
+      }catch(_){status.textContent='Could not share automatically. Copy the address from your browser and open it on your computer.'}
+    });
   }
   try{if(sessionStorage.getItem(progressKey)==='1')promoteOpenApp()}catch(_){}
   download.addEventListener('click',()=>{
+    if(platform!=='mac'&&platform!=='win')return;
     void api('/api/handoff/event',{method:'POST',body:JSON.stringify({stage:'download_clicked',token})}).catch(()=>{});
     promoteOpenApp();
   });
