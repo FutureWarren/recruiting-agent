@@ -83,7 +83,7 @@ try{
    const denied=await setup(browser);
    await denied.page.goto(server.base+'/?source=internal_test&email=must-not-leak@example.com&token=must-not-leak');await denied.page.evaluate(()=>Object.defineProperty(navigator,'clipboard',{configurable:true,value:{writeText:async()=>{throw Error('denied')}}}));await denied.page.locator('#mobile-copy-before').click();
    assert.equal(await denied.page.locator('#mobile-copy-backup').isVisible(),true);assert.doesNotMatch(await denied.page.locator('#mobile-copy-backup').inputValue(),/must-not-leak/);assert.equal(denied.requests.some(r=>r.url.endsWith('/start')),false);await denied.ctx.close();
-   // Desktop and resized desktop: exact baseline screenshots, masking only moving footage.
+   // Freeze the existing carousel at a shared frame; compare every static pixel exactly.
    if(engineName==='chromium')for(const ua of [UA.mac,UA.win])for(const width of [640,1440]){
     const platform=/Windows/.test(ua)?'windows':'mac';
     console.log('CHECK desktop exact pixels '+platform+' '+width);
@@ -94,7 +94,7 @@ try{
     for(const url of [server.base+'/baseline.html?source=internal_test',server.base+'/?source=internal_test']){
      await t.page.goto(url);await t.page.waitForFunction(()=>document.getElementById('dl-btn').dataset.downloadState==='ready');
      assert.equal(await t.page.locator('#mobile-handoff-modal').isVisible(),false);assert.equal(await t.page.locator('#hero-demo').evaluate(e=>!!e.closest('#demo')),true);
-     await t.page.addStyleTag({content:'video{visibility:hidden!important}'});images.push(await t.page.screenshot({fullPage:true,animations:'disabled'}));
+     await t.page.addStyleTag({content:'video{visibility:hidden!important}.company-track{transform:translate3d(0,0,0)!important}'});await t.page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));images.push(await t.page.screenshot({fullPage:true,animations:'disabled'}));
     }
     writeFileSync(join(root,'artifacts','desktop-'+platform+'-'+width+'-before.png'),images[0]);
     writeFileSync(join(root,'artifacts','desktop-'+platform+'-'+width+'-after.png'),images[1]);
