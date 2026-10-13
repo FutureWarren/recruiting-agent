@@ -17,7 +17,11 @@ jobs:
       - run: npm install --no-audit --no-fund
       - run: npx playwright install --with-deps chromium webkit
       - name: Installer, mobile first-paint and desktop isolation contracts
-        run: npm test
+        shell: bash
+        run: |
+          mkdir -p artifacts
+          set -o pipefail
+          npm test 2>&1 | tee artifacts/test-results.log
       - name: Commercial page regressions
         run: npm run test:commercial
       - name: Verify live delivery after the main-branch Pages deployment
