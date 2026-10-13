@@ -3,7 +3,7 @@ const API='https://backend-production-2b40.up.railway.app',REPO='FutureWarren/re
 const token=new URLSearchParams(location.search).get('token')||'';
 const $=id=>document.getElementById(id);
 function os(){const ua=navigator.userAgent||'',p=navigator.userAgentData?.platform||'';if(/Android|iPhone|iPad|iPod/i.test(ua)||(/Macintosh/.test(ua)&&(navigator.maxTouchPoints||0)>1))return'mobile';if(/windows/i.test(p)||/Windows|Win64|Win32|WOW64/i.test(ua))return'win';if(/macos|mac os/i.test(p)||/Macintosh|Mac OS X/i.test(ua))return'mac';return'other'}
-async function api(path,options={}){const r=await fetch(API+path,{...options,headers:{'content-type':'application/json',...(options.headers||{})}});const b=await r.json().catch(()=>({}));if(!r.ok)throw new Error(b.error||'This handoff could not be opened.');return b}
+async function api(path,options={}){const r=await fetch(API+path,{...options,keepalive:path==='/api/handoff/event',headers:{'content-type':'application/json',...(options.headers||{})}});const b=await r.json().catch(()=>({}));if(!r.ok)throw new Error(b.error||'This handoff could not be opened.');return b}
 async function installer(platform){
  const r=await fetch('https://api.github.com/repos/'+REPO+'/releases?per_page=10');if(!r.ok)throw new Error('release unavailable');const releases=await r.json();
  if(!Array.isArray(releases))throw new Error('release unavailable');
