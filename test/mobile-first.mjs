@@ -1,6 +1,6 @@
 /** Approved mobile-first experience, without weakening any desktop contract. */
 import assert from 'node:assert/strict';
-import {readFileSync,mkdirSync} from 'node:fs';
+import {readFileSync,mkdirSync,writeFileSync} from 'node:fs';
 import {createHash} from 'node:crypto';
 import {join} from 'node:path';
 import {chromium,webkit} from 'playwright-core';
@@ -17,6 +17,7 @@ const UA={phone:'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWeb
 const fixtures=[{tag_name:'v9.9.9',assets:[{name:'Orbit-9.9.9-arm64.dmg',size:120000000,browser_download_url:'https://example.test/mac.dmg'},{name:'Orbit-9.9.9-x64-Setup.exe',size:120000000,browser_download_url:'https://example.test/win.exe'}]}];
 async function setup(browser,options={},status='delivered'){
  const ctx=await browser.newContext({viewport:{width:390,height:750},userAgent:UA.phone,isMobile:true,hasTouch:true,reducedMotion:'reduce',...options});
+ ctx.setDefaultTimeout(12000);ctx.setDefaultNavigationTimeout(15000);
  const requests=[];const errors=[];
  await ctx.route('https://backend-production-2b40.up.railway.app/**',route=>{
   const req=route.request();requests.push({url:req.url(),body:req.postDataJSON()});
@@ -34,6 +35,7 @@ try{
   const browser=await engine.launch(engineName==='chromium'?{...(process.env.CHROMIUM?{executablePath:process.env.CHROMIUM}:{}),args:['--no-sandbox']}:{});
   try{
    for(const [name,width,height,ua,touch] of [['iphone',390,750,UA.phone,1],['small-phone',320,568,UA.phone,1],['android',360,740,UA.android,1],['ipad-landscape',1024,768,UA.mac,5]]){
+    console.log('CHECK '+engineName+' '+name);
     const t=await setup(browser,{viewport:{width,height},userAgent:ua});
     await t.ctx.addInitScript(n=>Object.defineProperty(navigator,'maxTouchPoints',{get:()=>n}),touch);
     await t.page.goto(server.base+'/?source=internal_test&utm_campaign=mobile_first');
@@ -54,18 +56,22 @@ try{
     assert.equal(t.requests.filter(r=>r.url.endsWith('/start')).length,1);
     const body=t.requests.find(r=>r.url.endsWith('/start')).body;assert.equal(body.email,'student@example.com');assert.equal(body.source,'internal_test');assert.equal(body.funnelVersion,2);assert.equal(body.platform,'mobile');
     assert.equal(await t.page.locator('#mobile-handoff-copy').isVisible(),true);assert.deepEqual(t.errors,[]);
-    await t.ctx.close();
+    await t.ctx.close();console.log('PASS '+engineName+' '+name);
    }
    // CSS-only first paint while both deferred assets are deliberately held back.
+   console.log('CHECK '+engineName+' first paint with deferred scripts held');
    const first=await setup(browser);let release;const gate=new Promise(r=>release=r);
    await first.ctx.route(/\/(mobile|home)\.js\?/,async r=>{await gate;await r.continue()});
-   await first.page.goto(server.base+'/?source=internal_test',{waitUntil:'commit'});
-   await first.page.locator('#mobile-handoff-email').waitFor({state:'visible'});
-   assert.equal(await first.page.locator('html').evaluate(e=>e.classList.contains('orbit-mobile-pending')),true);
-   release();await first.page.waitForLoadState('domcontentloaded');
-   assert.equal(first.requests.some(r=>['cta_clicked_v2','email_started_v2'].includes(r.body?.stage)),false);
-   await first.ctx.close();
+   try {
+    await first.page.goto(server.base+'/?source=internal_test',{waitUntil:'commit'});
+    await first.page.locator('#mobile-handoff-email').waitFor({state:'visible'});
+    assert.equal(await first.page.locator('html').evaluate(e=>e.classList.contains('orbit-mobile-pending')),true);
+    release();await first.page.waitForLoadState('domcontentloaded');
+    assert.equal(first.requests.some(r=>['cta_clicked_v2','email_started_v2'].includes(r.body?.stage)),false);
+   } finally { release();await first.ctx.close(); }
+   console.log('PASS '+engineName+' first paint');
    for(const status of ['accepted','failed','error']){
+    console.log('CHECK '+engineName+' email '+status);
     const t=await setup(browser,{},status);await t.page.goto(server.base+'/?source=internal_test');
     await t.page.locator('#mobile-handoff-email').fill('not-an-email');await t.page.locator('#mobile-handoff-submit').click();assert.equal(t.requests.some(r=>r.url.endsWith('/start')),false);
     await t.page.locator('#mobile-handoff-email').fill('anyone@gmail.com');await t.page.locator('#mobile-handoff-submit').click();
@@ -73,11 +79,14 @@ try{
     else{await t.page.waitForSelector('#mobile-handoff-success:not([hidden])');assert.doesNotMatch(await t.page.locator('#mobile-handoff-success-copy').textContent(),/We delivered/);assert.equal(await t.page.locator('#mobile-handoff-copy').isVisible(),true)}
     assert.deepEqual(t.errors,[]);await t.ctx.close();
    }
+   console.log('CHECK '+engineName+' restricted clipboard');
    const denied=await setup(browser);
    await denied.page.goto(server.base+'/?source=internal_test&email=must-not-leak@example.com&token=must-not-leak');await denied.page.evaluate(()=>Object.defineProperty(navigator,'clipboard',{configurable:true,value:{writeText:async()=>{throw Error('denied')}}}));await denied.page.locator('#mobile-copy-before').click();
    assert.equal(await denied.page.locator('#mobile-copy-backup').isVisible(),true);assert.doesNotMatch(await denied.page.locator('#mobile-copy-backup').inputValue(),/must-not-leak/);assert.equal(denied.requests.some(r=>r.url.endsWith('/start')),false);await denied.ctx.close();
    // Desktop and resized desktop: exact baseline screenshots, masking only moving footage.
    if(engineName==='chromium')for(const ua of [UA.mac,UA.win])for(const width of [640,1440]){
+    const platform=/Windows/.test(ua)?'windows':'mac';
+    console.log('CHECK desktop exact pixels '+platform+' '+width);
     const t=await setup(browser,{userAgent:ua,isMobile:false,hasTouch:false,viewport:{width,height:900}});
     await t.ctx.addInitScript(()=>Object.defineProperty(navigator,'userAgentData',{get:()=>({platform:/Windows/.test(navigator.userAgent)?'Windows':'macOS',getHighEntropyValues:async()=>({architecture:/Windows/.test(navigator.userAgent)?'x86':'arm'})})}));
     await t.ctx.route('**/baseline.html*',r=>r.fulfill({contentType:'text/html',body:baseline}));
@@ -87,7 +96,9 @@ try{
      assert.equal(await t.page.locator('#mobile-handoff-modal').isVisible(),false);assert.equal(await t.page.locator('#hero-demo').evaluate(e=>!!e.closest('#demo')),true);
      await t.page.addStyleTag({content:'video{visibility:hidden!important}'});images.push(await t.page.screenshot({fullPage:true,animations:'disabled'}));
     }
-    assert.deepEqual(images[0],images[1],'desktop pixels changed at '+width);assert.deepEqual(t.errors,[]);await t.ctx.close();
+    writeFileSync(join(root,'artifacts','desktop-'+platform+'-'+width+'-before.png'),images[0]);
+    writeFileSync(join(root,'artifacts','desktop-'+platform+'-'+width+'-after.png'),images[1]);
+    assert.equal(images[0].equals(images[1]),true,'desktop pixels changed: '+platform+' '+width+'px; see before/after artifacts');assert.deepEqual(t.errors,[]);await t.ctx.close();
    }
    console.log('PASS '+engineName+': immediate email without CTA, one-field capture, real demo in hero, no-email copy/fallback, errors, phone/iPad layout and desktop isolation.');
   }finally{await browser.close()}
