@@ -14,7 +14,7 @@ assert.match(html, /href="\/unsubscribe\/">Email preferences<\/a>/, 'website pro
 // This release intentionally adds a discoverable guide and an opt-in section.
 // Pixel parity below must still hold between the mobile-stripped baseline and
 // the shipping page on desktop, while the top-level SEO content may evolve.
-assert.match(baseline,/<main>/,'base desktop structure should remain intact');
+assert.match(baseline,/<main[\s>]/,'base desktop structure should remain intact');
 assert.match(baseline,/<footer>/,'base desktop footer should remain intact');
 assert.match(baseline,/id="recruiting-updates"/,'opt-in is part of approved desktop content');
 assert.equal(gitHash(readFileSync(join(root,'media/orbit-demo-hd.mp4'))),'bf4cacfb1bc00fe0ad8e7a05bb7356951fb399a1','reuse the actual approved demo unchanged');
