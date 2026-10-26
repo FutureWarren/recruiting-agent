@@ -41,7 +41,7 @@ try {
         try {
           await page.goto(base+'/?source=internal_test&utm_campaign=mobile_complete_page',{waitUntil:'domcontentloaded'});
           assert.equal(await page.locator('#mobile-handoff-email').isVisible(),true,'immediate email sheet retained');
-          assert.equal(await page.locator('#mobile-handoff-form input').count(),1,'still email-only');
+          assert.equal(await page.locator('#mobile-handoff-form input[type=email]').count(),1,'still requires email only');assert.equal(await page.locator('#mobile-news-consent').isChecked(),false,'newsletter consent remains optional');
           await page.locator('.mobile-handoff-close').click();
           await page.waitForFunction(()=>document.getElementById('mobile-handoff-modal').hidden);
           assert.equal(await page.locator('main').evaluate(e=>e.inert),false,'closing the sheet unlocks the page');
