@@ -11,6 +11,7 @@
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"SoftwareApplication","name":"Orbit","url":"https://orbit-reaches.com/","description":"AI-assisted student recruiting research and personalized outreach drafts, with user approval before sending.","applicationCategory":"BusinessApplication","operatingSystem":"macOS (Apple Silicon), Windows x64 beta","offers":{"@type":"Offer","price":"0","priceCurrency":"USD","description":"Free introductory Orbit Credits"}}</script>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='21' fill='none' stroke='%2317171c' stroke-width='6'/%3E%3Ccircle cx='32' cy='10' r='7' fill='%235c5cf2'/%3E%3C/svg%3E">
 <link rel="stylesheet" href="home.css?v=mobile-handoff-20260930-1">
+<link rel="stylesheet" href="newsletter.css?v=20261026-1">
 <style id="desktop-reminder-styles">
 /* Reuse the existing mobile download state; do not change installer routing. */
 .hero-copy .mobile-desktop-reminder{display:none;align-items:flex-start;gap:12px;max-width:440px;margin-top:16px;padding:14px 16px;border:1px solid rgba(92,92,242,.2);border-radius:12px;background:#ededfc;color:var(--ink)}
@@ -61,7 +62,34 @@ body:has([data-orbit-download][data-download-state="handoff"]) .mobile-desktop-r
 
 
 <section class="final" id="download"><div class="shell"><span class="orbit-mark" aria-hidden="true"></span><h2>Put Orbit to work.</h2><p>A little more time for everything else.</p><div class="actions"><span class="magnet"><a class="btn" id="dl-btn-final" data-orbit-download href="https://github.com/FutureWarren/recruiting-agent/releases/latest">Download Orbit ↗</a></span><a class="text-link" href="/pricing/">Explore plans</a></div><p class="desktop-requirement">Available now for Apple Silicon Mac (M1 and later) and Windows x64 beta.<br>Windows installer is currently unsigned, so SmartScreen may show an Unknown Publisher warning. Intel Macs, Windows on ARM, phones and tablets are not supported.</p></div></section>
-</main><footer><div class="shell footer-inner"><span>© 2026 Orbit · Built for ambitious students</span><div class="footer-links"><a href="/pricing/">Pricing</a><a href="/terms/">Terms</a><a href="/privacy/">Privacy</a><a href="/refunds/">Refunds</a><a href="/support/">Support</a><a href="/unsubscribe/">Email preferences</a><a href="https://github.com/FutureWarren/recruiting-agent" rel="noopener">GitHub</a><a href="https://github.com/FutureWarren/recruiting-agent/releases" rel="noopener">All releases</a></div></div></footer>
+</main>
+<section class="orbit-radar-section" id="recruiting-updates" aria-labelledby="orbit-radar-title">
+  <div class="shell orbit-radar-grid">
+    <div>
+      <div class="kicker">ORBIT RECRUITING RADAR</div>
+      <h2 id="orbit-radar-title">Real recruiting opportunities.<br>Delivered to you.</h2>
+      <p class="lead">Handpicked events, useful deadlines and one practical networking move. Choose a short daily or weekly update — with clear links to organizers and an easy way to unsubscribe.</p>
+    </div>
+    <form class="orbit-radar-card" id="orbit-radar-form">
+      <div class="micro-label">YOUR NEXT MOVE STARTS HERE</div>
+      <label for="orbit-radar-email">Email address</label>
+      <input id="orbit-radar-email" name="email" type="email" autocomplete="email" inputmode="email" placeholder="you@university.edu" maxlength="254" required>
+      <label for="orbit-radar-frequency">How often?</label>
+      <select id="orbit-radar-frequency" name="frequency">
+        <option value="daily">Daily on weekdays</option>
+        <option value="weekly">Once a week</option>
+      </select>
+      <label class="checkbox-line" for="orbit-radar-consent">
+        <input id="orbit-radar-consent" type="checkbox" name="consent" value="yes" required>
+        <span>Yes, I want Orbit recruiting opportunities, tips and product updates by email. I can unsubscribe whenever I want.</span>
+      </label>
+      <button type="submit">Get recruiting updates →</button>
+      <p class="feedback" id="orbit-radar-feedback" aria-live="polite" role="status"></p>
+      <p class="legal">We'll email you a confirmation link first. Nothing is subscribed until you confirm. <a href="/privacy/">Privacy</a> · <a href="/unsubscribe/">Email preferences</a>.</p>
+    </form>
+  </div>
+</section>
+<footer><div class="shell footer-inner"><span>© 2026 Orbit · Built for ambitious students</span><div class="footer-links"><a href="/pricing/">Pricing</a><a href="/terms/">Terms</a><a href="/privacy/">Privacy</a><a href="/refunds/">Refunds</a><a href="/support/">Support</a><a href="/unsubscribe/">Email preferences</a><a href="https://github.com/FutureWarren/recruiting-agent" rel="noopener">GitHub</a><a href="https://github.com/FutureWarren/recruiting-agent/releases" rel="noopener">All releases</a></div></div></footer>
 <div class="mobile-handoff-modal" id="mobile-handoff-modal" hidden aria-hidden="true">
   <div class="mobile-handoff-backdrop" data-handoff-close></div>
   <section class="mobile-handoff-dialog" role="dialog" aria-modal="true" aria-labelledby="mobile-handoff-title">
@@ -74,6 +102,7 @@ body:has([data-orbit-download][data-download-state="handoff"]) .mobile-desktop-r
         <label class="mobile-handoff-field" for="mobile-handoff-email"><span>Email address</span><input id="mobile-handoff-email" type="email" inputmode="email" autocomplete="email" placeholder="you@email.com" maxlength="254" required></label>
         <p class="mobile-handoff-error" id="mobile-handoff-error" role="alert" hidden></p>
         <button class="mobile-handoff-submit" id="mobile-handoff-submit" type="submit"><span>Email me the desktop link</span><b>→</b></button>
+        <label class="mobile-news-checkbox" for="mobile-news-consent"><input type="checkbox" id="mobile-news-consent"><span>Also send me optional recruiting opportunities and product updates (confirmation required). I can unsubscribe anytime.</span></label>
         <p class="mobile-handoff-fine">No school email required. Sign in after installing Orbit. <a href="/privacy/">Privacy</a></p>
       </form>
     </div>
@@ -82,6 +111,7 @@ body:has([data-orbit-download][data-download-state="handoff"]) .mobile-desktop-r
       <div class="mobile-handoff-kicker">SAVED</div>
       <h2 id="mobile-handoff-success-title">Your desktop link is ready.</h2>
       <p id="mobile-handoff-success-copy">Open the email on your Mac or Windows computer to download Orbit.</p>
+      <p id="mobile-news-status" aria-live="polite" style="font-size:12px;color:#4646c8"></p>
       <button class="mobile-handoff-copy" id="mobile-handoff-copy" type="button" hidden>Copy desktop link as backup</button>
       <button class="mobile-handoff-again" id="mobile-handoff-again" type="button">Use a different email</button>
     </div>
@@ -91,5 +121,6 @@ body:has([data-orbit-download][data-download-state="handoff"]) .mobile-desktop-r
 
 <script src="mobile.js?v=mobile-first-20261013-1" defer></script>
 <script src="home.js?v=acquisition-v2-20261013" defer></script>
+<script src="newsletter.js?v=20261026-1" defer></script>
 </body>
 </html>
