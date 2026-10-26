@@ -95,6 +95,13 @@ try{
     const images=[],carousels=[];
     for(const url of [server.base+'/baseline.html?source=internal_test',server.base+'/?source=internal_test']){
      await t.page.goto(url);await t.page.waitForFunction(()=>document.getElementById('dl-btn').dataset.downloadState==='ready');
+     // The new legal preferences link is tested for presence, then excluded solely from
+     // pixel parity so every pre-existing desktop visual remains byte-exact.
+     if (!url.includes('/baseline.html')) {
+      const preferences=t.page.locator('.footer-links a[href="/unsubscribe/"]');
+      assert.equal(await preferences.count(),1,'preferences footer link present');
+      await preferences.evaluate(el=>el.remove());
+     }
      assert.equal(await t.page.locator('#mobile-handoff-modal').isVisible(),false);assert.equal(await t.page.locator('#hero-demo').evaluate(e=>!!e.closest('#demo')),true);
      await t.page.addStyleTag({content:'video{visibility:hidden!important}.company-track{transform:translate3d(0,0,0)!important}'});
      await t.page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
