@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#f5f5f0"><meta name="robots" content="noindex,nofollow">
+<meta name="referrer" content="no-referrer">
+<title>Email Preferences — Orbit</title>
+<meta name="description" content="Manage the recruiting and product update emails you receive from Orbit.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='21' fill='none' stroke='%2317171c' stroke-width='6'/%3E%3Ccircle cx='32' cy='10' r='7' fill='%235c5cf2'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="/site.css">
+<style>
+.preferences { width:min(560px,calc(100% - 40px)); margin:100px auto 110px; }
+.preferences .kicker { font:750 11px/1.5 var(--font); color:var(--signal-ink); letter-spacing:.13em; text-transform:uppercase; }
+.preferences h1 { font-size:clamp(40px,8vw,60px); letter-spacing:-.058em; line-height:1.02; margin:20px 0; }
+.preferences .lead {font-size:17px;line-height:1.7;color:var(--ink-2);margin-bottom:33px}
+.preferences .panel { background:rgba(255,255,255,.9); border:1px solid var(--line-strong); border-radius:22px; padding:32px; box-shadow:0 20px 50px rgba(24,24,32,.05) }
+.preferences label {display:block; font-weight:700; font-size:13px; margin:0 0 10px}
+.preferences input { width:100%; min-height:52px; padding:13px 15px; border:1px solid #bfc0cb; border-radius:10px; background:white; color:var(--ink); font:inherit; }
+.preferences input:focus {outline:3px solid #dbdafa;border-color:var(--signal)}
+.preferences button {width:100%;min-height:51px;background:var(--dark);border:0;border-radius:10px;color:#fff;font:700 14px var(--font);cursor:pointer;margin-top:15px}
+.preferences button:hover {background:#31313a}.preferences button:disabled {opacity:.65;cursor:wait}
+.preferences .detail {color:var(--ink-2);font-size:13px;line-height:1.6;margin:18px 0 0}
+.preferences .status {padding:16px 18px;margin:18px 0 0;border-radius:10px;font-size:14px;line-height:1.6; background:#fff2f0;color:#7d392f}
+.preferences .status.ok {background:#eaf8f2;color:#12623f}
+.preferences .help {font-size:13px;line-height:1.6;color:var(--ink-2);margin:25px 0}.preferences .help a {color:var(--signal-ink)}
+.preferences [hidden]{display:none!important}
+@media(max-width:620px){.preferences{margin:68px auto 85px}.preferences .panel{padding:23px}}
+</style>
+</head>
+<body>
+<header class="shell topbar">
+  <a class="brand" href="/"><span class="orbit-mark" aria-hidden="true"></span>Orbit</a>
+  <nav class="nav" aria-label="Primary navigation"><a href="/support/">Support</a><a class="primary" href="/#download">Get Orbit</a></nav>
+</header>
+<main class="preferences" id="main">
+  <div class="kicker">Orbit / Email preferences</div>
+  <h1>Your inbox.<br>Your choice.</h1>
+  <p class="lead">You can stop receiving Orbit's recruiting opportunity roundups, newsletters, and product announcements at any time. No login is needed.</p>
+  <section class="panel" aria-labelledby="form-title">
+    <h2 id="form-title" style="font-size:22px;letter-spacing:-.03em;margin:0 0 18px">Unsubscribe from updates</h2>
+    <form id="unsubscribe-form" action="https://orbit-marketing-preferences-production.up.railway.app/api/marketing/unsubscribe" method="POST">
+      <label for="email">Email address that received the update</label>
+      <input id="email" name="email" type="email" autocomplete="email" inputmode="email" maxlength="254" placeholder="you@example.com" required>
+      <button id="submit-button" type="submit">Unsubscribe</button>
+    </form>
+    <p class="detail">This stops non-essential marketing emails. You'll still receive necessary account, billing, security, and service messages.</p>
+    <div id="unsubscribe-status" class="status" role="status" aria-live="polite" hidden></div>
+  </section>
+  <p class="help">Having trouble? Email <a href="mailto:future@orbit-reaches.com?subject=Unsubscribe">future@orbit-reaches.com</a> with “unsubscribe” in the subject. We'll honor your request.</p>
+  <p class="help"><a href="/">← Return to Orbit</a></p>
+</main>
+<footer><div class="shell footer-inner"><span>© 2026 Orbit · Operated by Angelic</span><div class="footer-links"><a href="/privacy/">Privacy</a><a href="/support/">Support</a><a href="/terms/">Terms</a></div></div></footer>
+<script>
+(function () {
+  'use strict';
+  var form = document.getElementById('unsubscribe-form');
+  var status = document.getElementById('unsubscribe-status');
+  var button = document.getElementById('submit-button');
+  function notice(message, success) {
+    status.hidden = false;
+    status.textContent = message;
+    status.classList.toggle('ok', !!success);
+    if (success) form.hidden = true;
+  }
+  if (new URLSearchParams(window.location.search).get('done') === '1') {
+    notice("You're unsubscribed. You will no longer receive Orbit recruiting and product updates.", true);
+  }
+  form.addEventListener('submit', async function (event) {
+    event.preventDefault();
+    if (!form.reportValidity()) return;
+    button.disabled = true;
+    button.textContent = 'Saving your preference…';
+    var controller = new AbortController();
+    var timeout = setTimeout(function () { controller.abort(); }, 12000);
+    try {
+      var response = await fetch(form.action, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: document.getElementById('email').value.trim() }),
+        signal: controller.signal,
+        cache: 'no-store'
+      });
+      var body = await response.json().catch(function () { return {}; });
+      if (!response.ok || !body.ok) throw new Error(body.error || 'We could not save your preference.');
+      notice("You're unsubscribed. You will no longer receive Orbit recruiting and product updates.", true);
+    } catch (error) {
+      notice("We couldn't save your preference right now. Please try again or email future@orbit-reaches.com with 'unsubscribe' in the subject.", false);
+    } finally {
+      clearTimeout(timeout);
+      button.disabled = false;
+      button.textContent = 'Unsubscribe';
+    }
+  });
+})();
+</script>
+</body></html>
