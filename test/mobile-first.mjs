@@ -9,7 +9,8 @@ const html=readFileSync(join(root,'index.html'),'utf8');
 const gitHash=s=>createHash('sha1').update('blob '+Buffer.byteLength(s)+'\0').update(s).digest('hex');
 assert.equal(gitHash(readFileSync(join(root,'home.js'))),'e13ea8f63dde02299758c6d6246f33204bf56349','desktop JS must remain byte-identical');
 assert.equal(gitHash(readFileSync(join(root,'home.css'))),'8a81c8ff98c47cb84c65deb64177c028183a58d7','desktop CSS must remain byte-identical');
-const baseline=html.replace(/<!-- Mobile-only first-paint handoff[^]*?<link rel="stylesheet" href="mobile\.css[^]*?>\n/,'').replace(/<script src="mobile\.js[^]*?<\/script>\n/,'');
+const baseline=html.replace(/<!-- Mobile-only first-paint handoff[^]*?<link rel="stylesheet" href="mobile\.css[^]*?>\n/,'').replace(/<script src="mobile\.js[^]*?<\/script>\n/,'').replace(/<a href="\/unsubscribe\/">Email preferences<\/a>/,'');
+assert.match(html, /href="\/unsubscribe\/">Email preferences<\/a>/, 'website provides a visible preferences link');
 assert.equal(gitHash(baseline),'5849da12c8d2be31cca6c3671d63bb65bf202af6','existing desktop HTML must remain byte-identical after removing isolated mobile assets');
 assert.equal(gitHash(readFileSync(join(root,'media/orbit-demo-hd.mp4'))),'bf4cacfb1bc00fe0ad8e7a05bb7356951fb399a1','reuse the actual approved demo unchanged');
 const server=await serve();mkdirSync(join(root,'artifacts'),{recursive:true});
@@ -94,6 +95,13 @@ try{
     const images=[],carousels=[];
     for(const url of [server.base+'/baseline.html?source=internal_test',server.base+'/?source=internal_test']){
      await t.page.goto(url);await t.page.waitForFunction(()=>document.getElementById('dl-btn').dataset.downloadState==='ready');
+     // The new legal preferences link is tested for presence, then excluded solely from
+     // pixel parity so every pre-existing desktop visual remains byte-exact.
+     if (!url.includes('/baseline.html')) {
+      const preferences=t.page.locator('.footer-links a[href="/unsubscribe/"]');
+      assert.equal(await preferences.count(),1,'preferences footer link present');
+      await preferences.evaluate(el=>el.remove());
+     }
      assert.equal(await t.page.locator('#mobile-handoff-modal').isVisible(),false);assert.equal(await t.page.locator('#hero-demo').evaluate(e=>!!e.closest('#demo')),true);
      await t.page.addStyleTag({content:'video{visibility:hidden!important}.company-track{transform:translate3d(0,0,0)!important}'});
      await t.page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
