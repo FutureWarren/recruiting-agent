@@ -8,7 +8,9 @@ test('sitemap publishes only canonical discoverable pages', () => {
   for(const path of ['/', '/pricing/', '/recruiting-guide/']) {
     assert.ok(xml.includes('https://orbit-reaches.com' + path + '</loc>'))
   }
+  assert.ok(xml.includes('https://orbit-reaches.com/recruiting-news/</loc>'))
   assert.ok(!xml.includes('/unsubscribe/'))
+
   assert.ok(!xml.includes('/continue/'))
 })
 test('robots points crawlers at sitemap', () => {
