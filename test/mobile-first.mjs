@@ -51,7 +51,7 @@ try{
     assert.equal(await t.page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false,name+' overflow');
     const info=await t.page.locator('#hero-demo').evaluate(e=>({hero:!!e.closest('.hero-copy'),src:e.querySelector('source').getAttribute('src'),y:e.getBoundingClientRect().top}));
     assert.equal(info.hero,true);assert.equal(info.src,'media/orbit-demo-hd.mp4');assert.ok(info.y<320);
-    assert.equal(await t.page.locator('#mobile-handoff-form input').count(),1,'only email required');
+    assert.equal(await t.page.locator('#mobile-handoff-form input[type=email]').count(),1,'only email required');assert.equal(await t.page.locator('#mobile-news-consent').isChecked(),false,'news opt-in is optional and starts unchecked');
     await t.page.locator('#mobile-copy-before').click();
     const copied=new URL(await t.page.evaluate(()=>window.__copied));assert.equal(copied.origin,'https://orbit-reaches.com');assert.equal(copied.searchParams.get('utm_campaign'),'mobile_first');assert.equal(t.requests.some(r=>r.url.endsWith('/start')),false);
     await t.page.locator('.mobile-handoff-close').click();await t.page.waitForFunction(()=>document.getElementById('mobile-handoff-modal').hidden);
