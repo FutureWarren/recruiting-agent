@@ -10,7 +10,7 @@ const gitHash=s=>createHash('sha1').update('blob '+Buffer.byteLength(s)+'\0').up
 assert.equal(gitHash(readFileSync(join(root,'home.js'))),'e13ea8f63dde02299758c6d6246f33204bf56349','desktop JS must remain byte-identical');
 assert.equal(gitHash(readFileSync(join(root,'home.css'))),'8a81c8ff98c47cb84c65deb64177c028183a58d7','desktop CSS must remain byte-identical');
 const baseline=html.replace(/<!-- Mobile-only first-paint handoff[^]*?<link rel="stylesheet" href="mobile\.css[^]*?>\n/,'').replace(/<script src="mobile\.js[^]*?<\/script>\n/,'').replace(/<a href="\/unsubscribe\/">Email preferences<\/a>/,'');
-assert.match(html, /href="\\/unsubscribe\\/">Email preferences<\\/a>/, 'website provides a visible preferences link');
+assert.match(html, /href="\/unsubscribe\/">Email preferences<\/a>/, 'website provides a visible preferences link');
 assert.equal(gitHash(baseline),'5849da12c8d2be31cca6c3671d63bb65bf202af6','existing desktop HTML must remain byte-identical after removing isolated mobile assets');
 assert.equal(gitHash(readFileSync(join(root,'media/orbit-demo-hd.mp4'))),'bf4cacfb1bc00fe0ad8e7a05bb7356951fb399a1','reuse the actual approved demo unchanged');
 const server=await serve();mkdirSync(join(root,'artifacts'),{recursive:true});
