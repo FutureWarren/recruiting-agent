@@ -21,5 +21,24 @@ test('guide includes visible value and canonical page', () => {
   assert.match(html,/cold email/i)
   assert.match(html,/coffee chats/i)
   assert.match(html, /rel="canonical" href="https:\/\/orbit-reaches\.com\/recruiting-guide\/"/)
-  assert.match(html, /utm_source=organic/)
+  assert.doesNotMatch(html, /utm_source=organic/)
+})
+
+test('content pages have crawlable homepage links and self canonicals', () => {
+  for (const path of ['recruiting-guide', 'recruiting-news']) {
+    assert.ok(file('index.html').includes('href="/' + path + '/"'))
+    const html = file(path + '/index.html')
+    assert.ok(html.includes('rel="canonical" href="https://orbit-reaches.com/' + path + '/"'))
+    assert.doesNotMatch(html, /<meta[^>]+(?:noindex|http-equiv="refresh")/i)
+  }
+})
+test('every sitemap destination exists and is not noindex', () => {
+  for (const [, url] of file('sitemap.xml').matchAll(/<loc>([^<]+)<\/loc>/g)) {
+    const parsed = new URL(url)
+    assert.equal(parsed.origin, 'https://orbit-reaches.com')
+    assert.equal(parsed.search, '')
+    const html = file(parsed.pathname.slice(1) + 'index.html')
+    assert.doesNotMatch(html, /<meta[^>]+noindex/i)
+  }
+  assert.match(file('continue/index.html'), /name="robots" content="noindex,nofollow"/)
 })
