@@ -111,6 +111,35 @@ function initMobileHandoffModal(){
      ?'Your email provider accepted the message for '+address+'. Open it on your computer when it arrives; keep the link below as a backup.'
      :'Email delivery could not be confirmed. Copy this link and open it on your Mac or Windows computer.';
    copy.hidden=!continueUrl;
+   // The desktop download handoff works independently of marketing signup.
+   // Only an explicitly checked, unchecked-by-default opt-in requests recruiting news.
+   const newsOpt=document.getElementById('mobile-handoff-news-optin');
+   const newsState=document.getElementById('mobile-handoff-news-status');
+   if(newsOpt?.checked && newsState){
+     newsState.hidden=false;newsState.textContent='Requesting separate recruiting updates confirmation…';
+     void fetch('https://api.orbit-reaches.com/api/marketing/subscribe',{
+       method:'POST',headers:{'content-type':'application/json'},
+       body:JSON.stringify({email:address,frequency:'daily',consent:true})
+     }).then(async response=>{
+       if(!response.ok)throw new Error('opt-in unavailable');
+       newsState.textContent='Please check your inbox for a separate confirmation before recruiting updates begin.';
+     }).catch(()=>{
+       newsState.textContent='We could not start recruiting updates right now. Your Orbit download link is still ready.';
+     });
+   }
+ 
+   // Mailing list is distinct from the requested desktop link. Only opt-in with
+   // an unchecked-by-default explicit checkbox, then require confirmation.
+   const newsConsent=document.getElementById('mobile-news-consent');
+   const newsStatus=document.getElementById('mobile-news-status');
+   if(newsConsent?.checked){
+    newsStatus.textContent='Requesting your optional Recruiting Radar confirmation…';
+    void handoffApi('/api/marketing/subscribe',{email:address,consent:true,frequency:'daily'}).then(()=>{
+      newsStatus.textContent='Check your inbox and confirm if you want Recruiting Radar emails.';
+    }).catch(()=>{
+      newsStatus.textContent='Recruiting Radar signup could not be completed. Your Orbit download link is still ready.';
+    });
+   }else if(newsStatus){newsStatus.textContent=''}
   }catch(err){error.textContent=err.message||'Orbit could not save this yet.';error.hidden=false}
   finally{submit.disabled=false;submit.classList.remove('loading');submit.querySelector('span').textContent='Email me the desktop link'}
  });
