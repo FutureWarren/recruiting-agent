@@ -111,6 +111,18 @@ function initMobileHandoffModal(){
      ?'Your email provider accepted the message for '+address+'. Open it on your computer when it arrives; keep the link below as a backup.'
      :'Email delivery could not be confirmed. Copy this link and open it on your Mac or Windows computer.';
    copy.hidden=!continueUrl;
+   // Mailing list is distinct from the requested desktop link. Only opt-in with
+   // an unchecked-by-default explicit checkbox, then require confirmation.
+   const newsConsent=document.getElementById('mobile-news-consent');
+   const newsStatus=document.getElementById('mobile-news-status');
+   if(newsConsent?.checked){
+    newsStatus.textContent='Requesting your optional Recruiting Radar confirmation…';
+    void handoffApi('/api/marketing/subscribe',{email:address,consent:true,frequency:'daily'}).then(()=>{
+      newsStatus.textContent='Check your inbox and confirm if you want Recruiting Radar emails.';
+    }).catch(()=>{
+      newsStatus.textContent='Recruiting Radar signup could not be completed. Your Orbit download link is still ready.';
+    });
+   }else if(newsStatus){newsStatus.textContent=''}
   }catch(err){error.textContent=err.message||'Orbit could not save this yet.';error.hidden=false}
   finally{submit.disabled=false;submit.classList.remove('loading');submit.querySelector('span').textContent='Email me the desktop link'}
  });
