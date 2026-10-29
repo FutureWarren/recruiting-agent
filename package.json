@@ -1,14 +1,25 @@
 {
   "name": "recruiting-agent-site",
   "private": true,
+  "type": "module",
   "description": "Orbit public website with tested download and whole-page motion behavior.",
   "scripts": {
-    "test": "node test/download-page.mjs && node test/handoff-page.mjs && node test/hero-quality.mjs && node test/scroll-legibility.mjs && node test/mobile-first.mjs && node test/mobile-complete-page.mjs",
-    "test:live": "node test/download-page.mjs --live && node test/mobile-complete-page.mjs --live",
+    "build": "node scripts/build-production.mjs",
+    "build:preview": "node scripts/build-continuum.mjs",
+    "preview": "node scripts/preview.mjs",
+    "test": "npm run test:unit && npm run test:production",
+    "test:unit": "node --test test/continuum.test.mjs test/continuum-pages.test.mjs test/signature-preview.test.mjs test/production-site.test.mjs test/pricing-parity.test.mjs test/unsubscribe-page.test.mjs test/seo-pages.test.mjs",
+    "test:production": "node test/production-browser.mjs && SITE_TEST_ROOT=dist node test/handoff-page.mjs",
+    "test:legacy-home": "node test/download-page.mjs && node test/handoff-page.mjs && node test/hero-quality.mjs && node test/scroll-legibility.mjs && node test/mobile-first.mjs && node test/mobile-complete-page.mjs",
+    "test:live": "node test/production-live.mjs",
     "test:commercial": "node --test test/pricing-parity.test.mjs && node test/commercial-pages.mjs && node --test test/unsubscribe-page.test.mjs && node --test test/seo-pages.test.mjs",
     "test:hero": "node test/hero-quality.mjs && node test/scroll-legibility.mjs"
   },
   "devDependencies": {
+    "esbuild": "0.25.11",
     "playwright": "^1.49.0"
+  },
+  "dependencies": {
+    "three": "0.180.0"
   }
 }

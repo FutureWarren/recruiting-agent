@@ -1,0 +1,178 @@
+/* Orbit companion pages: one quiet, dark system. No billing or service changes. */
+:root {
+  color-scheme:dark;
+  --bg:#090a0e; --paper:#111216; --panel:#111216;
+  --ink:#f2f2f5; --ink-2:#b3b2bf; --ink-3:#92909f; --muted:#b3b2bf;
+  --line:#ffffff16; --line-strong:#ffffff26;
+  --signal:#a095ff; --signal-ink:#c5bdff; --signal-soft:#a095ff0c;
+  --purple:#a095ff; --purple2:#b9adff; --success:#beb9ce; --dark:#111216;
+  --shell:min(1120px,calc(100% - 64px)); --reading:min(760px,calc(100% - 48px));
+  --font:-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",sans-serif;
+  --ease:cubic-bezier(.22,1,.36,1);
+}
+html { background:var(--bg); scroll-padding-top:96px; }
+body.orbit-pages { background:var(--bg); color:var(--ink); font:16px/1.65 var(--font); -webkit-font-smoothing:antialiased; }
+.orbit-pages a { color:var(--signal-ink); text-underline-offset:4px; }
+.orbit-pages :focus-visible { outline:2px solid var(--signal-ink); outline-offset:5px; }
+.orbit-pages .site-skip { position:fixed; top:-70px; left:20px; z-index:99; background:var(--ink); color:var(--bg); padding:12px 20px; border-radius:12px; }
+.orbit-pages .site-skip:focus { top:12px; }
+.orbit-pages .topbar {
+  width:var(--shell); min-height:76px; height:76px; padding:0;
+  display:flex; align-items:center; justify-content:space-between; gap:24px;
+  position:sticky; top:0; margin:0 auto; z-index:20;
+  background:#090a0ef2; border:0; border-bottom:1px solid var(--line); border-radius:0;
+  box-shadow:0 0 0 20px #090a0ef2; backdrop-filter:blur(18px); letter-spacing:0;
+}
+.orbit-pages .brand { display:inline-flex; align-items:center; gap:10px; color:var(--ink); font:650 24px/1 var(--font); text-decoration:none; letter-spacing:-.055em; }
+.orbit-pages .orbit-mark { position:relative; width:30px; height:30px; flex:none; }
+.orbit-pages .orbit-mark:before { content:""; position:absolute; inset:3px; border:2.5px solid #f2f2f5; border-radius:50%; }
+.orbit-pages .orbit-mark:after { content:""; position:absolute; top:0; left:50%; width:7px; height:7px; margin-left:-3.5px; background:var(--signal); border-radius:50%; }
+.orbit-pages .nav { display:flex; align-items:center; gap:28px; padding:0; border:0; }
+.orbit-pages .nav a { color:var(--ink-2); font:400 13px/1.5 var(--font); text-decoration:none; }
+.orbit-pages .nav a[aria-current=page],.orbit-pages .nav a:hover { color:var(--ink); }
+.orbit-pages .nav .primary { display:inline-flex; gap:9px; align-items:center; color:#16161c; background:#f2f2f5; border:0; border-radius:999px; padding:10px 20px; font-weight:500; }
+.orbit-pages .eyebrow,.orbit-pages .kicker,.orbit-pages .plan-label { color:var(--ink-3); font:500 12px/1.5 var(--font); letter-spacing:0; text-transform:none; }
+.orbit-pages .page-hero { max-width:800px; padding:92px 0 46px; }
+.orbit-pages .page-hero h1 { font-size:clamp(46px,6vw,74px); line-height:1.05; font-weight:600; letter-spacing:-.06em; margin:15px 0 25px; }
+.orbit-pages .page-hero>p { font-size:16px; line-height:1.7; color:var(--ink-2); max-width:660px; }
+.orbit-pages .page-hero [data-platform-availability] { font-size:12px; margin-top:17px; color:var(--ink-3); }
+.orbit-pages .hero-meta { gap:12px 22px; margin-top:24px; }
+.orbit-pages .pill { background:none; padding:0; border:0; color:var(--ink-2); font-size:12px; }
+.orbit-pages .pill+.pill:before { content:"·"; color:var(--ink-3); margin-right:22px; }
+.orbit-pages .pricing-grid { grid-template-columns:repeat(6,minmax(0,1fr)); gap:16px; }
+.orbit-pages .plan,.orbit-pages .plan.featured { grid-column:span 2; min-height:435px; padding:30px; border:1px solid var(--line-strong); border-radius:20px; background:var(--paper); color:var(--ink); }
+.orbit-pages .plan.featured { border-color:#a99aff88; background:#131218; }
+.orbit-pages .plan.featured:after { display:none; }
+.orbit-pages .plan-label { font-size:12px; }
+.orbit-pages .plan h2 { font-size:27px; font-weight:550; margin:17px 0 6px; }
+.orbit-pages .price { margin:28px 0 13px; gap:8px; }
+.orbit-pages .price strong { font-size:52px; font-weight:550; }
+.orbit-pages .price span { color:var(--ink-3); }
+.orbit-pages .credits { font-size:13px; font-weight:450; color:var(--ink-2); }
+.orbit-pages .featured .credits { color:var(--signal-ink); }
+.orbit-pages .plan ul { margin:25px 0 30px; }
+.orbit-pages .plan li { color:var(--ink-2); padding-block:6px; font-size:12px; }
+.orbit-pages .plan li:before { color:#b9b5c5; font-weight:400; }
+.orbit-pages .cta { border:1px solid #ffffff36; border-radius:999px; min-height:46px; padding:10px 18px; background:transparent; color:var(--ink); font:500 12px/1.5 var(--font); text-decoration:none; text-align:center; transition:background .2s,border-color .2s; }
+.orbit-pages .cta:hover { background:#ffffff0a; border-color:#ffffff77; }
+.orbit-pages .featured .cta { background:#f2f2f5; color:#16161c; border-color:#f2f2f5; }
+.orbit-pages .featured .cta:hover { background:white; }
+.orbit-pages .secondary-plan { grid-column:span 3; min-height:0; margin-top:4px; }
+.orbit-pages .secondary-plan h2 { font-size:22px; }
+.orbit-pages .secondary-plan .price strong { font-size:40px; }
+.orbit-pages .credit-explainer { margin-top:58px; padding-top:54px; border-top:1px solid var(--line); }
+.orbit-pages .credit-explainer h2 { font-size:clamp(30px,4vw,44px); font-weight:550; line-height:1.15; }
+.orbit-pages .credit-explainer>p { max-width:680px; font-size:15px; }
+.orbit-pages .credit-stages { gap:0; border-block:1px solid var(--line); margin:32px 0; }
+.orbit-pages .credit-stage { background:transparent; border:0; border-radius:0; padding:28px 22px 28px 0; }
+.orbit-pages .credit-stage+.credit-stage { padding-left:28px; border-left:1px solid var(--line); }
+.orbit-pages .credit-stage .stage-price { font-size:42px; margin:20px 0 18px; font-weight:500; }
+.orbit-pages .credit-stage h3 { font-size:15px; font-weight:500; }
+.orbit-pages .credit-stage p { font-size:12px; line-height:1.7; }
+.orbit-pages .credit-example { background:var(--paper); border-color:var(--line-strong); padding:28px 30px; }
+.orbit-pages .credit-example strong { font-weight:500; }
+.orbit-pages .credit-example p { line-height:1.75; }
+.orbit-pages .credit-faq { margin-top:42px; }
+.orbit-pages .credit-faq details { padding:24px 0; }
+.orbit-pages .credit-faq summary { font-size:15px; font-weight:450; }
+.orbit-pages .credit-faq p { line-height:1.8; }
+.orbit-pages .pricing-note { margin:54px 0 96px; border-bottom:0; }
+.orbit-pages .pricing-note h3 { font-weight:500; }
+.orbit-pages .pricing-note p { line-height:1.8; }
+.orbit-pages .legal-wrap { padding:90px 0 100px; }
+.orbit-pages .legal-wrap h1 { font-size:clamp(44px,5.5vw,64px); line-height:1.1; font-weight:550; }
+.orbit-pages .updated { font:400 12px/1.6 var(--font); margin:22px 0 48px; }
+.orbit-pages .legal-card { border:0; border-top:1px solid var(--line); border-radius:0; background:none; padding:36px 0 0; }
+.orbit-pages .legal-card h2 { font-size:21px; font-weight:500; line-height:1.4; margin-top:42px; }
+.orbit-pages .legal-card p,.orbit-pages .legal-card li { font-size:15px; line-height:1.85; color:var(--ink-2); }
+.orbit-pages .contact-card { background:var(--paper); border-color:var(--line-strong); padding:30px; border-radius:18px; }
+.orbit-pages .contact-card strong { font-weight:500; }
+.orbit-pages .contact-card p { margin-top:10px; line-height:1.75; }
+.orbit-pages .contact-card .cta { white-space:nowrap; }
+.orbit-pages .callout,.orbit-pages .tip { background:var(--signal-soft); border:1px solid #a095ff24; color:var(--ink-2); border-radius:14px; }
+.orbit-pages .site-footer { width:100%; border-top:1px solid var(--line); padding:38px 0 32px; background:var(--bg); }
+.orbit-pages .footer-inner { width:var(--shell); min-height:0; display:flex; align-items:start; justify-content:space-between; gap:40px; padding:0; margin:auto; }
+.orbit-pages .footer-links { display:flex; flex-wrap:wrap; justify-content:end; gap:12px 23px; max-width:660px; margin:0; }
+.orbit-pages .footer-links a { color:var(--ink-3); font:400 12px/1.8 var(--font); text-decoration:none; }
+.orbit-pages .footer-links a:hover { color:var(--ink); }
+.orbit-pages .copyright { min-height:0; display:block; margin:28px auto 0; padding:0; color:var(--ink-3); font:400 11px/1.7 var(--font); }
+.orbit-pages .wrap { width:100%; }
+.orbit-pages.page-recruiting-guide main { width:var(--reading); margin:80px auto; padding:0; background:none; border:0; border-radius:0; }
+.orbit-pages.page-recruiting-news .hero { width:var(--reading); margin:0 auto; padding:80px 0 38px; gap:0; }
+.orbit-pages.page-recruiting-news main { width:var(--reading); margin:0 auto 80px; background:none; border:0; border-top:1px solid var(--line); padding:32px 0 0; box-shadow:none; }
+.orbit-pages.page-recruiting-guide h1,.orbit-pages.page-recruiting-news h1 { font-size:clamp(40px,5vw,60px); font-weight:550; line-height:1.1; }
+.orbit-pages.page-recruiting-news h1 em { color:var(--ink-3); }
+.orbit-pages.page-recruiting-guide h2,.orbit-pages.page-recruiting-news h2 { font-weight:500; font-size:23px; line-height:1.4; margin-top:40px; }
+.orbit-pages.page-recruiting-guide p,.orbit-pages.page-recruiting-guide li,.orbit-pages.page-recruiting-news p { color:var(--ink-2); line-height:1.85; }
+.orbit-pages .lead { font-size:17px; }
+.orbit-pages pre { color:#d3d0de; background:var(--paper); border:1px solid var(--line-strong); padding:26px; font-size:13px; }
+.orbit-pages .preferences { margin:80px auto 100px; }
+.orbit-pages .preferences h1 { font-weight:550; }
+.orbit-pages .preferences .panel { background:var(--paper); border-color:var(--line-strong); box-shadow:none; }
+.orbit-pages .preferences input,.orbit-pages .field input[type=email],.orbit-pages textarea { background:#090a0e; color:var(--ink); border-color:#ffffff2b; border-radius:12px; }
+.orbit-pages .preferences input::placeholder,.orbit-pages input::placeholder { color:#7e7b8c; }
+.orbit-pages .preferences button,.orbit-pages .submit,.orbit-pages .desktop-link { background:var(--ink); color:#16161c; font-weight:500; border-radius:999px; }
+.orbit-pages .preferences button:hover { background:#fff; }
+.orbit-pages .preferences .status,.orbit-pages .error { background:#25191d; color:#ffbdc4; border-color:#ffbdc430; }
+.orbit-pages .preferences .status.ok { background:#12251e; color:#a6e2c2; }
+.orbit-pages.page-start main.shell { min-height:calc(100svh - 76px); padding:65px 0 90px; gap:70px; }
+.orbit-pages .intro h1 { font-weight:550; font-size:clamp(44px,5vw,64px); line-height:1.05; }
+.orbit-pages .card { background:var(--paper); border-color:var(--line-strong); box-shadow:none; border-radius:20px; }
+.orbit-pages .card:before,.orbit-pages .card:after,.orbit-pages .ambient { display:none; }
+.orbit-pages .card-top { font:400 11px/1.5 var(--font); letter-spacing:0; }
+.orbit-pages .device,.orbit-pages .receipt,.orbit-pages .goal-receipt,.orbit-pages .time-note { background:var(--paper); border-color:var(--line-strong); }
+.orbit-pages .field-hint,.orbit-pages .privacy-note,.orbit-pages .status { color:var(--ink-3); }
+.orbit-pages .fine { color:var(--ink-3)!important; line-height:1.8!important; }
+.orbit-pages.page-continue main { padding:80px 0 100px; min-height:calc(100svh - 240px); }
+.orbit-pages.page-continue .orb i { border-color:#f2f2f5; border-width:3px; }
+.orbit-pages.page-continue .actions .primary { color:#16161c; background:var(--ink); border-radius:999px; }
+.orbit-pages.page-continue .actions .secondary { color:var(--ink); background:transparent; border-color:var(--line-strong); border-radius:999px; }
+@media(min-width:800px) and (prefers-reduced-motion:no-preference) {
+  .orbit-pages .page-hero,.orbit-pages .legal-wrap,.orbit-pages .preferences { animation:page-enter .55s var(--ease) both; }
+  @keyframes page-enter { from { opacity:.2; transform:translateY(10px); } to { opacity:1; transform:none; } }
+}
+@media(max-width:900px) {
+  .orbit-pages .plan,.orbit-pages .plan.featured { padding:24px; }
+  .orbit-pages .price strong { font-size:43px; }
+  .orbit-pages .contact-card { grid-template-columns:1fr; }
+}
+@media(max-width:700px) {
+  :root { --shell:calc(100% - 40px); --reading:calc(100% - 40px); }
+  .orbit-pages .topbar { min-height:66px; height:66px; gap:15px; }
+  .orbit-pages .brand { font-size:22px; gap:6px; }
+  .orbit-pages .nav { gap:16px; }
+  .orbit-pages .nav a:not(.primary) { display:block; font-size:12px; }
+  .orbit-pages .nav a[href$="#demo"] { display:none; }
+  .orbit-pages .nav .primary { padding:8px 14px; font-size:11px; }
+  .orbit-pages .page-hero { padding:56px 0 34px; }
+  .orbit-pages .page-hero h1 { font-size:48px; }
+  .orbit-pages .page-hero>p { font-size:14px; }
+  .orbit-pages .hero-meta { gap:10px 16px; }
+  .orbit-pages .pill { font-size:11px; }
+  .orbit-pages .pill+.pill:before { margin-right:16px; }
+  .orbit-pages .pricing-grid { grid-template-columns:1fr; gap:14px; }
+  .orbit-pages .plan,.orbit-pages .plan.featured,.orbit-pages .secondary-plan { grid-column:auto; min-height:0; padding:28px; margin:0; }
+  .orbit-pages .plan ul { margin:20px 0 26px; }
+  .orbit-pages .price { margin:20px 0 10px; }
+  .orbit-pages .credit-explainer { margin-top:28px; padding-top:36px; }
+  .orbit-pages .credit-stages { grid-template-columns:1fr; }
+  .orbit-pages .credit-stage,.orbit-pages .credit-stage+.credit-stage { padding:24px 0; border-left:0; }
+  .orbit-pages .credit-stage+.credit-stage { border-top:1px solid var(--line); }
+  .orbit-pages .credit-example { padding:24px; }
+  .orbit-pages .credit-example strong { font-size:20px; }
+  .orbit-pages .pricing-note { margin-bottom:65px; }
+  .orbit-pages .legal-wrap { padding:56px 0 65px; }
+  .orbit-pages .legal-card p,.orbit-pages .legal-card li { font-size:14px; }
+  .orbit-pages .updated { margin-bottom:32px; }
+  .orbit-pages .contact-card { padding:24px; }
+  .orbit-pages .footer-inner { flex-direction:column; gap:26px; }
+  .orbit-pages .footer-links { justify-content:start; gap:12px 22px; }
+  .orbit-pages.page-recruiting-guide main { margin-block:52px 64px; }
+  .orbit-pages.page-recruiting-news .hero { padding-top:52px; }
+  .orbit-pages .preferences { margin-block:52px 64px; }
+  .orbit-pages.page-start main.shell { grid-template-columns:1fr; gap:26px; padding:35px 0 55px; }
+  .orbit-pages.page-start .intro h1 { font-size:44px; }
+  .orbit-pages.page-continue main { padding:55px 0 70px; }
+}
+@media(max-width:380px) { .orbit-pages .nav { gap:10px; } .orbit-pages .nav .primary { padding:8px 10px; } }
+@media(prefers-reduced-motion:reduce) { html { scroll-behavior:auto; } .orbit-pages *, .orbit-pages *:before,.orbit-pages *:after { animation:none!important; transition:none!important; } }

@@ -27,11 +27,18 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - run: npm run build
+      - run: npm run test:unit
+      - run: npx playwright install --with-deps chromium webkit
+      - name: Verify production pages, mobile handoff and installer routing (mocked services)
+        run: npm run test:production
       - name: Require production and website pricing to agree
         run: node test/pricing-production-parity.mjs
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: .
+          path: dist
       - id: deployment
         uses: actions/deploy-pages@v4

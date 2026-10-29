@@ -2,7 +2,7 @@ import { createServer } from 'node:http';
 import { existsSync, readFileSync, statSync } from 'node:fs';
 import { dirname, extname, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
-export const root=resolve(dirname(fileURLToPath(import.meta.url)),'..');
+export const root=resolve(dirname(fileURLToPath(import.meta.url)),'..',process.env.SITE_TEST_ROOT||'.');
 export async function serve(){
  const server=createServer((req,res)=>{
   let path;try{path=decodeURIComponent(new URL(req.url,'http://localhost').pathname)}catch{res.writeHead(400).end();return}
