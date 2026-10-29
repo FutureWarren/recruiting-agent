@@ -1,0 +1,84 @@
+/* Orbit signature study. Only the opening composition changes; the original
+   content, navigation, product walkthrough and download scripts stay in place. */
+.nav-wrap { padding-top: 14px; }
+.nav { border-color: transparent; border-radius: 16px; }
+.nav .brand { font-size: 22px; letter-spacing: -.045em; font-weight: 650; }
+.nav-links { font-size: 13px; }
+.nav-download { border-radius: 999px; padding: 9px 19px; }
+.cursor-aura { display: none !important; }
+.signature-fold { min-height: 0; }
+.signature-fold > .signature-shell { display: block; width: min(1600px, calc(100% - 40px)); margin: 14px auto 42px; }
+.signature-hero {
+  display: block; position: relative; isolation: isolate; width: 100%; padding: 0;
+  min-height: 760px; overflow: hidden; border-radius: 26px;
+  color: #f5f5f7; background: #09090c;
+  border: 1px solid rgba(20,20,28,.12);
+}
+.signature-art { position: absolute; inset: 0 0 auto; height: 430px; pointer-events: none; z-index: -1; }
+.signature-art canvas { width: 100%; height: 100%; display: block; opacity: 0; transition: opacity .7s ease; }
+.signature-art[data-render-state=ready] canvas { opacity: 1; }
+.signature-art[data-render-state=ready] .signature-fallback { opacity: 0; }
+.signature-fallback { position: absolute; inset: 0; overflow: hidden; transition: opacity .7s; }
+.signature-fallback i { position: absolute; width: 84%; aspect-ratio: 1.2; left: 8%; bottom: 18%; border: clamp(32px,8vw,120px) solid #79798d; border-radius: 50%; transform: translateY(-3%) rotate(-14deg); box-shadow: inset 0 -3px 4px #d7d7e6, 0 2px 3px #9b94dc; }
+.signature-fallback b { position: absolute; width: 23px; aspect-ratio: 1; border-radius: 50%; right: 17%; top: 45%; background: #5c5cf2; }
+.signature-copy { text-align: center; position: relative; padding: 300px 28px 56px; width: 100%; }
+.signature-copy .signature-intro { font-size: 15px; line-height: 1.5; color: #b6b6c2; max-width: none; margin: 0 0 16px; font-weight: 500; }
+.signature-hero h1 { font-size: clamp(56px, 6.05vw, 90px); line-height: 1.02; letter-spacing: -.055em; font-weight: 600; margin: 0 0 22px; }
+.signature-hero h1 span { display: inline; color: #a6a5b8; }
+.signature-copy .signature-description { max-width: 600px; margin: 0 auto; font-size: 16px; line-height: 1.65; color: #b6b6c2; letter-spacing: -.012em; }
+.signature-copy .actions { justify-content: center; gap: 14px; margin: 26px 0 0; }
+.signature-copy .btn { background: #f5f5f7; color: #1d1d1f; border: 1px solid #f5f5f7; border-radius: 999px; min-height: 46px; padding: 0 22px; font-size: 13px; font-weight: 550; transition: background .18s, border-color .18s; }
+.signature-copy .btn:hover { background: #fff; border-color: #fff; box-shadow: none; }
+.signature-copy .btn-secondary { background: transparent; color: #e5e5ed; border-color: #3d3d49; }
+.signature-copy .btn-secondary:hover { background: #1c1c24; border-color: #707080; }
+.signature-copy .download-info { margin-top: 18px; }
+.signature-copy .dl-meta { color: #92929f; font-size: 10px; }
+.signature-copy .mobile-desktop-reminder { margin: 20px auto 0; background: #16161f; color: #eeeef5; border-color: #303040; text-align: left; }
+.signature-copy .mobile-desktop-reminder p { color: #b6b6c2; }
+.signature-scroll { display: grid; place-content: center; position: absolute; bottom: 18px; left: calc(50% - 16px); width: 32px; height: 32px; color: #9a9aaa; border-radius: 50%; }
+.signature-scroll:hover { color: #fff; background: #1c1c24; }
+.signature-mobile-break { display: none; }
+.signature-fold .hero-companies { border-top: 0; }
+@media (min-width: 761px) and (max-height: 850px) {
+  .signature-hero { min-height: 680px; }
+  .signature-art { height: 360px; }
+  .signature-copy { padding-top: 250px; padding-bottom: 55px; }
+  .signature-hero h1 { font-size: clamp(56px,5.5vw,78px); }
+}
+@media (min-width: 761px) and (max-width: 1080px) {
+  .signature-copy { padding-top: 270px; }
+  .signature-art { height: 380px; }
+}
+@media (max-width: 760px) {
+  .signature-fold > .signature-shell { width: calc(100% - 20px); margin: 8px auto 24px; }
+  .signature-hero { min-height: 0; border-radius: 20px; }
+  .signature-art { height: 260px; }
+  .signature-copy { padding: 194px 22px 55px; }
+  .signature-copy .signature-intro { font-size: 12px; margin-bottom: 15px; }
+  .signature-hero h1 { font-size: clamp(43px, 10.8vw, 74px); line-height: 1.02; margin: 0 0 20px; }
+  .signature-mobile-break { display: inline; }
+  .signature-desktop-break { display: none; }
+  .signature-copy .signature-description { font-size: 14px; line-height: 1.6; max-width: 400px; }
+  .signature-copy .actions { gap: 10px; margin-top: 22px; }
+  .signature-copy .btn { min-height: 46px; font-size: 12px; padding: 0 17px; }
+  .signature-copy .dl-meta { font-size: 9px; max-width: 280px; margin: auto; }
+  .nav .brand { font-size: 19px; }
+  .signature-fallback i { width: 150%; left: -25%; bottom: 10%; border-width: 55px; }
+  .signature-fallback b { right: 6%; top: 26%; width: 17px; }
+  /* Preserve the existing phone journey, including its real video and handoff. */
+  html.orbit-mobile .signature-hero { display: block; padding: 0; }
+  html.orbit-mobile .signature-art { display: block !important; }
+  html.orbit-mobile .signature-copy { padding: 194px 20px 50px; text-align: center; }
+  html.orbit-mobile .signature-copy .signature-intro { font-size: 12px; color: #b6b6c2; }
+  html.orbit-mobile .signature-hero h1 { font-size: clamp(43px,10.8vw,70px); margin: 0 0 18px; }
+  html.orbit-mobile .signature-copy .signature-description { color: #b6b6c2; font-size: 14px; }
+  html.orbit-mobile .signature-copy .video-frame { margin-top: 24px; border-color: #393942; }
+  html.orbit-mobile .signature-copy .mobile-video-caption { color: #aaaab9; }
+  html.orbit-mobile .signature-copy .mobile-video-caption a { color: #d3d3e6; }
+  html.orbit-mobile .signature-copy .btn { background: #f5f5f7; color: #1d1d1f; border: 1px solid #f5f5f7; }
+  html.orbit-mobile .signature-copy .btn-secondary { background: transparent; color: #e5e5ed; border-color: #3d3d49; }
+  html.orbit-mobile .signature-copy .mobile-device-details { color: #b6b6c2; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .signature-art canvas, .signature-fallback { transition: none; }
+}

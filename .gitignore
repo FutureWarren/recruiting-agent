@@ -1,1 +1,5 @@
 node_modules/
+artifacts/3d-review/
+artifacts/
+dist/
+.orbit-publish-*/
