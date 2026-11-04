@@ -4,28 +4,35 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="robots" content="noindex, nofollow, noarchive" />
+    <meta name="referrer" content="no-referrer" />
     <title>Orbit Admin</title>
+    <script>
+      // Open Admin as a top-level page so its frame protection and login work.
+      window.location.replace('https://backend-production-2b40.up.railway.app/admin/');
+    </script>
+    <noscript>
+      <meta http-equiv="refresh" content="0; url=https://backend-production-2b40.up.railway.app/admin/" />
+    </noscript>
     <style>
-      html, body {
-        width: 100%;
-        height: 100%;
+      body {
         margin: 0;
+        min-height: 100vh;
+        display: grid;
+        place-content: center;
+        padding: 24px;
+        box-sizing: border-box;
         background: #0f1115;
+        color: #f4f5f7;
+        font: 16px/1.5 system-ui, sans-serif;
+        text-align: center;
       }
-      iframe {
-        display: block;
-        width: 100%;
-        height: 100%;
-        border: 0;
-      }
+      a { color: #b8bcff; }
     </style>
   </head>
   <body>
-    <iframe
-      src="https://backend-production-2b40.up.railway.app/admin"
-      title="Orbit Admin"
-      referrerpolicy="no-referrer"
-      allow="clipboard-read; clipboard-write"
-    ></iframe>
+    <main>
+      <h1>Opening Orbit Admin…</h1>
+      <p>If you are not redirected, <a href="https://backend-production-2b40.up.railway.app/admin/" referrerpolicy="no-referrer">open Orbit Admin</a>.</p>
+    </main>
   </body>
 </html>
