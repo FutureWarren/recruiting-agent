@@ -25,14 +25,8 @@ jobs:
           npm test 2>&1 | tee artifacts/test-results.log
       - name: Commercial page regressions
         run: npm run test:commercial
-      - name: Verify live delivery after the main-branch Pages deployment
-        if: github.ref == 'refs/heads/main'
-        run: |
-          for attempt in $(seq 1 8); do
-            npm run test:live && exit 0
-            sleep 15
-          done
-          exit 1
+      # Live verification runs only after the Pages deployment has completed.
+      # An independent push job races the deploy and falsely flags stale CDN content.
       - name: Preserve review screenshots and exact tested website
         if: always()
         uses: actions/upload-artifact@v4
