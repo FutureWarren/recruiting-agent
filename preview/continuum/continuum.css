@@ -480,3 +480,28 @@ html { color-scheme:dark; background:var(--bg); }
 @media(prefers-reduced-motion:reduce) {
   .source-card,.personal-studio .email-body mark,.approval-symbol { transition:none; }
 }
+
+/* Student-first positioning: clear two-part contrast across desktop and mobile. */
+.continuum .signature-copy .signature-intro {
+  color:#bdb3ff; font-size:11px; font-weight:650; letter-spacing:.14em;
+}
+.continuum .signature-hero h1 {
+  font-size:clamp(46px,5.45vw,86px); max-width:1280px;
+  margin-left:auto; margin-right:auto; text-wrap:balance;
+}
+.continuum .signature-hero h1 span { color:#b8adff; }
+.continuum .signature-copy .signature-description {
+  max-width:690px; margin-left:auto; margin-right:auto; line-height:1.7;
+}
+@media(max-width:760px) {
+  .continuum .signature-hero h1,
+  html.orbit-mobile .continuum .signature-hero h1 {
+    font-size:clamp(33px,9vw,52px); line-height:1.08;
+  }
+  .continuum .signature-copy .signature-intro {
+    font-size:10px!important; letter-spacing:.10em;
+  }
+  .continuum .signature-copy .signature-description {
+    max-width:430px; font-size:14px; line-height:1.6;
+  }
+}
