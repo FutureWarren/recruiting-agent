@@ -93,38 +93,3 @@ try {
   await browser.close()
   await new Promise(r => server.close(r))
 }
- + plan.priceUsd)
-          }
-          assert.ok((await card.locator('.credits').innerText()).includes(plan.credits.toLocaleString('en-US') + ' Orbit Credits'))
-          const interval = plan.periodMonths === 3 ? 'per three-month period' : plan.periodMonths === 1 ? 'each month' : 'to start'
-          assert.ok((await card.locator('.credits').innerText()).includes(interval))
-        }
-        for (const [kind, cost] of Object.entries(contract.metering)) {
-          const stage = page.locator(`[data-credit-kind="${kind}"]`)
-          assert.equal(await stage.getAttribute('data-credit-cost'), String(cost))
-          assert.ok((await stage.locator('.stage-price').innerText()).startsWith(String(cost)))
-        }
-        await page.locator('.credit-faq details').first().locator('summary').click()
-        assert.equal(await page.locator('.credit-faq details').first().getAttribute('open'), '')
-        assert.ok((await page.locator('.credit-faq details').first().innerText()).includes('not a free-research mode'))
-        if (width === 390 || width === 1440) {
-          await page.evaluate(() => scrollTo(0, 0))
-          await page.waitForTimeout(100)
-          await page.screenshot({path:resolve(root, 'artifacts', `pricing-${width}.png`), fullPage:true})
-        }
-      }
-      for (const href of await page.locator('a[href^="/"]').evaluateAll(els => els.map(e => e.getAttribute('href')))) {
-        const url = new URL(href, base)
-        const localFile = resolve(root, '.' + (url.pathname.endsWith('/') ? url.pathname + 'index.html' : url.pathname))
-        assert.ok(existsSync(localFile), `${path}: broken link ${href}`)
-        if (url.hash) assert.ok(readFileSync(localFile, 'utf8').includes(`id="${decodeURIComponent(url.hash.slice(1))}"`), `${path}: broken anchor ${href}`)
-      }
-      await page.close()
-    }
-  }
-  assert.deepEqual(errors, [])
-  console.log('Commercial pages passed: five widths, all five Credit V2 plans, 2/3/5 metering, billing periods, FAQ, links and stale-claim guards.')
-} finally {
-  await browser.close()
-  await new Promise(r => server.close(r))
-}
