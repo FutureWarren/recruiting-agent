@@ -20,7 +20,7 @@ const base = `http://127.0.0.1:${server.address().port}`
 const browser = await chromium.launch({ ...(process.env.CHROMIUM ? { executablePath: process.env.CHROMIUM } : {}), args: ['--no-sandbox'] })
 const paths = ['/pricing/', '/terms/', '/privacy/', '/refunds/', '/support/']
 const expected = {
-  '/pricing/': ['Available now for Apple Silicon Mac (M1 and later).', 'Windows, Intel Macs, phones and tablets are not supported.', '100 free Orbit Credits', '2 + 3 + 5 = 10 Orbit Credits', '580 Orbit Credits', 'before an email is sent', 'Stripe'],
+  '/pricing/': ['Available for Apple Silicon Mac (M1 and later) and Windows x64 beta.', 'Intel Macs, Windows on ARM, phones and tablets are not supported.', '100 free Orbit Credits', '2 + 3 + 5 = 10 Orbit Credits', '580 Orbit Credits', 'before an email is sent', 'Stripe'],
   '/terms/': ['Operated by Angelic', 'Stripe', 'renew automatically', 'Credit V2', '2 credits', '3 for contact', '5 for completed outreach'],
   '/privacy/': ['Stripe', 'Google', 'Alibaba Cloud', 'Apollo.io'],
   '/refunds/': ['Automatic renewal', 'Stripe', 'Canceling a subscription'],
@@ -57,6 +57,8 @@ try {
             assert.equal(await card.locator('.price strong').innerText(), '$9.99')
             assert.match(await card.locator('.price').innerText(), /first month/)
             assert.match(await card.locator('.intro-price-note').innerText(), /Then \$19\/month/)
+            assert.match(await card.locator('.intro-eligibility-note').innerText(), /eligible first-time Orbit Starter customers/)
+            assert.match(await card.locator('.intro-eligibility-note').innerText(), /no existing Stripe customer record/)
           } else {
             assert.equal(await card.locator('.price strong').innerText(), '$' + plan.priceUsd)
           }
