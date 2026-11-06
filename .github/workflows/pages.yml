@@ -42,3 +42,12 @@ jobs:
           path: dist
       - id: deployment
         uses: actions/deploy-pages@v4
+      - name: Verify newly deployed public site and immutable artifact hashes
+        timeout-minutes: 10
+        run: |
+          for attempt in $(seq 1 15); do
+            npm run test:live && exit 0
+            sleep 20
+          done
+          echo "Public Pages artifact did not match the deployed commit" >&2
+          exit 1
