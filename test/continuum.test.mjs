@@ -16,9 +16,13 @@ test('Reversing input converges without overshoot', () => {
   for (let i = 0; i < 120; i++) { const next = damp(value, .1, MOTION.follow, 1 / 60); assert.ok(next <= value && next >= .1); value = next; }
   assert.ok(value - .1 < .00001);
 });
-test('Original Hero markup, geometry, scene and signature styling are unchanged', async () => {
+test('Approved Hero positioning keeps the signature scene and product controls intact', async () => {
   const sha = value => createHash('sha256').update(value).digest('hex');
-  assert.equal(sha(html.match(/<header class="hero signature-hero">[\s\S]*?<\/header>/)[0]), 'f3c4b1ef3ac23b5d4706f52082b408f155dcf9d1e19f1bffbe0c766de850ed6d');
+  const hero = html.match(/<header class="hero signature-hero">[\s\S]*?<\/header>/)?.[0];
+  assert.ok(hero, 'Hero exists');
+  assert.match(hero, /<h1>No black-box outreach\.<br><span>No AI to babysit\.<\/span><\/h1>/);
+  for (const phrase of ['THE AI NETWORKING AGENT BUILT FOR STUDENTS', 'Watch it work in a real browser', 'You approve before sending.', 'data-orbit-download', 'data-continuum-scene']) assert.ok(hero.includes(phrase), phrase);
+  assert.match(html, /<title>Orbit — AI Networking Agent for Students<\/title>/);
   for (const [file, expected] of [
     ['src/continuum-scene.js', '4fea797545977a30b7b552bf6f87ec672d2f1fa336f8f408c532c21d11076c2a'],
     ['src/signature-model.js', '3579bee26cead425210c961655edc027149a1f111b485a6ba8b8c1ff28a367b7'],

@@ -6,9 +6,13 @@ import { execFileSync } from 'node:child_process';
 const read = path => readFile(new URL('../'+path,import.meta.url),'utf8');
 const after=await read('preview/signature/index.html');
 const before=await read('preview/original/index.html');
-test('Original website content below the hero is retained exactly',()=>{
+test('Only approved proof/demo copy changes below the Hero; product services stay the same',()=>{
   const tail=s=>s.slice(s.indexOf('<section class="company-section')).replace(/<script type="module" src="\/media\/3d\/orbit-signature.js"><\/script>\n/,'');
-  assert.equal(tail(after),tail(before));
+  const normalized = tail(after)
+    .replace('<h2>The proof is in the browser.</h2>', '<h2>Watch Orbit get to work.</h2>')
+    .replace('Watch Orbit research LinkedIn profiles, find work emails, and prepare personalized Gmail drafts—not just deliver a list.', 'Your brief becomes research, work-email discovery, and a personalized introduction. See the full walkthrough.')
+    .replace('A recruiting brief becomes LinkedIn research, work-email discovery, and personalized Gmail drafts. Review messages before sending.', 'A recruiting brief becomes professional research, work-email lookup and personalized outreach. Review messages before sending.');
+  assert.equal(normalized,tail(before));
 });
 test('Existing downloads, mobile handoff, and base styles are unchanged',async()=>{
   for(const file of ['home.js','mobile.js','home.css','mobile.css']) {
@@ -26,7 +30,8 @@ test('Preview is guarded against external writes and does not load the rejected 
 });
 test('Original ring and satellite identity, with no unrequested typewriter or orange palette',async()=>{
   assert.match(after,/class="orbit-mark"/);
-  assert.match(after,/<h1>Your next/);
+  assert.match(after, /<h1>No black-box outreach\.<br><span>No AI to babysit\.<\/span><\/h1>/);
+  assert.match(after, /THE AI NETWORKING AGENT BUILT FOR STUDENTS/);
   const model=await read('src/signature-model.js');
   assert.match(model,/#5c5cf2/);
   assert.match(model,/Orbit brand satellite/);

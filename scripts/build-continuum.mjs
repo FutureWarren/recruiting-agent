@@ -11,19 +11,16 @@ html = html.replace('<body>', '<body class="continuum continuum-dark"><div class
   .replace('data-signature-scene', 'data-continuum-scene')
   .replace('src="/home.js?v=acquisition-v2-20261013"', 'src="/preview/continuum/home-services.js"')
   .replace('src="/media/3d/orbit-signature.js"', 'src="/preview/continuum/assets/continuum.js"')
-  .replace('<title>Orbit — Your AI recruiting employee</title>', '<title>Orbit — A little closer</title>')
-  .replace('Your AI recruiting employee.</div>', 'Your ambition. In motion.</div>')
   .replace('<a href="#how">How it works</a><a href="#demo">Watch demo</a>', '<a href="#demo">Demo</a><a href="#numbers">Results</a>')
   .replace('<div class="kicker">See the product</div>', '')
-  .replace('Your brief becomes research, work-email discovery, and a personalized introduction. See the full walkthrough.', 'From finding the right person to a draft ready for your review.')
   .replace('or explore the workflow above.', 'or read the email example below.')
   .replace('<div class="kicker">Think beyond your circle</div>', '')
   .replace('<section class="final" id="download">', '<section class="final closing-section" id="download">')
   .replace('<span class="orbit-mark" aria-hidden="true"></span><h2>Put Orbit to work.</h2>', `${closingMark}<h2>Your next conversation<br><span>starts here.</span></h2>`)
   .replace('A little more time for everything else.', 'Mac + Windows. 100 free Orbit Credits to start.');
 
-// The Hero header and its 3D scene are deliberately unchanged. Company examples
-// sit directly after the Hero, outside its animation stage, followed by Demo.
+// Keep the signature Hero composition and 3D scene; the source now carries the
+// approved sharper networking positioning. Company examples follow the Hero.
 html = html.replace('</div><section class="company-section hero-companies"', '</div></div><section class="company-section hero-companies"')
   .replace('</p></div></section></div>\n<section id="demo"', '</p></div></section>\n<section id="demo"');
 html = html.replace(/<section id="how"[\s\S]*?<\/section>/, '');
