@@ -52,13 +52,14 @@ try {
           assert.equal(await card.getAttribute('data-period-months'), plan.periodMonths == null ? '' : String(plan.periodMonths))
           assert.equal(await card.locator('h2').innerText(), plan.name)
           if (plan.id === 'basic') {
-            // Starter displays an introductory first-month offer while the
-            // contracted recurring plan remains $19/month after month one.
+            // Starter shows a first-month promotional price while the
+            // recurring plan contract stays at $19/month.
             assert.equal(await card.locator('.price strong').innerText(), '$9.99')
             assert.match(await card.locator('.price').innerText(), /first month/)
             assert.match(await card.locator('.intro-price-note').innerText(), /Then \$19\/month/)
           } else {
-            assert.equal(await card.locator('.price strong').innerText(), '
+            assert.equal(await card.locator('.price strong').innerText(), '$' + plan.priceUsd)
+          }
           assert.ok((await card.locator('.credits').innerText()).includes(plan.credits.toLocaleString('en-US') + ' Orbit Credits'))
           const interval = plan.periodMonths === 3 ? 'per three-month period' : plan.periodMonths === 1 ? 'each month' : 'to start'
           assert.ok((await card.locator('.credits').innerText()).includes(interval))
