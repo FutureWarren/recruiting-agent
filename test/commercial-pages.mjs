@@ -24,7 +24,7 @@ const expected = {
   '/terms/': ['Operated by Angelic', 'Stripe', 'renew automatically', 'Credit V2', '2 credits', '3 for contact', '5 for completed outreach'],
   '/privacy/': ['Stripe', 'Google', 'Alibaba Cloud', 'Apollo.io'],
   '/refunds/': ['Automatic renewal', 'Stripe', 'Canceling a subscription'],
-  '/support/': ['Supported computers', 'Available now for Apple Silicon Mac (M1 and later).', 'Windows, Intel Macs, phones and tablets are not supported.', 'lw3405@nyu.edu', 'Credits did not update']
+  '/support/': ['Supported computers', 'Available for Apple Silicon Mac (M1 and later) and Windows x64 beta.', 'Intel Macs, Windows on ARM, phones and tablets are not supported.', 'lw3405@nyu.edu', 'Credits did not update']
 }
 const errors = []
 const stale = /one credit (?:is|is charged)|pay for completed personalized outreach|\b30 free credits\b/i
