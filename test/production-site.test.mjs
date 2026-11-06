@@ -17,6 +17,19 @@ test('Production ships the approved design, not the old prototype or disabled pr
   }
   assert.match(html,/\/assets\/orbit\/continuum.js\?v=[0-9a-f]{12}/);
 });
+test('Deployed Hero differentiates transparent execution from generic DIY AI workflows',()=>{
+  assert.match(html, /<title>Orbit — AI Networking Agent for Students<\/title>/);
+  assert.match(html, /<h1>No black-box outreach\.<br><span>No AI to babysit\.<\/span><\/h1>/);
+  assert.match(html, /THE AI NETWORKING AGENT BUILT FOR STUDENTS/);
+  assert.match(html, /Watch it work in a real browser/);
+  assert.match(html, /LinkedIn/);
+  assert.match(html, /personalized Gmail drafts/);
+  assert.match(html, /You approve before sending\./);
+  assert.match(html, /The proof is in the browser\./);
+  assert.match(html, /id="dl-btn" data-orbit-download/);
+  assert.match(html, /id="hero-demo"/);
+  assert.doesNotMatch(html, /Install the Orbit Chrome Extension|Run in your browser with no install/);
+});
 test('All rendered pages retain prices, legal prose and executable business code',async()=>{
   for(const page of ['pricing','support','privacy','terms','refunds','unsubscribe']) assert.equal(main(await read(`dist/${page}/index.html`)),main(await read(`${page}/index.html`)),page);
   for(const page of pages) {
