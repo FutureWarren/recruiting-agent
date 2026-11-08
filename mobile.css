@@ -89,3 +89,9 @@ html.orbit-mobile .orbit-task-error{color:#ffb9b9;font-size:12px;line-height:1.4
 html.orbit-mobile .mobile-prepared-task{padding:12px 13px!important;margin:10px 0 12px!important;border:1px solid #ddd9fa;border-radius:11px;background:#f3f1ff;color:#28253b!important;font-size:12px!important;line-height:1.6!important;max-height:125px;overflow:auto}
 @media(min-width:520px){html.orbit-mobile .orbit-task-fields{grid-template-columns:1fr 1fr}}
 @media(prefers-reduced-motion:reduce){html.orbit-mobile .orbit-task-submit{transition:none}}
+
+/* Safari may include off-canvas 3D decoration in scrollWidth on narrow phones. */
+html.orbit-mobile, html.orbit-mobile body { max-width:100%;overflow-x:clip; }
+html.orbit-mobile .mobile-illustrative-email{margin:8px 0 12px;padding:10px 12px;border:1px solid #dfdcf3;border-radius:10px;background:#fff}
+html.orbit-mobile .mobile-illustrative-email summary{cursor:pointer;font-size:12px;font-weight:650;line-height:1.5;color:#332c66;min-height:25px}
+html.orbit-mobile .mobile-example-message{margin:8px 0 0!important;font-size:12px!important;line-height:1.6!important;white-space:pre-line;color:#383444!important}
