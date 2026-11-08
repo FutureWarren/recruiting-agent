@@ -11,7 +11,8 @@ test('Only approved proof/demo copy changes below the Hero; product services sta
   const normalized = tail(after)
     .replace('<h2>The proof is in the browser.</h2>', '<h2>Watch Orbit get to work.</h2>')
     .replace('Watch Orbit research LinkedIn profiles, find work emails, and prepare personalized Gmail drafts—not just deliver a list.', 'Your brief becomes research, work-email discovery, and a personalized introduction. See the full walkthrough.')
-    .replace('A recruiting brief becomes LinkedIn research, work-email discovery, and personalized Gmail drafts. Review messages before sending.', 'A recruiting brief becomes professional research, work-email lookup and personalized outreach. Review messages before sending.');
+    .replace('A recruiting brief becomes LinkedIn research, work-email discovery, and personalized Gmail drafts. Review messages before sending.', 'A recruiting brief becomes professional research, work-email lookup and personalized outreach. Review messages before sending.')
+    .replace('/mobile.js?v=task-first-20261108-1', '/mobile.js?v=mobile-first-20261013-1');
   assert.equal(normalized,tail(before));
 });
 test('Existing downloads, mobile handoff, and base styles are unchanged',async()=>{
