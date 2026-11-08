@@ -136,6 +136,18 @@ function initSiteAttribution(){
  return {send};
 }
 const siteTracking=initSiteAttribution();
+// A Descript iframe cannot expose reliable native play events across origins.
+// Measure only when the demo actually becomes visible, not when it loads.
+const demoForVisibility=document.getElementById('hero-demo');
+if(demoForVisibility&&'IntersectionObserver' in window){
+ const observer=new IntersectionObserver(entries=>{
+  if(entries.some(entry=>entry.isIntersecting&&entry.intersectionRatio>=.5)){
+   siteTracking.send('demo_visible_v3');
+   observer.disconnect();
+  }
+ },{threshold:.5});
+ observer.observe(demoForVisibility);
+}
 const downloadReady=initDownload();
 initMobileHandoffModal();
 document.querySelectorAll('[data-orbit-download]').forEach(button=>button.addEventListener('click',async event=>{
