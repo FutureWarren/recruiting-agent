@@ -36,9 +36,7 @@ html.orbit-mobile .footer-inner{display:block;font-size:10px}
 html.orbit-mobile .footer-links{display:flex;flex-wrap:wrap;gap:4px 16px;margin-top:6px}
 html.orbit-mobile .footer-links a{min-height:36px;display:inline-flex;align-items:center}
 html.orbit-mobile .footer-links a[href^='https://github.com']{display:none}
-/* CSS exposes the email field on first paint, even while deferred JS loads. */
-html.orbit-mobile.orbit-mobile-pending body{overflow:hidden}
-html.orbit-mobile.orbit-mobile-pending #mobile-handoff-modal[hidden]{display:grid!important;opacity:1;pointer-events:auto}
+/* Mobile viewers see the actual product before they choose to save a task. */
 html.orbit-mobile .mobile-handoff-modal{display:grid;place-items:end center;padding:0;inset:0;top:var(--orbit-vv-top,0px);bottom:auto;height:var(--orbit-vv-height,100dvh);width:100%;transition:opacity .15s ease}
 html.orbit-mobile .mobile-handoff-modal.is-open{display:grid!important;opacity:1;pointer-events:auto}
 html.orbit-mobile .mobile-handoff-modal[hidden]:not(.is-open){display:none!important}
@@ -73,3 +71,21 @@ html.orbit-mobile .mobile-handoff-again{min-height:40px;margin:6px auto 0;font-s
  html.orbit-mobile .story-scene{display:grid}
  html.orbit-mobile .scene-layer{position:relative;inset:auto;grid-area:1/1;min-width:0;align-self:start}
 }
+
+
+/* Task-first mobile conversion: real demo -> university/industry -> email handoff. */
+html.orbit-mobile .orbit-mobile-task{margin:14px 0 0;padding:20px 18px;border-radius:18px;background:#171923;border:1px solid rgba(175,171,255,.27);color:#f7f7fd;box-shadow:0 16px 36px rgba(3,4,12,.16)}
+html.orbit-mobile .orbit-task-eyebrow{font-size:10px;font-weight:760;letter-spacing:.14em;color:#a9a7ff;margin-bottom:9px}
+html.orbit-mobile .orbit-mobile-task h2{font-size:clamp(23px,6.8vw,30px);font-weight:700;letter-spacing:-.04em;line-height:1.15;color:#fff;margin:0 0 9px}
+html.orbit-mobile .orbit-mobile-task>p:not(.orbit-task-fine){font-size:13px;line-height:1.55;color:#c5c6d2;margin:0 0 17px}
+html.orbit-mobile .orbit-task-fields{display:grid;gap:11px}
+html.orbit-mobile .orbit-task-fields label{display:grid;gap:6px;color:#e3e4f3;font-size:12px;font-weight:630}
+html.orbit-mobile .orbit-task-fields input,html.orbit-mobile .orbit-task-fields select{display:block;width:100%;min-height:47px;max-width:100%;padding:10px 12px;color:#191b25;font-size:16px;font-weight:500;font-family:inherit;background:#fff;border:1px solid #cccce0;border-radius:10px;box-shadow:none}
+html.orbit-mobile .orbit-task-fields input:focus-visible,html.orbit-mobile .orbit-task-fields select:focus-visible{outline:3px solid #a8a7ff;outline-offset:2px}
+html.orbit-mobile .orbit-task-submit{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;min-height:52px;padding:12px 13px;margin:14px 0 0;color:#11121a;background:#d4d0ff;border:0;border-radius:12px;font:700 14px/1.35 inherit;cursor:pointer;box-shadow:none}
+html.orbit-mobile .orbit-task-submit:focus-visible{outline:3px solid #fff;outline-offset:2px}
+html.orbit-mobile .orbit-task-fine{color:#b9b9c7!important;font-size:10px!important;line-height:1.5!important;margin:11px 0 0!important}
+html.orbit-mobile .orbit-task-error{color:#ffb9b9;font-size:12px;line-height:1.4;margin:8px 0 0}
+html.orbit-mobile .mobile-prepared-task{padding:12px 13px!important;margin:10px 0 12px!important;border:1px solid #ddd9fa;border-radius:11px;background:#f3f1ff;color:#28253b!important;font-size:12px!important;line-height:1.6!important;max-height:125px;overflow:auto}
+@media(min-width:520px){html.orbit-mobile .orbit-task-fields{grid-template-columns:1fr 1fr}}
+@media(prefers-reduced-motion:reduce){html.orbit-mobile .orbit-task-submit{transition:none}}
