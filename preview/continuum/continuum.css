@@ -505,3 +505,15 @@ html { color-scheme:dark; background:var(--bg); }
     max-width:430px; font-size:14px; line-height:1.6;
   }
 }
+
+
+/* Approved light-mode product video, hosted through Descript's published embed. */
+.demo-showcase iframe.demo-embed,
+html.orbit-mobile .hero-copy iframe.demo-embed {
+  display:block; width:100%; height:auto; aspect-ratio:16/9;
+  border:0; border-radius:0; background:#f7f7f9;
+}
+.demo-illustrative-note {
+  margin:11px auto 0;max-width:1120px;padding:0 4px;
+  color:#8a8996;font-size:11px;line-height:1.5;text-align:center;
+}
