@@ -6,15 +6,22 @@ import { execFileSync } from 'node:child_process';
 const read = path => readFile(new URL('../'+path,import.meta.url),'utf8');
 const after=await read('preview/signature/index.html');
 const before=await read('preview/original/index.html');
-test('Hero, company section, and business copy remain intact around approved light-mode demo',()=>{
-  const tail=s=>s.slice(s.indexOf('<section class="company-section')).replace(/<script type="module" src="\\/media\\/3d\\/orbit-signature.js"><\\/script>\\n/,'');
-  const normalize=s=>tail(s).replace(/<div class="video-frame">[\\s\\S]*?<\\/details>/,'<APPROVED_DEMO>');
+
+test('Hero and business copy remain intact around approved light-mode demo',()=>{
+  const tail=s=>s.slice(s.indexOf('<section class="company-section'))
+    .replace('<script type="module" src="/media/3d/orbit-signature.js"></script>' + String.fromCharCode(10),'');
+  const normalize=s=>{
+    const html=tail(s), start=html.indexOf('<div class="video-frame">');
+    const end=html.indexOf('</details>',start);
+    assert.ok(start>=0&&end>=0,'expected media+transcript block');
+    return html.slice(0,start)+'<APPROVED_DEMO>'+html.slice(end+'</details>'.length);
+  };
   const normalized=normalize(after)
     .replace('<h2>The proof is in the browser.</h2>', '<h2>Watch Orbit get to work.</h2>')
     .replace('Watch Orbit research LinkedIn profiles, find work emails, and prepare personalized Gmail drafts—not just deliver a list.', 'Your brief becomes research, work-email discovery, and a personalized introduction. See the full walkthrough.');
   assert.equal(normalized,normalize(before));
-  assert.match(after,/src="https:\\/\\/share.descript.com\\/embed\\/ajzqFGunaT1"/);
-  assert.match(after,/Sending requires your approval/);
+  assert.ok(after.includes('src="https://share.descript.com/embed/ajzqFGunaT1"'));
+  assert.ok(after.includes('Sending requires your approval'));
 });
 test('Existing downloads, mobile handoff, and base styles are unchanged',async()=>{
   for(const file of ['home.js','mobile.js','home.css','mobile.css']) {
