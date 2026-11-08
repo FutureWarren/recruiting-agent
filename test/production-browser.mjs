@@ -40,32 +40,59 @@ try {
       for(const [device,width,height,ua,touch] of [['phone',390,844,UA.phone,1],['small-phone',320,568,UA.phone,1],['android',360,740,UA.android,1],['ipad',1024,768,UA.mac,5]]) {
         const t=await setup(browser,{ua,width,height,touch});
         await t.page.goto(server.base+'/?source=internal_test&utm_campaign=approved_design');
-        await t.page.locator('#mobile-handoff-modal.is-open').waitFor();
+        await t.page.locator('#orbit-mobile-task').waitFor({state:'visible'});
+        assert.equal(await t.page.locator('#mobile-handoff-modal').isVisible(),false,'no unsolicited email sheet');
+        assert.equal(await t.page.locator('#hero-demo').evaluate(e=>!!e.closest('.hero-copy')),true,'real demo remains in mobile hero');
+        noSend(t);await noOverflow(t.page,device);
+        assert.equal(t.requests.some(r=>['cta_clicked_v2','email_started_v2'].includes(r.body?.stage)),false);
+        await t.page.locator('#orbit-task-school').fill('NYU');
+        await t.page.locator('#orbit-task-industry').selectOption('Investment Banking');
+        await t.page.locator('.orbit-task-submit').click();
+        await t.page.locator('#mobile-handoff-modal.is-open').waitFor({state:'visible'});
         assert.equal(await t.page.locator('#mobile-handoff-form input').count(),1);
         assert.equal(await t.page.locator('#mobile-handoff-email').isVisible(),true);
-        assert.equal(await t.page.evaluate(()=>document.activeElement.id==='mobile-handoff-email'),false,'do not raise keyboard automatically');
-        assert.equal(t.requests.some(r=>['cta_clicked_v2','email_started_v2'].includes(r.body?.stage)),false,'automatic display is not intent');
-        noSend(t);await noOverflow(t.page,device);
-        assert.equal(await t.page.locator('#hero-demo').evaluate(e=>!!e.closest('.hero-copy')),true);
+        assert.match(await t.page.locator('#mobile-prepared-task').innerText(),/NYU alumni in Investment Banking/);
+        assert.equal(t.requests.some(r=>r.body?.stage==='task_config_started_v3'),true);
+        assert.equal(t.requests.some(r=>r.body?.stage==='task_previewed_v3'),true);
+        noSend(t);
         await t.page.locator('#mobile-copy-before').click();noSend(t);
-        const copied=new URL(await t.page.evaluate(()=>window.__copied));assert.equal(copied.origin,'https://orbit-reaches.com');assert.equal(copied.searchParams.get('utm_campaign'),'approved_design');
+        const copied=new URL(await t.page.evaluate(()=>window.__copied));
+        assert.equal(copied.origin,'https://orbit-reaches.com');
+        assert.equal(copied.searchParams.get('utm_campaign'),'approved_design');
         await t.page.locator('.mobile-handoff-close').click();await t.page.locator('#mobile-handoff-modal').waitFor({state:'hidden'});
         assert.equal(await t.page.locator('main').evaluate(e=>e.inert),false);
-        for(const section of ['#companies','#numbers','#profile','#download']) {await t.page.locator(section).scrollIntoViewIfNeeded();assert.equal(await t.page.locator(section).isVisible(),true);}
+        for(const section of ['#companies','#numbers','#profile','#download']) {
+          await t.page.locator(section).scrollIntoViewIfNeeded();
+          assert.equal(await t.page.locator(section).isVisible(),true);
+        }
         await noOverflow(t.page,device+' full page');
-        await t.page.locator('#dl-btn-final').click();await t.page.locator('#mobile-handoff-email').waitFor({state:'visible'});
-        await t.page.locator('#mobile-handoff-email').fill('not-an-email');await t.page.locator('#mobile-handoff-submit').click();noSend(t);
-        await t.page.locator('#mobile-handoff-email').fill('fixture@example.test');await t.page.locator('#mobile-handoff-submit').click();
+        await t.page.locator('#dl-btn-final').click();
+        await t.page.locator('#mobile-handoff-modal.is-open').waitFor({state:'visible'});
+        await t.page.locator('#mobile-handoff-email').fill('not-an-email');
+        await t.page.locator('#mobile-handoff-submit').click();noSend(t);
+        await t.page.locator('#mobile-handoff-email').fill('fixture@example.test');
+        await t.page.locator('#mobile-handoff-submit').click();
         await t.page.locator('#mobile-handoff-success:not([hidden])').waitFor();
         assert.match(await t.page.locator('#mobile-handoff-success-title').innerText(),/Check your inbox/);
-        const calls=t.requests.filter(r=>r.path==='/api/handoff/start');assert.equal(calls.length,1);assert.equal(calls[0].body.platform,'mobile');assert.equal(calls[0].body.funnelVersion,2);assert.equal(calls[0].body.firstName,undefined);assert.equal(calls[0].body.goal,undefined);
-        assert.equal(await t.page.locator('#mobile-handoff-copy').isVisible(),true);assert.deepEqual(t.errors,[]);
+        const calls=t.requests.filter(r=>r.path==='/api/handoff/start');
+        assert.equal(calls.length,1);
+        assert.equal(calls[0].body.platform,'mobile');
+        assert.equal(calls[0].body.funnelVersion,2);
+        assert.equal(calls[0].body.firstName,undefined);
+        assert.match(calls[0].body.goal,/NYU alumni in Investment Banking/);
+        assert.match(calls[0].body.detail,/Do not send messages without my approval/);
+        assert.equal(await t.page.locator('#mobile-handoff-copy').isVisible(),true);
+        assert.deepEqual(t.errors,[]);
         await t.page.screenshot({path:`artifacts/production-review/${name}-${device}.png`});
-        await t.ctx.close();console.log(`PASS ${name} ${device}: immediate sheet, one field, copy, reopen, mocked submit, layout`);
+        await t.ctx.close();console.log(`PASS ${name} ${device}: task-first hero, explicit task, copy, saved handoff, mocked submit, layout`);
       }
       for(const status of ['accepted','failed','error']) {
         const t=await setup(browser,{status});await t.page.goto(server.base);
-        await t.page.locator('#mobile-handoff-email').fill('fixture@example.test');await t.page.locator('#mobile-handoff-submit').click();
+        await t.page.locator('#orbit-task-school').fill('NYU');
+        await t.page.locator('.orbit-task-submit').click();
+        await t.page.locator('#mobile-handoff-modal.is-open').waitFor({state:'visible'});
+        await t.page.locator('#mobile-handoff-email').fill('fixture@example.test');
+        await t.page.locator('#mobile-handoff-submit').click();
         if(status==='error') {await t.page.locator('#mobile-handoff-error').waitFor({state:'visible'});assert.equal(await t.page.locator('#mobile-copy-before').isVisible(),true);}
         else {await t.page.locator('#mobile-handoff-success:not([hidden])').waitFor();assert.doesNotMatch(await t.page.locator('#mobile-handoff-success-copy').innerText(),/We delivered/);assert.equal(await t.page.locator('#mobile-handoff-copy').isVisible(),true);}
         assert.deepEqual(t.errors,[]);await t.ctx.close();console.log(`PASS ${name} delivery state ${status}`);
