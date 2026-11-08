@@ -47,6 +47,94 @@
   copy.append(requirements);
   root.classList.add('mobile-ready');
 
+  // First value on mobile is a prepared networking task, not an unexpected email sheet.
+  const composer = document.createElement('section');
+  composer.id = 'orbit-mobile-task';
+  composer.className = 'orbit-mobile-task';
+  composer.setAttribute('aria-labelledby', 'orbit-mobile-task-title');
+  composer.innerHTML = [
+    '<div class="orbit-task-eyebrow">01 / PREPARE YOUR FIRST TASK</div>',
+    '<h2 id="orbit-mobile-task-title">Start with alumni who get your path.</h2>',
+    '<p>Tell Orbit where you study and what field interests you. We will prepare the task here, then run it on your computer.</p>',
+    '<form id="orbit-mobile-task-form" novalidate>',
+    '<div class="orbit-task-fields">',
+    '<label for="orbit-task-school">Your university<input id="orbit-task-school" name="school" type="text" placeholder="e.g. NYU" autocomplete="organization" maxlength="55" required></label>',
+    '<label for="orbit-task-industry">Target industry<select id="orbit-task-industry" name="industry"><option value="Investment Banking">Investment Banking</option><option value="Consulting">Consulting</option><option value="Private Equity">Private Equity</option><option value="Technology">Technology</option><option value="Asset Management">Asset Management</option><option value="Marketing">Marketing</option><option value="Other professional fields">Other</option></select></label>',
+    '</div>',
+    '<p class="orbit-task-error" id="orbit-task-error" role="alert" hidden></p>',
+    '<button type="submit" class="orbit-task-submit">Prepare my networking task <span aria-hidden="true">→</span></button>',
+    '</form>',
+    '<p class="orbit-task-fine">No LinkedIn or Gmail password on this website. You will review drafts before sending.</p>'
+  ].join('');
+  caption.after(composer);
+  const taskForm = composer.querySelector('#orbit-mobile-task-form');
+  const school = composer.querySelector('#orbit-task-school');
+  const industry = composer.querySelector('#orbit-task-industry');
+  const taskError = composer.querySelector('#orbit-task-error');
+  let preparedTask = null;
+  const markedStages = new Set();
+  const recordStage = stage => {
+    if (markedStages.has(stage) || typeof handoffApi !== 'function') return;
+    markedStages.add(stage);
+    void handoffApi('/api/handoff/event', {
+      visitorId: handoffVisitor(), stage, ...handoffAttribution()
+    }).catch(() => {});
+  };
+  window.orbitMobileTask = () => preparedTask ? {...preparedTask} : null;
+  const invalidate = () => { preparedTask = null; taskError.hidden = true; recordStage('task_config_started_v3'); };
+  school.addEventListener('input', invalidate);
+  industry.addEventListener('change', invalidate);
+  video.addEventListener('play', () => { if (video.currentTime < 2) recordStage('demo_played_v3'); }, {once:true});
+  taskForm.addEventListener('submit', event => {
+    event.preventDefault();
+    const university = school.value.trim().replace(/\s+/g, ' ').slice(0, 55);
+    if (!university) {
+      taskError.textContent = 'Add your university so Orbit knows which alumni to look for.';
+      taskError.hidden = false;
+      school.focus();
+      return;
+    }
+    taskError.hidden = true;
+    const field = industry.value;
+    preparedTask = {
+      goal: 'Connect with ' + university + ' alumni in ' + field,
+      detail: 'Find up to 5 relevant alumni on LinkedIn, research their professional backgrounds, avoid duplicate contacts, look for available work emails, and prepare personalized networking email drafts for my review. Do not send messages without my approval.'
+    };
+    const title = document.getElementById('mobile-handoff-title');
+    const intro = document.querySelector('#mobile-handoff-form-state > p');
+    title.textContent = 'Your first task is ready.';
+    intro.textContent = 'Email this prepared task to yourself, then open it on your Mac or Windows computer.';
+    let summary = document.getElementById('mobile-prepared-task');
+    if (!summary) {
+      summary = document.createElement('p');
+      summary.id = 'mobile-prepared-task';
+      summary.className = 'mobile-prepared-task';
+      intro.after(summary);
+    }
+    summary.textContent = preparedTask.goal + '. ' + preparedTask.detail;
+    recordStage('task_previewed_v3');
+    window.dispatchEvent(new Event('orbit:open-handoff'));
+  });
+  // Existing download links remain present for no-JS/desktop users. On phones,
+  // each call-to-action leads to the composer instead of a forced email modal.
+  document.querySelectorAll('[data-orbit-download]').forEach(button => {
+    button.addEventListener('click', event => {
+      if (button.dataset.downloadState !== 'handoff') return;
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      recordStage('cta_clicked_v2');
+      if (preparedTask) {
+        window.dispatchEvent(new Event('orbit:open-handoff'));
+      } else {
+        composer.scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'center'});
+      }
+    }, {capture:true});
+  });
+  // Keep the current real 1080p recording until the newly reviewed demo is ready.
+  // A poster and manual playback avoid forcing a large video download on mobile data.
+  video.preload = 'metadata';
+
+
   const brand = document.createElement('div');
   brand.className = 'mobile-sheet-brand';
   const mark = document.createElement('span');
@@ -62,7 +150,7 @@
   backupButton.id = 'mobile-copy-before';
   backupButton.type = 'button';
   backupButton.className = 'mobile-copy-before';
-  backupButton.textContent = 'Or copy desktop link';
+  backupButton.textContent = 'Copy generic site link (task not saved)';
   const backupStatus = document.createElement('p');
   backupStatus.className = 'mobile-copy-status';
   backupStatus.setAttribute('role', 'status');
@@ -93,7 +181,7 @@
     try {
       if (!navigator.clipboard?.writeText) throw new Error('Clipboard unavailable');
       await navigator.clipboard.writeText(url);
-      backupStatus.textContent = 'Copied. Open it on your computer.';
+      backupStatus.textContent = 'Copied a generic website link. To save your chosen task, use email above.';
     } catch (_) {
       let field = document.getElementById('mobile-copy-backup');
       if (!field) {
@@ -105,15 +193,15 @@
         backupButton.after(field);
       }
       field.value = url; field.focus(); field.select();
-      backupStatus.textContent = 'Select and copy this link. Open it on your computer.';
+      backupStatus.textContent = 'Copy the generic link. Only the email handoff saves your chosen task.';
     }
   });
 
-  // Real first-paint open: no timer, scroll threshold, synthetic CTA click or network wait.
-  modal.hidden = false;
-  modal.setAttribute('aria-hidden', 'false');
-  modal.classList.add('is-open');
-  document.body.classList.add('handoff-modal-open');
+  // Never obstruct the real product video with an unsolicited signup form.
+  modal.hidden = true;
+  modal.setAttribute('aria-hidden', 'true');
+  modal.classList.remove('is-open');
+  document.body.classList.remove('handoff-modal-open');
   root.classList.remove('orbit-mobile-pending');
   dialog.tabIndex = -1;
   let wasOpen = false;
@@ -164,7 +252,7 @@
   fitKeyboard();
   // home.js initializes the existing device routing first; only change phone labels afterward.
   document.addEventListener('DOMContentLoaded', () => {
-    document.getElementById('dl-btn').textContent = 'Get Orbit on my computer →';
+    document.querySelectorAll('[data-orbit-download]').forEach(button => { if (button.dataset.downloadState === 'handoff') button.textContent = 'Prepare my task →'; });
     document.getElementById('dl-meta').textContent = 'Mac (M1+) · Windows x64 beta · 100 free credits';
   }, {once:true});
 })();
