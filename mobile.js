@@ -23,20 +23,13 @@
   const label = document.createElement('span');
   label.textContent = 'Real Orbit demo · You stay in control.';
   const full = document.createElement('a');
-  full.href = video.querySelector('source').getAttribute('src');
-  full.textContent = 'Full screen ↗';
-  full.setAttribute('aria-label', 'Watch the real Orbit demo full screen');
+  full.href = 'https://share.descript.com/view/ajzqFGunaT1';
+  full.textContent = 'Watch full screen ↗';
+  full.target = '_blank';
+  full.rel = 'noopener noreferrer';
+  full.setAttribute('aria-label', 'Open the 20-second Orbit demo in a new tab');
   caption.append(label, full);
   frame.after(caption);
-  full.addEventListener('click', async event => {
-    if (!video.requestFullscreen && !video.webkitEnterFullscreen) return;
-    event.preventDefault();
-    try {
-      if (video.webkitEnterFullscreen) video.webkitEnterFullscreen();
-      else await video.requestFullscreen();
-      await video.play();
-    } catch (_) { window.location.assign(full.href); }
-  });
   const requirements = document.createElement('details');
   requirements.className = 'mobile-device-details';
   const summary = document.createElement('summary');
@@ -84,7 +77,9 @@
   const invalidate = () => { preparedTask = null; taskError.hidden = true; recordStage('task_config_started_v3'); };
   school.addEventListener('input', invalidate);
   industry.addEventListener('change', invalidate);
-  video.addEventListener('play', () => { if (video.currentTime < 2) recordStage('demo_played_v3'); }, {once:true});
+  // Third-party embedded players don't emit reliable native play events to this page.
+  // Track an explicit open of the full-size player; never label an iframe load as playback.
+  full.addEventListener('click', () => recordStage('demo_opened_v3'), {once:true});
   taskForm.addEventListener('submit', event => {
     event.preventDefault();
     const university = school.value.trim().replace(/\s+/g, ' ').slice(0, 55);
@@ -149,9 +144,8 @@
       }
     }, {capture:true});
   });
-  // Keep the current real 1080p recording until the newly reviewed demo is ready.
-  // A poster and manual playback avoid forcing a large video download on mobile data.
-  video.preload = 'metadata';
+  // Use lazy-loaded Descript embed; no native autoplay or second video download.
+  video.loading = 'lazy';
 
 
   const brand = document.createElement('div');
