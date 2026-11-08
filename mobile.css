@@ -82,7 +82,7 @@ html.orbit-mobile .orbit-task-fields{display:grid;gap:11px}
 html.orbit-mobile .orbit-task-fields label{display:grid;gap:6px;color:#e3e4f3;font-size:12px;font-weight:630}
 html.orbit-mobile .orbit-task-fields input,html.orbit-mobile .orbit-task-fields select{display:block;width:100%;min-height:47px;max-width:100%;padding:10px 12px;color:#191b25;font-size:16px;font-weight:500;font-family:inherit;background:#fff;border:1px solid #cccce0;border-radius:10px;box-shadow:none}
 html.orbit-mobile .orbit-task-fields input:focus-visible,html.orbit-mobile .orbit-task-fields select:focus-visible{outline:3px solid #a8a7ff;outline-offset:2px}
-html.orbit-mobile .orbit-task-submit{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;min-height:52px;padding:12px 13px;margin:14px 0 0;color:#11121a;background:#d4d0ff;border:0;border-radius:12px;font:700 14px/1.35 inherit;cursor:pointer;box-shadow:none}
+html.orbit-mobile .orbit-task-submit{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;min-height:52px;padding:12px 13px;margin:14px 0 0;color:#11121a;background:#d4d0ff;border:0;border-radius:12px;font-family:inherit;font-size:14px;font-weight:700;line-height:1.35;cursor:pointer;box-shadow:none}
 html.orbit-mobile .orbit-task-submit:focus-visible{outline:3px solid #fff;outline-offset:2px}
 html.orbit-mobile .orbit-task-fine{color:#b9b9c7!important;font-size:10px!important;line-height:1.5!important;margin:11px 0 0!important}
 html.orbit-mobile .orbit-task-error{color:#ffb9b9;font-size:12px;line-height:1.4;margin:8px 0 0}
