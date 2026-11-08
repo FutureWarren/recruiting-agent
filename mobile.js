@@ -128,8 +128,8 @@
     }
     preview.querySelector('.mobile-example-message').textContent =
       'Subject: Fellow ' + university + ' student exploring ' + field +
-      '\\n\\nHi [Name], I’m a ' + university + ' student interested in ' + field +
-      '. I would love to learn about your experience and career path. Would you be open to a brief conversation?\\n\\n' +
+      '\n\nHi [Name], I’m a ' + university + ' student interested in ' + field +
+      '. I would love to learn about your experience and career path. Would you be open to a brief conversation?\n\n' +
       'Example only: no person has been researched, and no email has been sent.';
     recordStage('task_previewed_v3');
     window.dispatchEvent(new Event('orbit:open-handoff'));
