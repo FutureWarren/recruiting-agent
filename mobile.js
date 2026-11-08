@@ -112,6 +112,25 @@
       intro.after(summary);
     }
     summary.textContent = preparedTask.goal + '. ' + preparedTask.detail;
+    // This is intentionally an example, NOT a fabricated real AI result.
+    // Users still need the desktop app to discover verified people and produce drafts.
+    let preview = document.getElementById('mobile-illustrative-email');
+    if (!preview) {
+      preview = document.createElement('details');
+      preview.id = 'mobile-illustrative-email';
+      preview.className = 'mobile-illustrative-email';
+      const toggle = document.createElement('summary');
+      toggle.textContent = 'Preview an example email (illustrative only)';
+      const message = document.createElement('p');
+      message.className = 'mobile-example-message';
+      preview.append(toggle, message);
+      summary.after(preview);
+    }
+    preview.querySelector('.mobile-example-message').textContent =
+      'Subject: Fellow ' + university + ' student exploring ' + field +
+      '\\n\\nHi [Name], I’m a ' + university + ' student interested in ' + field +
+      '. I would love to learn about your experience and career path. Would you be open to a brief conversation?\\n\\n' +
+      'Example only: no person has been researched, and no email has been sent.';
     recordStage('task_previewed_v3');
     window.dispatchEvent(new Event('orbit:open-handoff'));
   });
