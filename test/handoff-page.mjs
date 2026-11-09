@@ -4,6 +4,11 @@ import { serve } from './static-server.mjs'
 const server=await serve(),browser=await chromium.launch({...(process.env.CHROMIUM?{executablePath:process.env.CHROMIUM}:{}),args:['--no-sandbox']})
 try{
  const ctx=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true,userAgent:'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 Version/17.0 Mobile/15E148 Safari/604.1'})
+ // The public page embeds a third-party player. This test verifies our own UI
+ // and API contracts offline, so never wait on Descript network navigation.
+ await ctx.route('https://share.descript.com/**',route=>route.fulfill({
+  status:200,contentType:'text/html',body:'<!doctype html><html><body>Orbit demo fixture</body></html>'
+ }))
  const page=await ctx.newPage(),requests=[]
  await ctx.route('https://backend-production-2b40.up.railway.app/api/handoff/**',async route=>{
   const req=route.request();requests.push({url:req.url(),method:req.method(),body:req.postData()})
@@ -11,7 +16,7 @@ try{
   if(req.url().endsWith('/resolve'))return route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({firstName:'',goal:'',detail:''})})
   return route.fulfill({status:204,body:''})
  })
- await page.goto(server.base+'/?source=nyu_library&utm_campaign=launch')
+ await page.goto(server.base+'/?source=nyu_library&utm_campaign=launch',{waitUntil:'domcontentloaded'})
  assert.equal(await page.locator('#mobile-handoff-modal').isVisible(),false,'website should not force email before product demo')
  await page.locator('#orbit-task-school').waitFor({state:'visible'})
  assert.equal(await page.locator('#hero-demo').evaluate(el=>!!el.closest('.hero-copy')),true)
