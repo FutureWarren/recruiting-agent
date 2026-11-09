@@ -90,6 +90,7 @@ function initMobileHandoffModal(){
   if(button.dataset.downloadState!=='handoff')return;
   e.preventDefault();openModal();
  }));
+ window.addEventListener('orbit:open-handoff',openModal);
  document.querySelectorAll('[data-handoff-close]').forEach(button=>button.addEventListener('click',closeModal));
  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!modal.hidden)closeModal()});
  email.addEventListener('focus',markStarted);
@@ -99,7 +100,8 @@ function initMobileHandoffModal(){
   if(!/^\S+@\S+\.\S+$/.test(address)){error.textContent='Enter a valid email.';error.hidden=false;email.focus();return}
   submit.disabled=true;submit.classList.add('loading');submit.querySelector('span').textContent='Sending your link…';
   try{
-   const data=await handoffApi('/api/handoff/start',{email:address,visitorId,...attribution});
+   const prepared=typeof window.orbitMobileTask==='function'?window.orbitMobileTask():null;
+   const data=await handoffApi('/api/handoff/start',{email:address,visitorId,...attribution,...(prepared?{goal:prepared.goal,detail:prepared.detail}:{})});
    continueUrl=data.continueUrl||'';try{localStorage.setItem('orbit_handoff_continue',continueUrl)}catch(_){}
    formState.hidden=true;success.hidden=false;
    const delivered=data.emailStatus==='delivered';
@@ -111,6 +113,7 @@ function initMobileHandoffModal(){
      ?'Your email provider accepted the message for '+address+'. Open it on your computer when it arrives; keep the link below as a backup.'
      :'Email delivery could not be confirmed. Copy this link and open it on your Mac or Windows computer.';
    copy.hidden=!continueUrl;
+   if(prepared) document.getElementById('mobile-handoff-success-copy').append(' Your selected networking task is saved for review in Orbit.');
   }catch(err){error.textContent=err.message||'Orbit could not save this yet.';error.hidden=false}
   finally{submit.disabled=false;submit.classList.remove('loading');submit.querySelector('span').textContent='Email me the desktop link'}
  });
@@ -133,6 +136,18 @@ function initSiteAttribution(){
  return {send};
 }
 const siteTracking=initSiteAttribution();
+// A Descript iframe cannot expose reliable native play events across origins.
+// Measure only when the demo actually becomes visible, not when it loads.
+const demoForVisibility=document.getElementById('hero-demo');
+if(demoForVisibility&&'IntersectionObserver' in window){
+ const observer=new IntersectionObserver(entries=>{
+  if(entries.some(entry=>entry.isIntersecting&&entry.intersectionRatio>=.5)){
+   siteTracking.send('demo_visible_v3');
+   observer.disconnect();
+  }
+ },{threshold:.5});
+ observer.observe(demoForVisibility);
+}
 const downloadReady=initDownload();
 initMobileHandoffModal();
 document.querySelectorAll('[data-orbit-download]').forEach(button=>button.addEventListener('click',async event=>{

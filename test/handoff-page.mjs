@@ -4,6 +4,11 @@ import { serve } from './static-server.mjs'
 const server=await serve(),browser=await chromium.launch({...(process.env.CHROMIUM?{executablePath:process.env.CHROMIUM}:{}),args:['--no-sandbox']})
 try{
  const ctx=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true,userAgent:'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 Version/17.0 Mobile/15E148 Safari/604.1'})
+ // The public page embeds a third-party player. This test verifies our own UI
+ // and API contracts offline, so never wait on Descript network navigation.
+ await ctx.route('https://share.descript.com/**',route=>route.fulfill({
+  status:200,contentType:'text/html',body:'<!doctype html><html><body>Orbit demo fixture</body></html>'
+ }))
  const page=await ctx.newPage(),requests=[]
  await ctx.route('https://backend-production-2b40.up.railway.app/api/handoff/**',async route=>{
   const req=route.request();requests.push({url:req.url(),method:req.method(),body:req.postData()})
@@ -11,14 +16,19 @@ try{
   if(req.url().endsWith('/resolve'))return route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({firstName:'',goal:'',detail:''})})
   return route.fulfill({status:204,body:''})
  })
- await page.goto(server.base+'/?source=nyu_library&utm_campaign=launch')
- assert.equal(await page.locator('#mobile-handoff-modal').isHidden(),false,'approved phone experience opens the email sheet immediately')
- assert.equal(requests.some(r=>['cta_clicked_v2','email_started_v2'].includes(JSON.parse(r.body||'{}').stage)),false,'automatic display is not a click or form start')
+ await page.goto(server.base+'/?source=nyu_library&utm_campaign=launch',{waitUntil:'domcontentloaded'})
+ assert.equal(await page.locator('#mobile-handoff-modal').isVisible(),false,'website should not force email before product demo')
+ await page.locator('#orbit-task-school').waitFor({state:'visible'})
+ assert.equal(await page.locator('#hero-demo').evaluate(el=>!!el.closest('.hero-copy')),true)
+ assert.equal(requests.some(r=>['cta_clicked_v2','email_started_v2'].includes(JSON.parse(r.body||'{}').stage)),false,'visiting is not intent')
+ await page.fill('#orbit-task-school','NYU')
+ await page.locator('#orbit-task-industry').selectOption('Investment Banking')
+ await page.click('.orbit-task-submit')
  await page.waitForSelector('#mobile-handoff-modal.is-open')
- assert.equal(await page.locator('#mobile-handoff-first-name').count(),0,'name is no longer required')
+ assert.equal(await page.locator('#mobile-handoff-form input').count(),1,'save still only requests email')
  assert.equal(await page.locator('#mobile-handoff-email').isVisible(),true)
- assert.equal(await page.locator('[data-mobile-goal]').count(),0)
- assert.equal(await page.locator('input[type=file]').count(),0,'mobile handoff must never ask for a resume')
+ assert.equal(await page.locator('input[type=file]').count(),0,'website must not ask for a resume')
+ assert.match(await page.locator('#mobile-prepared-task').textContent(),/NYU alumni in Investment Banking/)
  await page.fill('#mobile-handoff-email','student@example.com')
  await page.click('#mobile-handoff-submit')
  await page.waitForSelector('#mobile-handoff-success:not([hidden])')
@@ -28,7 +38,7 @@ try{
  const start=requests.find(r=>r.url.endsWith('/start'))
  assert.ok(start,'handoff start request missing')
  const body=JSON.parse(start.body)
- assert.equal(body.funnelVersion,2);assert.equal(body.platform,'mobile');assert.equal(body.firstName,undefined);assert.equal(body.email,'student@example.com');assert.equal(body.goal,undefined);assert.equal(body.source,'nyu_library');assert.equal(body.utm_campaign,'launch')
+ assert.equal(body.funnelVersion,2);assert.equal(body.platform,'mobile');assert.equal(body.firstName,undefined);assert.equal(body.email,'student@example.com');assert.match(body.goal,/NYU alumni in Investment Banking/);assert.match(body.detail,/personalized networking email drafts/);assert.equal(body.source,'nyu_library');assert.equal(body.utm_campaign,'launch')
  assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false)
  const fallback=await ctx.newPage()
  await fallback.goto(server.base+'/start/?source=nyu_library')
@@ -80,5 +90,5 @@ try{
  assert.match(await w.locator('#open-app').getAttribute('href'),/^orbit:\/\/handoff\?token=/)
  await windows.close()
 
- console.log('PASS handoff: email-only mobile capture, copy/share on phone, desktop download, Windows unsigned warning, and deep-link CTA.')
+ console.log('PASS handoff: task-first mobile capture, personalized handoff, copy/share on phone, desktop download, Windows unsigned warning, and deep-link CTA.')
 }finally{await browser.close();await server.close()}

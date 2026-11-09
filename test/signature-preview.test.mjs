@@ -6,13 +6,23 @@ import { execFileSync } from 'node:child_process';
 const read = path => readFile(new URL('../'+path,import.meta.url),'utf8');
 const after=await read('preview/signature/index.html');
 const before=await read('preview/original/index.html');
-test('Only approved proof/demo copy changes below the Hero; product services stay the same',()=>{
-  const tail=s=>s.slice(s.indexOf('<section class="company-section')).replace(/<script type="module" src="\/media\/3d\/orbit-signature.js"><\/script>\n/,'');
-  const normalized = tail(after)
+
+test('Hero and business copy remain intact around approved light-mode demo',()=>{
+  const tail=s=>s.slice(s.indexOf('<section class="company-section'))
+    .replace('<script type="module" src="/media/3d/orbit-signature.js"></script>' + String.fromCharCode(10),'');
+  const normalize=s=>{
+    const html=tail(s), start=html.indexOf('<div class="video-frame">');
+    const end=html.indexOf('</details>',start);
+    assert.ok(start>=0&&end>=0,'expected media+transcript block');
+    return (html.slice(0,start)+'<APPROVED_DEMO>'+html.slice(end+'</details>'.length))
+      .replace('/mobile.js?v=task-first-20261108-1','/mobile.js?v=mobile-first-20261013-1');
+  };
+  const normalized=normalize(after)
     .replace('<h2>The proof is in the browser.</h2>', '<h2>Watch Orbit get to work.</h2>')
-    .replace('Watch Orbit research LinkedIn profiles, find work emails, and prepare personalized Gmail drafts—not just deliver a list.', 'Your brief becomes research, work-email discovery, and a personalized introduction. See the full walkthrough.')
-    .replace('A recruiting brief becomes LinkedIn research, work-email discovery, and personalized Gmail drafts. Review messages before sending.', 'A recruiting brief becomes professional research, work-email lookup and personalized outreach. Review messages before sending.');
-  assert.equal(normalized,tail(before));
+    .replace('Watch Orbit research LinkedIn profiles, find work emails, and prepare personalized Gmail drafts—not just deliver a list.', 'Your brief becomes research, work-email discovery, and a personalized introduction. See the full walkthrough.');
+  assert.equal(normalized,normalize(before));
+  assert.ok(after.includes('src="https://share.descript.com/embed/ajzqFGunaT1"'));
+  assert.ok(after.includes('Sending requires your approval'));
 });
 test('Existing downloads, mobile handoff, and base styles are unchanged',async()=>{
   for(const file of ['home.js','mobile.js','home.css','mobile.css']) {

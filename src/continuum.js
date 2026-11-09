@@ -5,6 +5,7 @@ const all = selector => [...document.querySelectorAll(selector)];
 const body = document.body, hero = $('.signature-hero'), art = $('[data-continuum-scene]');
 const ambientArt = $('[data-ambient-scene]');
 const video = $('#hero-demo'), strip = $('.company-window'), email = $('.email-example');
+const nativeVideo = video instanceof HTMLVideoElement;
 const reduced = matchMedia('(prefers-reduced-motion: reduce)');
 // A short desktop browser window is still a desktop. Height must not disable 3D.
 const desktop = matchMedia('(min-width: 761px)');
@@ -29,8 +30,8 @@ function showStoryPhase(phase) {
 const cleanups = [];
 function listen(el, event, callback, options) { el?.addEventListener(event, callback, options); cleanups.push(() => el?.removeEventListener(event, callback, options)); }
 const schedule = () => { if (!raf && !document.hidden && !disposed) raf = requestAnimationFrame(tick); };
-function pauseVideo() { if (!video.paused) { automaticPause = true; video.pause(); } }
-function playVideo() { if (enabled && videoVisible && !document.hidden && !userPaused) video.play().catch(() => {}); }
+function pauseVideo() { if (nativeVideo && !video.paused) { automaticPause = true; video.pause(); } }
+function playVideo() { if (nativeVideo && enabled && videoVisible && !document.hidden && !userPaused) video.play().catch(() => {}); }
 function settings() {
   enabled = !optedOut && !reduced.matches && !connection?.saveData;
   body.classList.toggle('continuum-active', enabled);
@@ -152,7 +153,9 @@ listen(video, 'play', () => { userPaused = false; });
 all('a[href="#demo"]').forEach(link => listen(link, 'click', e => {
   if (link.getAttribute('href') !== '#demo') return;
   e.preventDefault(); video.closest('.video-frame').scrollIntoView({ block: 'center', behavior: 'auto' });
-  userPaused = false; video.play().catch(() => {});
+  userPaused = false;
+  if (nativeVideo) video.play().catch(() => {});
+  else video.focus({preventScroll:true});
 }));
 const io = new IntersectionObserver(entries => entries.forEach(entry => {
   if (entry.target === art) { heroVisible = entry.isIntersecting; dirty = true; schedule(); }
