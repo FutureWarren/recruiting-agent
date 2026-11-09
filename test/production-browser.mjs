@@ -33,6 +33,15 @@ async function setup(browser,{ua=UA.phone,width=390,height=844,touch=1,arch='arm
 }
 const noOverflow=async(page,label)=>assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false,label+' overflow');
 const noSend=t=>assert.equal(t.requests.filter(r=>r.path==='/api/handoff/start').length,0,'no email before explicit submit');
+// Website event beacons are intentionally fire-and-forget. Wait for their mocked
+// HTTP request rather than making assertions against a race in the test runner.
+async function expectStage(t,stage){
+  for(let attempt=0;attempt<40;attempt++){
+    if(t.requests.some(r=>r.body?.stage===stage))return;
+    await new Promise(resolve=>setTimeout(resolve,50));
+  }
+  assert.fail('missing expected website event: '+stage);
+}
 try {
   for(const [name,engine] of [['chromium',chromium],['webkit',webkit]]) {
     const browser=await engine.launch({headless:true});
@@ -52,8 +61,8 @@ try {
         assert.equal(await t.page.locator('#mobile-handoff-form input').count(),1);
         assert.equal(await t.page.locator('#mobile-handoff-email').isVisible(),true);
         assert.match(await t.page.locator('#mobile-prepared-task').innerText(),/NYU alumni in Investment Banking/);
-        assert.equal(t.requests.some(r=>r.body?.stage==='task_config_started_v3'),true);
-        assert.equal(t.requests.some(r=>r.body?.stage==='task_previewed_v3'),true);
+        await expectStage(t,'task_config_started_v3');
+        await expectStage(t,'task_previewed_v3');
         noSend(t);
         await t.page.locator('#mobile-copy-before').click();noSend(t);
         const copied=new URL(await t.page.evaluate(()=>window.__copied));
