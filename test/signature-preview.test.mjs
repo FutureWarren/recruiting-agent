@@ -15,7 +15,7 @@ test('Hero and business copy remain intact around approved light-mode demo',()=>
     const end=html.indexOf('</details>',start);
     assert.ok(start>=0&&end>=0,'expected media+transcript block');
     return (html.slice(0,start)+'<APPROVED_DEMO>'+html.slice(end+'</details>'.length))
-      .replace('/mobile.js?v=task-first-20261108-1','/mobile.js?v=mobile-first-20261013-1');
+      .replace('/mobile.js?v=native-loop-20261108-2','/mobile.js?v=mobile-first-20261013-1');
   };
   const normalized=normalize(after)
     .replace('<h2>The proof is in the browser.</h2>', '<h2>Watch Orbit get to work.</h2>')
