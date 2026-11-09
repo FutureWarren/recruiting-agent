@@ -67,6 +67,18 @@ try {
           kind:'VIDEO',muted:true,autoplay:true,loop:true,playsInline:true,
           localSource:'/media/orbit-demo-light-20261108.mp4'
         },'the actual player must be a first-party autoplaying, looping HTML5 video');
+        if(device==='phone'){
+          await t.page.locator('#hero-demo').scrollIntoViewIfNeeded();
+          // Simulate iOS Low Power Mode rejecting autoplay. The user still
+          // needs a clear, working play affordance instead of a dead poster.
+          await t.page.locator('#hero-demo').evaluate(v=>{
+            v.pause();
+            v.dispatchEvent(new Event('orbit:autoplay-blocked'));
+          });
+          await t.page.locator('#mobile-demo-play-fallback').waitFor({state:'visible'});
+          await t.page.locator('#hero-demo').evaluate(v=>v.dispatchEvent(new Event('play')));
+          await t.page.locator('#mobile-demo-play-fallback').waitFor({state:'hidden'});
+        }
         noSend(t);await noOverflow(t.page,device);
         assert.equal(t.requests.some(r=>['cta_clicked_v2','email_started_v2'].includes(r.body?.stage)),false);
         await t.page.locator('#orbit-task-school').fill('NYU');
