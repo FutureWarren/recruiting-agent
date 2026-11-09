@@ -146,7 +146,7 @@ listen(strip, 'pointermove', e => { if (drag?.id === e.pointerId) strip.scrollLe
 const endDrag = e => { if (drag?.id === e.pointerId) { if (strip.hasPointerCapture(e.pointerId)) strip.releasePointerCapture(e.pointerId); drag = null; schedule(); } };
 listen(strip, 'pointerup', endDrag); listen(strip, 'pointercancel', endDrag); listen(strip, 'lostpointercapture', () => { drag = null; });
 
-listen(video, 'loadedmetadata', () => { if (Number.isFinite(video.duration)) $('#video-duration').textContent = `${Math.round(video.duration)}s · 1080p`; dirty = true; schedule(); });
+listen(video, 'loadedmetadata', () => { if (Number.isFinite(video.duration)) $('#video-duration').textContent = `${Math.round(video.duration)}s · HD`; dirty = true; schedule(); });
 listen(video, 'error', () => { $('#video-fallback').hidden = false; });
 listen(video, 'pause', () => { if (automaticPause) automaticPause = false; else if (videoVisible && !document.hidden) userPaused = true; });
 listen(video, 'play', () => { userPaused = false; });
