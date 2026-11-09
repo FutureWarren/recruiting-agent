@@ -8,7 +8,11 @@ const { serve }=await import('./static-server.mjs');
 const server=await serve();
 await mkdir('artifacts/production-review',{recursive:true});
 const UA={phone:'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 Version/17.0 Mobile/15E148 Safari/604.1',android:'Mozilla/5.0 (Linux; Android 14) AppleWebKit/537.36 Chrome/130.0.0.0 Mobile Safari/537.36',mac:'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 Chrome/131.0.0.0',win:'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/131.0.0.0'};
-const releases=[{tag_name:'v9.9.9',assets:[{name:'Orbit-9.9.9-arm64.dmg',size:120000000,browser_download_url:'https://example.test/mac.dmg'},{name:'Orbit-9.9.9-x64-Setup.exe',size:120000000,browser_download_url:'https://example.test/win.exe'}]}];
+// Model a Mac-first release: Windows must retain the previous matching installer.
+const releases=[
+  {tag_name:'v9.9.9',assets:[{name:'Orbit-9.9.9-arm64.dmg',size:120000000,browser_download_url:'https://example.test/mac.dmg'}]},
+  {tag_name:'v9.9.8',assets:[{name:'Orbit-9.9.8-x64-Setup.exe',size:120000000,browser_download_url:'https://example.test/win.exe'}]}
+];
 async function setup(browser,{ua=UA.phone,width=390,height=844,touch=1,arch='arm',status='delivered',reduced='reduce',releaseFailure=false}={}) {
   const ctx=await browser.newContext({viewport:{width,height},userAgent:ua,hasTouch:touch>0,reducedMotion:reduced});
   const requests=[],errors=[];

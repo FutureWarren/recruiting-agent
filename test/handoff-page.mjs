@@ -68,9 +68,14 @@ try{
  await phoneContinue.close()
  await ctx.close()
  const desktop=await browser.newContext({userAgent:'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 Chrome/131.0.0.0'})
+ await desktop.addInitScript(()=>Object.defineProperty(navigator,'userAgentData',{value:{platform:'macOS',getHighEntropyValues:async()=>({architecture:'arm'})}}))
+ const platformReleases=[
+  {tag_name:'v0.1.121',assets:[{name:'Orbit-0.1.121-arm64.dmg',browser_download_url:'https://example.test/orbit.dmg'}]},
+  {tag_name:'v0.1.120',assets:[{name:'Orbit-0.1.120-x64-Setup.exe',browser_download_url:'https://example.test/orbit.exe'}]}
+ ]
  const p=await desktop.newPage()
  await p.route('https://backend-production-2b40.up.railway.app/api/handoff/**',route=>route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({firstName:'Future',goal:'',detail:''})}))
- await p.route('https://api.github.com/**',route=>route.fulfill({status:200,contentType:'application/json',body:JSON.stringify([{tag_name:'v0.1.99',assets:[{name:'Orbit-0.1.99-arm64.dmg',browser_download_url:'https://example.test/orbit.dmg'},{name:'Orbit-0.1.99-x64-Setup.exe',browser_download_url:'https://example.test/orbit.exe'}]}])}))
+ await p.route('https://api.github.com/**',route=>route.fulfill({status:200,contentType:'application/json',body:JSON.stringify(platformReleases)}))
  await p.goto(server.base+'/continue/?token=abcdefghijklmnopqrstuvwx.abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQ')
  await p.waitForSelector('#actions:not([hidden])')
  assert.equal(await p.locator('#title').textContent(),'Welcome, Future.')
@@ -78,21 +83,59 @@ try{
  const resolveReq=requests.find(r=>r.url.endsWith('/resolve'))
  // Desktop context uses its own request list below in browser routing; the
  // product contract is body-token resolve rather than a credential in URL.
- assert.equal(await p.locator('#download').getAttribute('href'),'https://example.test/orbit.dmg')
+ await p.waitForSelector('#download[href="https://example.test/orbit.dmg"]')
  assert.match(await p.locator('#open-app').getAttribute('href'),/^orbit:\/\/handoff\?token=/)
  await desktop.close()
 
  const windows=await browser.newContext({userAgent:'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/131.0.0.0'})
+ await windows.addInitScript(()=>Object.defineProperty(navigator,'userAgentData',{value:{platform:'Windows',getHighEntropyValues:async()=>({architecture:'x86'})}}))
  const w=await windows.newPage()
  await w.route('https://backend-production-2b40.up.railway.app/api/handoff/**',route=>route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({firstName:'Future',goal:'',detail:''})}))
- await w.route('https://api.github.com/**',route=>route.fulfill({status:200,contentType:'application/json',body:JSON.stringify([{tag_name:'v0.1.99',assets:[{name:'Orbit-0.1.99-arm64.dmg',browser_download_url:'https://example.test/orbit.dmg'},{name:'Orbit-0.1.99-x64-Setup.exe',browser_download_url:'https://example.test/orbit.exe'}]}])}))
+ await w.route('https://api.github.com/**',route=>route.fulfill({status:200,contentType:'application/json',body:JSON.stringify(platformReleases)}))
  await w.goto(server.base+'/continue/?token=abcdefghijklmnopqrstuvwx.abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQ')
  await w.waitForSelector('#actions:not([hidden])')
- assert.equal(await w.locator('#download').getAttribute('href'),'https://example.test/orbit.exe')
+ await w.waitForSelector('#download[href="https://example.test/orbit.exe"]')
  assert.match(await w.locator('#download').textContent(),/Windows/)
  assert.match(await w.locator('#status').textContent(),/unsigned.*SmartScreen.*Unknown Publisher/i)
  assert.match(await w.locator('#open-app').getAttribute('href'),/^orbit:\/\/handoff\?token=/)
  await windows.close()
 
- console.log('PASS handoff: immediate email-first capture, optional personalized task, copy/share on phone, desktop installers and deep-link CTA.')
+ const supportedHostsOnly = async page => {
+  await page.route('https://backend-production-2b40.up.railway.app/api/handoff/**', route => route.fulfill({
+    status:200, contentType:'application/json', body:JSON.stringify({firstName:'Student',goal:'Research alumni'})
+  }))
+ }
+ for (const [platform,arch] of [['macOS','x86'],['Windows','arm']]) {
+  const page = await browser.newPage()
+  await page.addInitScript(({platform,arch}) => Object.defineProperty(navigator,'userAgentData',{value:{
+    platform,getHighEntropyValues:async()=>({architecture:arch})
+  }}),{platform,arch})
+  await supportedHostsOnly(page)
+  let installerRequests=0
+  await page.route('https://api.github.com/**', route => { installerRequests++; return route.abort() })
+  await page.goto(mobileUrl)
+  await page.waitForSelector('#download:has-text("Copy / share desktop link")')
+  assert.match(await page.locator('#status').textContent(),/supported computer/)
+  assert.equal(await page.locator('#open-app').isHidden(),true)
+  assert.equal(installerRequests,0,platform+' must not query or offer an incompatible installer')
+  await page.close()
+ }
+
+ const stalled = await browser.newPage()
+ await stalled.addInitScript(() => {
+  Object.defineProperty(navigator,'userAgentData',{value:{platform:'Windows',getHighEntropyValues:async()=>({architecture:'x86'})}})
+  const fetchReal = window.fetch
+  window.fetch = (url,options) => {
+   if(!String(url).startsWith('https://api.github.com/')) return fetchReal(url,options)
+   return new Promise((_,reject) => options.signal.addEventListener('abort',()=>reject(options.signal.reason),{once:true}))
+  }
+ })
+ await supportedHostsOnly(stalled)
+ await stalled.goto(mobileUrl)
+ await stalled.waitForSelector('#download[href="https://github.com/FutureWarren/recruiting-agent/releases"]',{timeout:8000})
+ assert.match(await stalled.locator('#download').textContent(),/View Windows downloads/)
+ assert.equal(await stalled.locator('#open-app').isVisible(),true)
+ await stalled.close()
+
+ console.log('PASS handoff: email-first capture, optional personalized task, portable signed link, platform-safe installers, bounded installer lookup and deep-link CTA.')
 }finally{await browser.close();await server.close()}
