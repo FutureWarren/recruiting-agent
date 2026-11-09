@@ -507,11 +507,11 @@ html { color-scheme:dark; background:var(--bg); }
 }
 
 
-/* Approved light-mode product video, hosted through Descript's published embed. */
-.demo-showcase iframe.demo-embed,
-html.orbit-mobile .hero-copy iframe.demo-embed {
+/* First-party Orbit video: native muted autoplay and seamless loop. */
+.demo-showcase video.demo-video,
+html.orbit-mobile .hero-copy video.demo-video {
   display:block; width:100%; height:auto; aspect-ratio:16/9;
-  border:0; border-radius:0; background:#f7f7f9;
+  object-fit:contain; background:#f7f7f9;
 }
 .demo-illustrative-note {
   margin:11px auto 0;max-width:1120px;padding:0 4px;

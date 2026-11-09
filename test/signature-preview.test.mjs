@@ -15,13 +15,15 @@ test('Hero and business copy remain intact around approved light-mode demo',()=>
     const end=html.indexOf('</details>',start);
     assert.ok(start>=0&&end>=0,'expected media+transcript block');
     return (html.slice(0,start)+'<APPROVED_DEMO>'+html.slice(end+'</details>'.length))
-      .replace('/mobile.js?v=task-first-20261108-1','/mobile.js?v=mobile-first-20261013-1');
+      .replace('/mobile.js?v=native-loop-20261108-2','/mobile.js?v=mobile-first-20261013-1');
   };
   const normalized=normalize(after)
     .replace('<h2>The proof is in the browser.</h2>', '<h2>Watch Orbit get to work.</h2>')
     .replace('Watch Orbit research LinkedIn profiles, find work emails, and prepare personalized Gmail drafts—not just deliver a list.', 'Your brief becomes research, work-email discovery, and a personalized introduction. See the full walkthrough.');
   assert.equal(normalized,normalize(before));
-  assert.ok(after.includes('src="https://share.descript.com/embed/ajzqFGunaT1"'));
+  assert.ok(after.includes('src="/media/orbit-demo-light-20261108.mp4"'));
+  assert.ok(after.includes('muted autoplay loop playsinline'));
+  assert.ok(!after.includes('share.descript.com'));
   assert.ok(after.includes('Sending requires your approval'));
 });
 test('Existing downloads, mobile handoff, and base styles are unchanged',async()=>{

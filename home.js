@@ -136,9 +136,11 @@ function initSiteAttribution(){
  return {send};
 }
 const siteTracking=initSiteAttribution();
-// A Descript iframe cannot expose reliable native play events across origins.
-// Measure only when the demo actually becomes visible, not when it loads.
+// Measure a real native video play separately from merely seeing the player.
 const demoForVisibility=document.getElementById('hero-demo');
+if(demoForVisibility instanceof HTMLVideoElement){
+ demoForVisibility.addEventListener('play',()=>siteTracking.send('demo_played_v3'),{once:true});
+}
 if(demoForVisibility&&'IntersectionObserver' in window){
  const observer=new IntersectionObserver(entries=>{
   if(entries.some(entry=>entry.isIntersecting&&entry.intersectionRatio>=.5)){
@@ -216,7 +218,7 @@ document.querySelectorAll('[data-orbit-download]').forEach(button=>button.addEve
  if('IntersectionObserver'in window){const io=new IntersectionObserver(entries=>{entries.forEach(e=>{if(e.target===hero){heroVisible=e.isIntersecting;hero.classList.toggle('offscreen',!heroVisible||document.hidden)}else if(e.target===strip){stripVisible=e.isIntersecting;schedule()}else if(e.isIntersecting){e.target.classList.add('seen');io.unobserve(e.target)}})},{threshold:.08});io.observe(hero);io.observe(strip);all('.motion-reveal').forEach(el=>io.observe(el))}else{all('.motion-reveal').forEach(el=>el.classList.add('seen'));stripVisible=true}
  // Full-resolution source; CSS controls layout, not the previous 910px/DPR ceiling.
  const video=$('#hero-demo');let videoInView=false,userPaused=false;
- video.addEventListener('loadedmetadata',()=>{if(Number.isFinite(video.duration))$('#video-duration').textContent=Math.round(video.duration)+'s · 1080p'});
+ video.addEventListener('loadedmetadata',()=>{if(Number.isFinite(video.duration))$('#video-duration').textContent=Math.round(video.duration)+'s · HD'});
  video.addEventListener('error',()=>{$('#video-fallback').hidden=false});
  video.addEventListener('pause',()=>{if(videoInView&&!document.hidden)userPaused=true});
  const playVideo=()=>{if(enabled&&videoInView&&!userPaused&&!document.hidden)video.play().catch(()=>{})};
