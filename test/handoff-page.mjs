@@ -17,10 +17,14 @@ try{
   return route.fulfill({status:204,body:''})
  })
  await page.goto(server.base+'/?source=nyu_library&utm_campaign=launch',{waitUntil:'domcontentloaded'})
- assert.equal(await page.locator('#mobile-handoff-modal').isVisible(),false,'website should not force email before product demo')
+ await page.waitForSelector('#mobile-handoff-modal.is-open')
+ assert.equal(await page.locator('#mobile-handoff-email').isVisible(),true,'mobile visitors see email sheet immediately')
+ assert.equal(await page.evaluate(()=>document.activeElement?.id==='mobile-handoff-email'),false,'no automatic keyboard')
+ assert.equal(requests.some(r=>['cta_clicked_v2','email_started_v2'].includes(JSON.parse(r.body||'{}').stage)),false,'display is not a click or email start')
+ await page.locator('.mobile-handoff-close').click()
+ await page.locator('#mobile-handoff-modal').waitFor({state:'hidden'})
  await page.locator('#orbit-task-school').waitFor({state:'visible'})
  assert.equal(await page.locator('#hero-demo').evaluate(el=>!!el.closest('.hero-copy')),true)
- assert.equal(requests.some(r=>['cta_clicked_v2','email_started_v2'].includes(JSON.parse(r.body||'{}').stage)),false,'visiting is not intent')
  await page.fill('#orbit-task-school','NYU')
  await page.locator('#orbit-task-industry').selectOption('Investment Banking')
  await page.click('.orbit-task-submit')
@@ -90,5 +94,5 @@ try{
  assert.match(await w.locator('#open-app').getAttribute('href'),/^orbit:\/\/handoff\?token=/)
  await windows.close()
 
- console.log('PASS handoff: task-first mobile capture, personalized handoff, copy/share on phone, desktop download, Windows unsigned warning, and deep-link CTA.')
+ console.log('PASS handoff: immediate email-first capture, optional personalized task, copy/share on phone, desktop installers and deep-link CTA.')
 }finally{await browser.close();await server.close()}
