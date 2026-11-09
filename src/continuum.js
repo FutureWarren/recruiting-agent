@@ -31,7 +31,25 @@ const cleanups = [];
 function listen(el, event, callback, options) { el?.addEventListener(event, callback, options); cleanups.push(() => el?.removeEventListener(event, callback, options)); }
 const schedule = () => { if (!raf && !document.hidden && !disposed) raf = requestAnimationFrame(tick); };
 function pauseVideo() { if (nativeVideo && !video.paused) { automaticPause = true; video.pause(); } }
-function playVideo() { if (nativeVideo && enabled && videoVisible && !document.hidden && !userPaused) video.play().catch(() => {}); }
+function playVideo() {
+  // Native media has its own policy. Decorative 3D motion being disabled must
+  // not silently prevent the product demo from being offered on phones.
+  if (!nativeVideo || !videoVisible || document.hidden || userPaused) return;
+  if (reduced.matches || connection?.saveData) {
+    video.dispatchEvent(new Event('orbit:autoplay-blocked'));
+    return;
+  }
+  video.muted = true;
+  video.playsInline = true;
+  const attempt = video.play();
+  if (attempt?.catch) void attempt.catch(() => {
+    // iOS Low Power Mode and some browsers reject autoplay even when muted.
+    // We cannot bypass device policy: expose one user-initiated play action.
+    if (videoVisible && video.paused && !document.hidden) {
+      video.dispatchEvent(new Event('orbit:autoplay-blocked'));
+    }
+  });
+}
 function settings() {
   enabled = !optedOut && !reduced.matches && !connection?.saveData;
   body.classList.toggle('continuum-active', enabled);
