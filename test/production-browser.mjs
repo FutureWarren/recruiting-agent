@@ -52,6 +52,14 @@ try {
         await t.page.locator('#orbit-mobile-task').waitFor({state:'visible'});
         assert.equal(await t.page.locator('#mobile-handoff-modal').isVisible(),false,'no unsolicited email sheet');
         assert.equal(await t.page.locator('#hero-demo').evaluate(e=>!!e.closest('.hero-copy')),true,'real demo remains in mobile hero');
+        const nativeVideo=await t.page.locator('#hero-demo').evaluate(e=>({
+          kind:e.tagName, muted:e.muted, autoplay:e.autoplay, loop:e.loop, playsInline:e.playsInline,
+          localSource:e.querySelector('source')?.getAttribute('src') || ''
+        }));
+        assert.deepEqual(nativeVideo,{
+          kind:'VIDEO',muted:true,autoplay:true,loop:true,playsInline:true,
+          localSource:'/media/orbit-demo-light-20261108.mp4'
+        },'the actual player must be a first-party autoplaying, looping HTML5 video');
         noSend(t);await noOverflow(t.page,device);
         assert.equal(t.requests.some(r=>['cta_clicked_v2','email_started_v2'].includes(r.body?.stage)),false);
         await t.page.locator('#orbit-task-school').fill('NYU');
