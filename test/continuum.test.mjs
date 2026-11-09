@@ -43,10 +43,13 @@ test('Commercial and mobile services are byte-identical to the original prefix',
   assert.equal(await read('preview/continuum/home-services.js'), home.slice(0, cut) + '\n');
   for (const file of ['home.js', 'mobile.js', 'home.css', 'mobile.css']) assert.equal(await read(file), execFileSync('git', ['show', 'HEAD:' + file], { encoding: 'utf8' }));
 });
-test('Original legal, limitations, mobile handoff and approved demo embed retained', () => {
-  for (const text of ['not endorsements or verified offer outcomes', 'not a performance guarantee', 'not confirmed sends', 'Prepared for your review. Not sent.', 'Windows installer is currently unsigned', '/privacy/', '/terms/', '/unsubscribe/', 'https://share.descript.com/embed/ajzqFGunaT1', 'id="mobile-handoff-form"', 'id="mobile-handoff-success"']) assert.ok(html.includes(text), text);
+test('Original legal, limitations, mobile handoff and native looping approved demo retained', () => {
+  for (const text of ['not endorsements or verified offer outcomes', 'not a performance guarantee', 'not confirmed sends', 'Prepared for your review. Not sent.', 'Windows installer is currently unsigned', '/privacy/', '/terms/', '/unsubscribe/', '/media/orbit-demo-light-20261108.mp4', 'id="mobile-handoff-form"', 'id="mobile-handoff-success"']) assert.ok(html.includes(text), text);
   assert.equal((html.match(/<a\b[^>]*\bdata-orbit-download\b/g) || []).length, 3);
   assert.equal((html.match(/id="hero-demo"/g) || []).length, 1);
+  assert.match(html, /id="hero-demo"[^>]*muted autoplay loop playsinline/);
+  assert.doesNotMatch(html, /share\.descript\.com|<iframe[^>]*id="hero-demo"/);
+  assert.match(html, /poster="\/media\/orbit-demo-light-poster\.jpg"/);
 });
 test('Preview guard runs before scripts and prohibits non-read external requests', async () => {
   assert.ok(html.indexOf('/preview/guard.js') < html.indexOf('/preview/continuum/home-services.js'));
