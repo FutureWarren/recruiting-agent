@@ -48,7 +48,29 @@
   copy.append(requirements);
   root.classList.add('mobile-ready');
 
-  // First value on mobile is a prepared networking task, not an unexpected email sheet.
+  // Native iOS Safari can block autoplay in Low Power Mode even for muted video.
+  // Show a first-party tap-to-play fallback only if the browser refuses playback.
+  const videoFallback = document.createElement('button');
+  videoFallback.type = 'button';
+  videoFallback.id = 'mobile-demo-play-fallback';
+  videoFallback.className = 'mobile-demo-play-fallback';
+  videoFallback.textContent = '▶ Play Orbit demo';
+  videoFallback.setAttribute('aria-label', 'Play the 20-second Orbit demo');
+  videoFallback.hidden = true;
+  frame.append(videoFallback);
+  const tryUserPlayback = () => {
+    video.muted = true;
+    video.playsInline = true;
+    const result = video.play();
+    if (result?.catch) void result.catch(() => { videoFallback.hidden = false; });
+  };
+  videoFallback.addEventListener('click', tryUserPlayback);
+  video.addEventListener('orbit:autoplay-blocked', () => {
+    if (video.paused && !document.hidden) videoFallback.hidden = false;
+  });
+  video.addEventListener('play', () => { videoFallback.hidden = true; });
+
+  // The email link is captured first; the optional task builder remains below the demo.
   const composer = document.createElement('section');
   composer.id = 'orbit-mobile-task';
   composer.className = 'orbit-mobile-task';
@@ -222,12 +244,15 @@
     }
   });
 
-  // Never obstruct the real product video with an unsolicited signup form.
-  modal.hidden = true;
-  modal.setAttribute('aria-hidden', 'true');
-  modal.classList.remove('is-open');
-  document.body.classList.remove('handoff-modal-open');
+  // Phone QR visitors see the one-field email handoff sheet immediately.
+  // The sheet is dismissible and never focuses the input/opens the keyboard
+  // until the visitor explicitly taps it; displaying it is NOT a form start.
+  modal.hidden = false;
+  modal.setAttribute('aria-hidden', 'false');
+  modal.classList.add('is-open');
+  document.body.classList.add('handoff-modal-open');
   root.classList.remove('orbit-mobile-pending');
+  dialog.querySelector('.mobile-handoff-close')?.addEventListener('click', tryUserPlayback);
   dialog.tabIndex = -1;
   let wasOpen = false;
   let returnFocus = null;
