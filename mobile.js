@@ -23,13 +23,21 @@
   const label = document.createElement('span');
   label.textContent = 'Real Orbit demo · You stay in control.';
   const full = document.createElement('a');
-  full.href = 'https://share.descript.com/view/ajzqFGunaT1';
-  full.textContent = 'Watch full screen ↗';
-  full.target = '_blank';
-  full.rel = 'noopener noreferrer';
-  full.setAttribute('aria-label', 'Open the 20-second Orbit demo in a new tab');
+  full.href = '/media/orbit-demo-light-20261108.mp4';
+  full.textContent = 'Full screen ↗';
+  full.setAttribute('aria-label', 'Watch Orbit demo full screen');
   caption.append(label, full);
   frame.after(caption);
+  full.addEventListener('click', async event => {
+    const fullscreen = video.requestFullscreen || video.webkitEnterFullscreen;
+    if (!fullscreen) return;
+    event.preventDefault();
+    try {
+      if (video.webkitEnterFullscreen) video.webkitEnterFullscreen();
+      else await video.requestFullscreen();
+      await video.play();
+    } catch (_) { window.location.assign(full.href); }
+  });
   const requirements = document.createElement('details');
   requirements.className = 'mobile-device-details';
   const summary = document.createElement('summary');
@@ -77,8 +85,8 @@
   const invalidate = () => { preparedTask = null; taskError.hidden = true; recordStage('task_config_started_v3'); };
   school.addEventListener('input', invalidate);
   industry.addEventListener('change', invalidate);
-  // Third-party embedded players don't emit reliable native play events to this page.
-  // Track an explicit open of the full-size player; never label an iframe load as playback.
+  // Track a genuine play event; native HTML5 loop playback is observable.
+  video.addEventListener('play', () => recordStage('demo_played_v3'), {once:true});
   full.addEventListener('click', () => recordStage('demo_opened_v3'), {once:true});
   taskForm.addEventListener('submit', event => {
     event.preventDefault();
@@ -144,8 +152,12 @@
       }
     }, {capture:true});
   });
-  // Use lazy-loaded Descript embed; no native autoplay or second video download.
-  video.loading = 'lazy';
+  // Mobile-safe native playback: muted autoplay + playsinline + loop, no branding overlay.
+  video.muted = true;
+  video.autoplay = true;
+  video.loop = true;
+  video.playsInline = true;
+  video.preload = 'metadata';
 
 
   const brand = document.createElement('div');
