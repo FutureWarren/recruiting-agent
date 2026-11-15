@@ -92,6 +92,9 @@ async function toBase64(blob){
 function show(id){for(const x of ['capture','loading','results'])$(x).hidden=x!==id;$(id).scrollIntoView({block:'start',behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'});}
 function valid(data){
   const matches=data?.matches;
+  if(data?.version==='photo-vibe-v2' && (!allowedBrand(data.company)||
+     !Array.isArray(data.companyAlternates)||data.companyAlternates.length!==2||
+     !data.companyAlternates.every(allowedBrand)))return false;
   if(!Array.isArray(matches)||matches.length!==5) return false;
   const ids=new Set();
   for(const match of matches){if(!archetypes.some(a=>a.id===match.id)||ids.has(match.id)||!Number.isInteger(match.score)||match.score<0||match.score>100)return false;ids.add(match.id);}
@@ -100,9 +103,64 @@ function valid(data){
     typeof data.explanation==='string'&&data.explanation.length<=400&&
     Array.isArray(data.tags)&&data.tags.length<=4&&data.tags.every(t=>typeof t==='string'&&t.length<=35);
 }
+
+/* Explicit company allowlist. Qwen never invents a company, logo or URL. */
+const APPROVED_BRAND_DOMAINS=new Set([
+ 'goldmansachs.com','jpmorgan.com','morganstanley.com',
+ 'mckinsey.com','bcg.com','bain.com',
+ 'google.com','meta.com','nvidia.com',
+ 'notion.so','figma.com','linear.app',
+ 'salesforce.com','airbnb.com','hubspot.com'
+]);
+function allowedBrand(brand){
+ return brand && typeof brand.name==='string' && brand.name.length>0 && brand.name.length<=65 &&
+  typeof brand.domain==='string' && APPROVED_BRAND_DOMAINS.has(brand.domain) &&
+  typeof brand.mood==='string' && brand.mood.length<=90;
+}
+function officialFaviconUrl(domain){
+ const url=new URL('https://www.google.com/s2/favicons');
+ url.searchParams.set('domain',domain);
+ url.searchParams.set('sz','128');
+ return url.toString();
+}
+function attachBrandLogo(img,brand,fallback){
+ img.hidden=true;
+ fallback.hidden=false;
+ fallback.textContent=brand.name.split(/\s+/).map(w=>w[0]||'').slice(0,2).join('').toUpperCase();
+ img.alt=brand.name+' logo';
+ img.referrerPolicy='no-referrer';
+ img.onload=()=>{
+   if(img.naturalWidth){img.hidden=false;fallback.hidden=true;}
+ };
+ img.onerror=()=>{img.hidden=true;fallback.hidden=false;};
+ img.src=officialFaviconUrl(brand.domain);
+}
+function renderBrandVibe(data){
+ const shell=$('brand-match');
+ if(data.version!=='photo-vibe-v2' || !allowedBrand(data.company)){
+   shell.hidden=true;return;
+ }
+ shell.hidden=false;
+ $('brand-name').textContent=data.company.name;
+ $('brand-mood').textContent=data.company.mood;
+ attachBrandLogo($('brand-logo'),data.company,$('brand-fallback'));
+ const row=$('brand-alternates');row.replaceChildren();
+ for(const brand of (data.companyAlternates||[]).filter(allowedBrand).slice(0,2)){
+  const el=document.createElement('div');el.className='fm-brand-alt';
+  const img=document.createElement('img');
+  img.alt=brand.name+' logo';
+  img.width=22;img.height=22;img.loading='lazy';img.referrerPolicy='no-referrer';
+  img.onerror=()=>img.remove();
+  img.src=officialFaviconUrl(brand.domain);
+  const name=document.createElement('span');name.textContent=brand.name;
+  el.append(img,name);row.append(el);
+ }
+}
+
 function render(data){
-  report=data;const ordered=[...data.matches].sort((a,b)=>b.score-a.score);
+  report=data;renderBrandVibe(data);const ordered=[...data.matches].sort((a,b)=>b.score-a.score);
   $('result-photo').src=previewUrl;$('result-title').textContent=data.title;
+  $('result-subtitle').textContent=data.subtitle||'YOUR STYLE ALTER EGO';
   $('result-line').textContent=data.tagline;$('result-reason').textContent=data.explanation;
   const tags=$('style-tags');tags.replaceChildren();for(const tag of data.tags){const el=document.createElement('span');el.textContent=tag;tags.append(el);}
   const list=$('match-list');list.replaceChildren();
@@ -138,7 +196,7 @@ $('analyze').addEventListener('click',async()=>{
     });
     if(!response.ok){
       const status=response.status;
-      if(status===429)throw new Error('Today\u2019s free analyses or your short-term request limit has been reached. Please try later.');
+      if(status===429)throw new Error('Today\u2019s free Face Match analyses are full. Please try again tomorrow.');
       if(status===400)throw new Error('We couldn\u2019t read this photo. Please choose another photo.');
       if(status===503 || status===502 || status===504)throw new Error('Our AI couldn\u2019t finish this analysis. Your photo is still ready; tap Reveal my aura to retry.');
       throw new Error('The photo analysis failed. Please retry.');
@@ -162,12 +220,13 @@ function resultCanvas(){
   const words=report.title.split(' ');let line='',yy=280;
   for(const word of words){const next=line?line+' '+word:word;if(c.measureText(next).width>475&&line){c.fillText(line,535,yy);yy+=65;line=word;}else line=next;}
   c.fillText(line,535,yy);
-  c.font='24px sans-serif';c.fillStyle='#d7cbe7';c.fillText('STYLE MATCH · JUST FOR FUN',535,690);
+  c.font='21px sans-serif';c.fillStyle='#d7cbe7';c.fillText((report.tags||[]).slice(0,2).join(' · ').slice(0,37),535,690);
   c.strokeStyle='#40354f';c.beginPath();c.moveTo(70,810);c.lineTo(1010,810);c.stroke();
   c.font='bold 28px sans-serif';c.fillStyle='#f5edff';c.fillText('TOP MATCHES',70,873);
   const top=[...report.matches].sort((a,b)=>b.score-a.score).slice(0,3);
   top.forEach((m,i)=>{const item=archetypes.find(a=>a.id===m.id);const yy=945+i*94;c.font='25px sans-serif';c.fillStyle='#f5edff';c.fillText(item.title,70,yy);c.fillStyle='#b9a4ff';c.fillRect(395,yy-18,Math.round(430*m.score/100),12);c.font='bold 25px sans-serif';c.fillText(String(m.score),890,yy);});
-  c.fillStyle='#a99cb7';c.font='21px sans-serif';c.fillText('orbit-reaches.com/face-match/',70,1287);
+  if(report.company?.name){c.fillStyle='#bca8ff';c.font='bold 18px sans-serif';c.fillText('YOUR BRAND-VIBE TWIN',70,1205);c.fillStyle='#f8f4ff';c.font='bold 31px sans-serif';c.fillText(report.company.name,70,1250);}
+  c.fillStyle='#a99cb7';c.font='18px sans-serif';c.fillText('orbit-reaches.com/face-match/ · Just for fun',70,1320);
   return canvas;
 }
 async function blobForShare(){return new Promise(resolve=>resultCanvas().toBlob(resolve,'image/png'));}
