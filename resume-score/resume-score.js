@@ -20,6 +20,9 @@ const fileName = byId('file-name');
 const uploadError = byId('upload-error');
 const gateError = byId('unlock-error');
 let ready = false, reportToken = '', report = null, captchaToken = '', captchaSiteKey = '';
+const bridge = window.OrbitNetworkingBridge;
+const networkVariant = bridge?.variant('resume-evaluation') || 'a';
+let selectedNetworkingFirm = '';
 
 function show(stage) {
   for (const id of stages) byId(id).hidden = id !== stage;
@@ -158,6 +161,8 @@ byId('unlock-form').addEventListener('submit', async event => {
     report = data.report;
     render(report);
     show('result-stage');
+    bridge?.track('resume-evaluation', 'result_viewed', networkVariant);
+    observeNetworkingCTA();
     // An email used to unlock a report is not marketing permission.
     // Only an explicit, unchecked-by-default opt-in can create a subscription.
     if (byId('marketing-consent').checked) {
@@ -237,6 +242,7 @@ function renderCompanyCloud(targets) {
   const priority = { realistic: 0, stretch: 1, exploratory: 2 };
   const sorted = (Array.isArray(targets) ? [...targets] : []).sort((a,b) => (priority[a.fit] ?? 2) - (priority[b.fit] ?? 2)).slice(0, 7);
   if (!sorted.length) {
+    selectNetworkingTarget(null);
     container.classList.add('is-empty');
     container.append(element('p', 'rs-cloud-empty', 'Company map unavailable for this review.'));
     detail.fit.textContent = 'Score ready';
@@ -259,6 +265,7 @@ function renderCompanyCloud(targets) {
     detail.role.textContent = target.role;
     detail.rationale.textContent = target.rationale;
     items.forEach((node, index) => node.setAttribute('aria-pressed', String(index === i)));
+    selectNetworkingTarget(target);
   }
   sorted.forEach((item, i) => {
     const bubble = element('button', 'rs-bubble');
@@ -286,6 +293,49 @@ function renderCompanyCloud(targets) {
     items.push(bubble);
   });
   if (sorted.length) select(0);
+}
+function selectNetworkingTarget(target) {
+  // Only explicitly curated company names are safe to carry into an agent goal.
+  const company = target && logoDomain(target.company) ? String(target.company).trim().slice(0, 75) : '';
+  selectedNetworkingFirm = company;
+  const friendly = company || 'your target field';
+  byId('networking-next-heading').textContent = company
+    ? 'Want to work at ' + company + '? Start networking.'
+    : 'Your next move: make a real connection.';
+  byId('networking-next-description').textContent = company
+    ? 'Orbit can research people at ' + company + ', prepare thoughtful introductions, and let you approve outreach.'
+    : 'Orbit helps you find relevant alumni, prepare introductions, and review outreach before sending.';
+  const a = byId('networking-next-cta');
+  const mini = byId('company-network-cta');
+  a.textContent = networkVariant === 'b'
+    ? (company ? 'Start networking at ' + company + ' ↗' : 'Start networking with Orbit ↗')
+    : (company ? 'Find ' + company + ' alumni ↗' : 'Find relevant alumni ↗');
+  mini.textContent = company ? 'Network at ' + company + ' ↗' : 'Find relevant alumni ↗';
+  for (const link of [a, mini]) link.href = bridge?.href('resume_evaluation', networkVariant) || '/start/';
+}
+function observeNetworkingCTA() {
+  if (!('IntersectionObserver' in window)) {
+    bridge?.track('resume-evaluation', 'networking_cta_viewed', networkVariant);
+    return;
+  }
+  const observer = new IntersectionObserver(entries => {
+    if (entries.some(entry => entry.isIntersecting)) {
+      bridge?.track('resume-evaluation', 'networking_cta_viewed', networkVariant);
+      observer.disconnect();
+    }
+  }, { threshold: 0.3 });
+  observer.observe(byId('networking-next-move'));
+  observer.observe(byId('company-network-cta'));
+}
+for (const link of document.querySelectorAll('[data-networking-cta]')) {
+  link.addEventListener('click', () => {
+    bridge?.prepare({
+      source: 'resume_evaluation',
+      company: selectedNetworkingFirm,
+      email: byId('unlock-email').value
+    });
+    bridge?.track('resume-evaluation', 'networking_cta_clicked', networkVariant);
+  });
 }
 function renderTemplate(review) {
   const preview = byId('template-issues');
@@ -322,7 +372,8 @@ function render(data) {
   byId('inferred-direction').textContent = data.inferredDirection;
   byId('percentile-note').textContent = data.percentileNote;
   byId('report-disclaimer').textContent = data.disclaimer;
-  byId('orbit-action').textContent = data.nextOrbitAction;
+  // The Next Move now uses the selected company's real networking workflow,
+  // not the former generic AI nextOrbitAction placeholder.
   renderTemplate(data.templateReview);
   byId('result-status').textContent = data.analysisStatus === 'limited'
     ? 'Your score is ready. Some optional AI suggestions were unavailable.' : '';
