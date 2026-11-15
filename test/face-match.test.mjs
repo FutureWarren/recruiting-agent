@@ -51,7 +51,7 @@ test('Portrait-vibe v2 renders real editorial brand logos and positive tags',()=
  assert.match(js,/google\.com/);
  assert.match(js,/officialFaviconUrl/);
  assert.match(js,/renderBrandVibe/);
- assert.match(js,/data\.version==='photo-vibe-v2'/);
+ assert.match(js,/data\??\.version==='photo-vibe-v2'/);
  assert.match(css,/\.fm-brand-match/);
  assert.doesNotMatch(js,/short-term request limit/);
  assert.match(h,/not your outfit/);
