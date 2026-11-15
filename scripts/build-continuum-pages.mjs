@@ -2,7 +2,7 @@ import { readFile, writeFile, mkdir } from 'node:fs/promises';
 
 // Local design routes only. Source content, form endpoints and service scripts
 // remain authoritative; this renderer neither publishes nor changes billing.
-export const pages = ['pricing', 'support', 'recruiting-guide', 'recruiting-news', 'privacy', 'terms', 'refunds', 'unsubscribe', 'start', 'continue', 'resume-score'];
+export const pages = ['pricing', 'support', 'recruiting-guide', 'recruiting-news', 'privacy', 'terms', 'refunds', 'unsubscribe', 'start', 'continue', 'resume-score', 'face-match'];
 export const prefix = '/preview/continuum';
 export function previewLinks(html) {
   return html.replace(/(<a\b[^>]*\bhref=")([^"\s]+)(")/g, (match, before, href, after) => {
@@ -13,7 +13,7 @@ export function previewLinks(html) {
   });
 }
 const nav = page => `<a class="site-skip" href="#page-content">Skip to content</a><header class="shell topbar"><a class="brand" href="/" aria-label="Orbit home"><span class="orbit-mark" aria-hidden="true"></span>Orbit</a><nav class="nav" aria-label="Primary navigation"><a href="/#demo">Demo</a><a href="/pricing/"${page === 'pricing' ? ' aria-current="page"' : ''}>Pricing</a><a href="/support/"${page === 'support' ? ' aria-current="page"' : ''}>Support</a><a class="primary" href="/#download">Get Orbit <span aria-hidden="true">↗</span></a></nav></header>`;
-const footer = `<footer class="site-footer"><div class="shell footer-inner"><a class="brand" href="/"><span class="orbit-mark" aria-hidden="true"></span>Orbit</a><div class="footer-links"><a href="/pricing/">Pricing</a><a href="/support/">Support</a><a href="/recruiting-guide/">Recruiting guide</a><a href="/recruiting-news/">News</a><a href="/start/">Desktop link</a><a href="/terms/">Terms</a><a href="/privacy/">Privacy</a><a href="/refunds/">Refunds</a><a href="/unsubscribe/">Email preferences</a></div></div><div class="shell copyright">© 2026 Orbit · Operated by Angelic</div></footer>`;
+const footer = `<footer class="site-footer"><div class="shell footer-inner"><a class="brand" href="/"><span class="orbit-mark" aria-hidden="true"></span>Orbit</a><div class="footer-links"><a href="/pricing/">Pricing</a><a href="/support/">Support</a><a href="/resume-score/">Resume Evaluation</a><a href="/face-match/">Face Match</a><a href="/recruiting-guide/">Recruiting guide</a><a href="/recruiting-news/">News</a><a href="/start/">Desktop link</a><a href="/terms/">Terms</a><a href="/privacy/">Privacy</a><a href="/refunds/">Refunds</a><a href="/unsubscribe/">Email preferences</a></div></div><div class="shell copyright">© 2026 Orbit · Operated by Angelic</div></footer>`;
 
 export async function buildCompanionPages() {
   for (const page of pages) {

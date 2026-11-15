@@ -35,7 +35,7 @@ html = html.replace(/<section class="stats"[\s\S]*?<\/section>/, `<section class
 html = html.replace(/<section id="profile"[\s\S]*?<\/section>/, personalDemo);
 html = html.replace(/<section id="security"[\s\S]*?<\/section>/, '');
 html = html.replace(/<section id="recruiting-resources"[\s\S]*?<\/section>/, '');
-html = html.replace('<div class="footer-links">', '<div class="footer-links"><a href="/recruiting-guide/">Recruiting guide</a><a href="/recruiting-news/">News</a>');
+html = html.replace('<div class="footer-links">', '<div class="footer-links"><a href="/resume-score/">Resume Evaluation</a><a href="/face-match/">Face Match</a><a href="/recruiting-guide/">Recruiting guide</a><a href="/recruiting-news/">News</a>');
 await mkdir('preview/continuum/assets', { recursive: true });
 await buildCompanionPages();
 await writeFile('preview/continuum/index.html', previewLinks(html));
