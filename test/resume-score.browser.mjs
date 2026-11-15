@@ -58,6 +58,7 @@ try {
     assert.equal(await page.locator('#overall-score').innerText(),'82')
     assert.equal(await page.locator('.rs-bubble').count(),6)
     assert.equal(await page.locator('.rs-bubble[aria-pressed="true"]').count(),1)
+    await page.locator('.rs-bubble').first().click({force:true})
     assert.equal(await page.locator('#company-detail-name').innerText(),'Goldman Sachs')
     assert.ok((await page.locator('.rs-bubble img').count()) >= 5)
     await page.locator('.rs-bubble').nth(1).click({force:true})
