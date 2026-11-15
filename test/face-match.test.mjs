@@ -24,3 +24,14 @@ test('Face Match privacy notice discloses photo processing',()=>{
   assert.match(p,/DashScope\/Qwen/);
   assert.match(p,/provider-side retention/);
 });
+
+test('Face Match only shows custom upload action and explains transient server errors',()=>{
+  const html=read('face-match/index.html');
+  const css=read('face-match/face-match.css');
+  const js=read('face-match/face-match.js');
+  assert.match(html,/id="photo-input" class="fm-visually-hidden"/);
+  assert.match(css,/\.fm-visually-hidden\{/);
+  assert.match(js,/controller\.abort\(\),45000/);
+  assert.match(js,/Our AI couldn/);
+  assert.doesNotMatch(js,/Analysis is not available yet\. Please try again later/);
+});
