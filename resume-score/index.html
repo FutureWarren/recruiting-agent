@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#090a0e">
+  <meta name="description" content="Get a free, evidence-based AI résumé review: a clear scoring rubric, your strongest signals, target company ideas and a practical improvement plan.">
+  <title>Free AI Resume Score &amp; Career Feedback | Orbit</title>
+  <link rel="canonical" href="https://orbit-reaches.com/resume-score/">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='21' fill='none' stroke='%237d68fc' stroke-width='6'/%3E%3Ccircle cx='32' cy='10' r='7' fill='%237d68fc'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="/resume-score/resume-score.css">
+</head>
+<body>
+<header class="shell topbar"><a class="brand" href="/" aria-label="Orbit home"><span class="orbit-mark" aria-hidden="true"></span>Orbit</a><nav class="nav" aria-label="Primary navigation"><a href="/">Home</a><a href="/recruiting-guide/">Recruiting guide</a><a href="/pricing/">Pricing</a><a class="primary" href="/#download">Get Orbit</a></nav></header>
+<main class="rs-page" id="page-content" tabindex="-1">
+  <section class="rs-hero">
+    <div class="rs-orbit" aria-hidden="true"><span class="rs-satellite"></span></div>
+    <div class="rs-eyebrow">ORBIT / RESUME INTELLIGENCE</div>
+    <h1>Know where you stand.<br><span>Know what to do next.</span></h1>
+    <p>Upload your résumé for a candid AI assessment of your strengths, missing evidence and roles worth exploring. No account or payment required.</p>
+    <div class="rs-tags"><span>Six-dimension assessment</span><span>Company fit ideas</span><span>Actionable edits</span></div>
+  </section>
+
+  <section class="rs-surface" aria-live="polite">
+    <div id="upload-stage">
+      <div class="rs-step"><span>01 / YOUR RESUME</span><span class="rs-state">FREE ASSESSMENT</span></div>
+      <h2>Start with your experience.</h2>
+      <p class="rs-muted">A strong review starts with what you've actually done — not generic résumé templates.</p>
+      <form id="resume-form">
+        <label class="rs-drop" id="resume-drop" for="resume-file">
+          <span class="rs-upload-icon" aria-hidden="true">↑</span>
+          <strong>Choose a PDF or DOCX résumé</strong>
+          <span id="file-name">or drag a file here · max 2 MB</span>
+          <input id="resume-file" name="resume" type="file" accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document" required>
+        </label>
+        <p class="rs-disclosure">Your file is processed to produce this review. We do not keep the raw upload; your report expires after 24 hours and is removed shortly afterward; an optional marketing subscription is stored separately only if you opt in. Review our <a href="/privacy/">Privacy Policy</a> for AI-provider processing.</p>
+        <div id="captcha" aria-label="Abuse prevention verification"></div>
+        <p id="upload-error" class="rs-error" role="alert" hidden></p>
+        <button type="submit" id="analyze-button" class="rs-button" disabled>Analyze my resume <span aria-hidden="true">↗</span></button>
+      </form>
+    </div>
+    <div id="loading-stage" hidden>
+      <div class="rs-step">02 / ANALYSIS</div>
+      <div class="rs-loader" aria-hidden="true"><span></span></div>
+      <h2>Reading your experience.</h2>
+      <p class="rs-muted">Checking evidence, accomplishments, clarity and the roles your profile could support.</p>
+    </div>
+    <div id="gate-stage" hidden>
+      <div class="rs-step"><span>03 / REPORT READY</span><span class="rs-state">ANALYSIS COMPLETE</span></div>
+      <div class="rs-gate-mark" aria-hidden="true">✓</div>
+      <h2>Your personalized report is ready.</h2>
+      <p class="rs-muted">Unlock your six scores, company-fit ideas and the highest-impact changes to make next.</p>
+      <div class="rs-locked"><span>Overall score</span><strong>•• / 100</strong><span>Strengths · Gaps · Target roles</span></div>
+      <form id="unlock-form">
+        <label for="unlock-email">Email address</label>
+        <input type="email" id="unlock-email" placeholder="you@example.com" inputmode="email" autocomplete="email" maxlength="254" required>
+        <label class="rs-check"><input type="checkbox" id="marketing-consent"><span>I'd also like optional Orbit recruiting tips and product updates by email. I can unsubscribe anytime. A separate confirmation email will be sent.</span></label>
+        <p id="unlock-error" class="rs-error" role="alert" hidden></p>
+        <button type="submit" id="unlock-button" class="rs-button">Unlock my free report <span aria-hidden="true">↗</span></button>
+        <p class="rs-small">Your email unlocks this one report. Marketing updates are optional and never required.</p>
+      </form>
+    </div>
+    <div id="result-stage" hidden>
+      <div class="rs-step"><span>04 / YOUR REPORT</span><span class="rs-state">ORBIT RESUME INTELLIGENCE</span></div>
+      <div class="rs-score-head"><div><p class="rs-eyebrow">RUBRIC SCORE</p><div class="rs-total"><span id="overall-score">—</span><small>/ 100</small></div><p class="rs-muted" id="verdict"></p></div><div class="rs-score-ring" aria-hidden="true"><span id="ring-score">—</span></div></div>
+      <p id="inferred-direction" class="rs-direction"></p>
+      <div class="rs-report-grid">
+        <section class="rs-panel"><h3>Six dimensions</h3><div id="ratings"></div><p class="rs-small">Scores reflect this résumé against a transparent rubric, not verified hiring outcomes.</p></section>
+        <section class="rs-panel"><h3>How do you compare?</h3><div class="rs-percentile">—</div><p id="percentile-note" class="rs-muted"></p></section>
+        <section class="rs-panel"><h3>Your strongest signals</h3><div id="strengths"></div></section>
+        <section class="rs-panel"><h3>What to improve next</h3><div id="gaps"></div></section>
+      </div>
+      <section class="rs-panel rs-companies"><h3>Companies &amp; roles worth exploring</h3><p class="rs-muted">Illustrative fit, not interview or offer probability. No live openings are implied.</p><div id="companies"></div></section>
+      <section class="rs-next"><div><p class="rs-eyebrow">FROM INSIGHT TO ACTION</p><h3>Don't just improve your résumé.<br>Expand who you can reach.</h3><p id="orbit-action"></p><p class="rs-small">Orbit currently helps with research, personalized networking and outreach. It does not guarantee a job or auto-submit applications.</p></div><a class="rs-button" href="/?utm_source=resume_score&amp;utm_medium=free_tool&amp;utm_campaign=resume_intelligence#download">Try Orbit free <span aria-hidden="true">↗</span></a></section>
+      <p id="report-disclaimer" class="rs-disclosure"></p>
+      <div class="rs-actions"><button type="button" class="rs-text-button" id="copy-report">Copy review summary</button><button type="button" class="rs-text-button" id="delete-report">Delete my report and unlock email</button><a class="rs-text-button" href="/resume-score/">Start a new review</a></div>
+      <p id="result-status" class="rs-muted" role="status"></p>
+    </div>
+  </section>
+  <p class="rs-footnote">Designed for early-career exploration. No fictitious applicant percentiles, invented hiring odds or guaranteed company matches.</p>
+</main>
+<footer class="rs-footer"><p>© 2026 Orbit · Built for ambitious students</p><nav aria-label="Footer"><a href="/privacy/">Privacy</a><a href="/terms/">Terms</a><a href="/unsubscribe/">Email preferences</a><a href="/support/">Support</a></nav></footer>
+<script src="/resume-score/resume-score.js" defer></script>
+</body>
+</html>

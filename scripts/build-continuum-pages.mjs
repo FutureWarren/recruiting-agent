@@ -2,7 +2,7 @@ import { readFile, writeFile, mkdir } from 'node:fs/promises';
 
 // Local design routes only. Source content, form endpoints and service scripts
 // remain authoritative; this renderer neither publishes nor changes billing.
-export const pages = ['pricing', 'support', 'recruiting-guide', 'recruiting-news', 'privacy', 'terms', 'refunds', 'unsubscribe', 'start', 'continue'];
+export const pages = ['pricing', 'support', 'recruiting-guide', 'recruiting-news', 'privacy', 'terms', 'refunds', 'unsubscribe', 'start', 'continue', 'resume-score'];
 export const prefix = '/preview/continuum';
 export function previewLinks(html) {
   return html.replace(/(<a\b[^>]*\bhref=")([^"\s]+)(")/g, (match, before, href, after) => {
@@ -30,7 +30,7 @@ export async function buildCompanionPages() {
     } else {
       html = html.replace(/<header\b[\s\S]*?<\/header>/, nav(page));
     }
-    html = html.replace(/<footer>[\s\S]*?<\/footer>/, '');
+    html = html.replace(/<footer\b[^>]*>[\s\S]*?<\/footer>/, '');
     html = html.replace('</body>', footer + '\n</body>');
     html = html.replace(/<main\b([^>]*)>/, (match, attrs) => /\bid=/.test(attrs) ? `<main${attrs} tabindex="-1">` : `<main${attrs} id="page-content" tabindex="-1">`);
     // The preferences form's established main ID is retained.
