@@ -229,6 +229,10 @@ function renderCompanyCloud(targets) {
   const priority = { realistic: 0, stretch: 1, exploratory: 2 };
   const sorted = [...targets].sort((a,b) => (priority[a.fit] ?? 2) - (priority[b.fit] ?? 2)).slice(0, 7);
   const items = [];
+  // Avoid accidental hover selection when bubbles appear underneath an idle cursor.
+  // The user must move the pointer inside the map after it is rendered.
+  let hoverArmed = false;
+  container.addEventListener('pointermove', () => { hoverArmed = true }, { once: true });
   function select(i) {
     const target = sorted[i];
     if (!target) return;
@@ -257,7 +261,8 @@ function renderCompanyCloud(targets) {
     }
     bubble.append(wrap, element('span', 'rs-bubble-label', item.company));
     bubble.addEventListener('click', () => select(i));
-    bubble.addEventListener('mouseenter', () => select(i));
+    bubble.addEventListener('mouseenter', () => { if (hoverArmed) select(i); });
+    bubble.addEventListener('pointermove', () => { if (hoverArmed) select(i); });
     bubble.addEventListener('focus', () => select(i));
     container.append(bubble);
     items.push(bubble);
