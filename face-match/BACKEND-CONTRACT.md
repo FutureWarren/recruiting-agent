@@ -2,7 +2,7 @@
 
 Frontend: `/face-match/`. Independent of `/resume-score/`; does not change any resume scoring.
 
-## Endpoint (not yet implemented)
+## Endpoint (implemented in paired backend PR #422; not deployed)
 `POST /api/face-match/analyze` on the Orbit backend.
 Request: `{imageBase64: string, mimeType:"image/jpeg", consent:true}`. Images are downsampled in browser to at most 1280 px long side. Validate image bytes, content type and <=5 MB decoded server-side.
 
@@ -37,3 +37,6 @@ Set `Cache-Control: no-store`; do not store raw photos, logs containing imageBas
 - Result card export stays in the browser; share does not expose a private report URL.
 - Verify privacy policy covers third-party image processor, retention, geographic transfers and user rights before public launch.
 - Performance and abuse testing required before enabling web discoverability.
+
+## Paired implementation
+Backend draft PR: https://github.com/FutureWarren/Future/pull/422. The backend feature is disabled by default and must be deployed from its PR before switching `FACE_MATCH_ENABLED=true` in a verified environment. Website must not be merged before this dependency is green. The backend currently reserves a daily count in Postgres and uses an in-memory IP rate limiter. It does not save uploaded photographs or completed reports.
