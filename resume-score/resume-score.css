@@ -142,3 +142,8 @@
   .rs-next h3{font-size:22px}.rs-next .rs-button{width:100%}
 }
 @media(prefers-reduced-motion:reduce){.rs-bubble{animation:none;will-change:auto}.rs-bubble:hover{transition:none}}
+
+/* Graceful partial report: preserve layout without fake company bubbles. */
+.rs-company-cloud.is-empty{height:215px;min-height:215px;display:flex;align-items:center;justify-content:center}
+.rs-company-cloud.is-empty:before,.rs-company-cloud.is-empty:after{display:none}
+.rs-cloud-empty{max-width:225px;text-align:center;color:#b4aec7;font-size:13px;line-height:1.6;border:1px dashed #655a7b;padding:18px;border-radius:13px}
