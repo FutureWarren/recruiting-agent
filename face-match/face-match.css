@@ -13,3 +13,28 @@
 /* Keep the native file control accessible to keyboards/assistive tech, not visually duplicated. */
 .fm-visually-hidden{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip:rect(0 0 0 0)!important;white-space:nowrap!important;border:0!important}
 .fm-secondary:focus-within{outline:2px solid #d0bfff;outline-offset:3px}
+
+
+/* Face Match v2 — portrait-first, brand-inspired entertainment result */
+.fm-result-main{align-items:start}
+.fm-archetype-subtitle{font-size:12px!important;letter-spacing:.16em;text-transform:uppercase;font-weight:700;color:#c5b2ff!important;margin:0 0 12px!important}
+.fm-brand-match{margin-top:26px;padding:22px;border:1px solid rgba(189,166,255,.3);border-radius:19px;background:radial-gradient(ellipse at 0 0,rgba(151,113,248,.16),transparent 68%),#17131f;animation:fm-brand-arrive .7s .45s both}
+.fm-brand-head{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.fm-brand-badge{font-size:9px;letter-spacing:.14em;color:#bdb2d2;border:1px solid rgba(187,166,232,.3);padding:5px 8px;border-radius:40px;white-space:nowrap}
+.fm-brand-feature{display:flex;gap:17px;align-items:center;margin-top:17px}
+.fm-logo-frame{width:70px;height:70px;flex:0 0 70px;border-radius:18px;background:#f5f3f9;display:flex;align-items:center;justify-content:center;box-shadow:0 8px 30px rgba(0,0,0,.24);overflow:hidden;color:#6046b2}
+.fm-logo-frame img{display:block;width:49px;height:49px;object-fit:contain}
+.fm-logo-frame span{font-size:28px;font-weight:750;letter-spacing:-.04em}
+.fm-brand-feature h3{font-size:clamp(20px,3vw,29px);font-weight:690;letter-spacing:-.035em;margin:0 0 5px;line-height:1.18}
+.fm-brand-feature p{font-size:12px;color:#a79bb8;margin:0;line-height:1.5}
+.fm-brand-alts{margin-top:21px;padding-top:17px;border-top:1px solid rgba(204,189,232,.13)}
+.fm-brand-alts>span{display:block;font-size:10px;color:#978ba9;letter-spacing:.12em;font-weight:700;margin-bottom:11px}
+.fm-brand-alt-list{display:flex;flex-wrap:wrap;gap:8px}
+.fm-brand-alt{display:flex;align-items:center;gap:8px;padding:7px 10px;border:1px solid rgba(204,189,232,.16);border-radius:10px;background:rgba(255,255,255,.027)}
+.fm-brand-alt img{width:22px;height:22px;object-fit:contain;background:#f3f2f6;border-radius:5px}
+.fm-brand-alt span{font-size:12px;color:#d7d0e2}
+.fm-brand-note{font-size:10px!important;line-height:1.55;color:#8e859e!important;margin:17px 0 0!important}
+.fm-chips span{background:linear-gradient(110deg,rgba(187,149,255,.17),rgba(113,80,217,.08));border-color:rgba(191,163,255,.36);color:#e3d3ff;font-weight:650}
+@keyframes fm-brand-arrive{from{opacity:0;transform:translateY(18px) scale(.975);filter:blur(5px)}to{opacity:1;transform:none;filter:none}}
+@media(max-width:760px){.fm-brand-match{padding:18px;margin-top:20px}.fm-logo-frame{width:56px;height:56px;flex-basis:56px;border-radius:14px}.fm-logo-frame img{width:40px;height:40px}.fm-brand-feature{gap:13px}.fm-brand-feature h3{font-size:22px}.fm-brand-alt-list{gap:7px}.fm-brand-alt{padding:7px 9px}.fm-brand-alt span{font-size:11px}}
+@media(prefers-reduced-motion:reduce){.fm-brand-match{animation:none!important}}
