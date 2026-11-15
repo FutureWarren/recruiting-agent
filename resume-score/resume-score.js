@@ -179,15 +179,98 @@ function paragraph(parent, label, detail, extra) {
   row.append(strong, element('p', '', detail));
   parent.append(row);
 }
+
+const VERIFIED_LOGO_DOMAINS = Object.freeze({
+  'goldman sachs':'goldmansachs.com',
+  'morgan stanley':'morganstanley.com',
+  'jpmorgan':'jpmorganchase.com', 'j.p. morgan':'jpmorganchase.com', 'jpmorgan chase':'jpmorganchase.com',
+  'blackrock':'blackrock.com', 'citi':'citi.com', 'citigroup':'citi.com',
+  'jefferies':'jefferies.com', 'houlihan lokey':'hl.com', 'lazard':'lazard.com',
+  'evercore':'evercore.com', 'moelis':'moelis.com', 'moelis & company':'moelis.com',
+  'pjt partners':'pjtpartners.com', 'bank of america':'bankofamerica.com',
+  'wells fargo':'wellsfargo.com', 'barclays':'barclays.com', 'ubs':'ubs.com',
+  'rbc':'rbc.com', 'raymond james':'raymondjames.com',
+  'bloomberg':'bloomberg.com', 'vanguard':'vanguard.com', 'fidelity':'fidelity.com',
+  'state street':'statestreet.com', 'capital one':'capitalone.com',
+  'jane street':'janestreet.com', 'citadel':'citadel.com', 'two sigma':'twosigma.com',
+  'hudson river trading':'hudsonrivertrading.com', 'bridgewater':'bridgewater.com',
+  'aqr':'aqr.com', 'de shaw':'deshaw.com',
+  'google':'google.com', 'alphabet':'abc.xyz', 'meta':'meta.com',
+  'microsoft':'microsoft.com', 'amazon':'amazon.com', 'apple':'apple.com',
+  'nvidia':'nvidia.com', 'tesla':'tesla.com', 'openai':'openai.com',
+  'stripe':'stripe.com', 'databricks':'databricks.com',
+  'salesforce':'salesforce.com', 'adobe':'adobe.com', 'figma':'figma.com',
+  'notion':'notion.so', 'palantir':'palantir.com', 'ibm':'ibm.com',
+  'deloitte':'deloitte.com', 'pwc':'pwc.com', 'kpmg':'kpmg.com',
+  'ey':'ey.com', 'accenture':'accenture.com', 'mckinsey':'mckinsey.com',
+  'bain':'bain.com', 'bain & company':'bain.com', 'boston consulting group':'bcg.com',
+  'bcg':'bcg.com', 'oliver wyman':'oliverwyman.com',
+  'nike':'nike.com', 'disney':'disney.com', 'spotify':'spotify.com',
+  'uber':'uber.com', 'airbnb':'airbnb.com', 'american express':'americanexpress.com'
+});
+function logoDomain(company) {
+  // All image hosts and domains are fixed, never taken from model output.
+  const key = String(company).toLowerCase().trim().replace(/\s+/g, ' ');
+  return Object.prototype.hasOwnProperty.call(VERIFIED_LOGO_DOMAINS, key) ? VERIFIED_LOGO_DOMAINS[key] : null;
+}
+function initials(name) {
+  const words = String(name).replace(/[^a-zA-Z0-9 ]/g, '').split(/\s+/).filter(Boolean);
+  return words.length > 1 ? (words[0][0] + words[1][0]).toUpperCase() : (words[0] || '?').slice(0, 2).toUpperCase();
+}
+function renderCompanyCloud(targets) {
+  const container = byId('companies');
+  container.replaceChildren();
+  const detail = {
+    fit: byId('company-detail-fit'),
+    company: byId('company-detail-name'),
+    role: byId('company-detail-role'),
+    rationale: byId('company-detail-rationale')
+  };
+  const priority = { realistic: 0, stretch: 1, exploratory: 2 };
+  const sorted = [...targets].sort((a,b) => (priority[a.fit] ?? 2) - (priority[b.fit] ?? 2)).slice(0, 7);
+  const items = [];
+  function select(i) {
+    const target = sorted[i];
+    if (!target) return;
+    detail.fit.textContent = target.fit === 'realistic' ? 'Closest alignment' : target.fit === 'stretch' ? 'Stretch path' : 'Explore';
+    detail.company.textContent = target.company;
+    detail.role.textContent = target.role;
+    detail.rationale.textContent = target.rationale;
+    items.forEach((node, index) => node.setAttribute('aria-pressed', String(index === i)));
+  }
+  sorted.forEach((item, i) => {
+    const bubble = element('button', 'rs-bubble');
+    bubble.type = 'button';
+    bubble.setAttribute('aria-label', item.company + ' · ' + item.role);
+    bubble.setAttribute('aria-pressed', 'false');
+    const wrap = element('span', 'rs-bubble-icon');
+    wrap.append(element('span', 'rs-bubble-initials', initials(item.company)));
+    const domain = logoDomain(item.company);
+    if (domain) {
+      const img = document.createElement('img');
+      img.src = 'https://www.google.com/s2/favicons?domain=' + encodeURIComponent(domain) + '&sz=128';
+      img.alt = '';
+      img.referrerPolicy = 'no-referrer';
+      img.loading = i < 3 ? 'eager' : 'lazy';
+      img.onerror = () => img.remove();
+      wrap.append(img);
+    }
+    bubble.append(wrap, element('span', 'rs-bubble-label', item.company));
+    bubble.addEventListener('click', () => select(i));
+    bubble.addEventListener('mouseenter', () => select(i));
+    bubble.addEventListener('focus', () => select(i));
+    container.append(bubble);
+    items.push(bubble);
+  });
+  if (sorted.length) select(0);
+}
 function render(data) {
   byId('overall-score').textContent = String(data.score);
-  byId('ring-score').textContent = String(data.score);
   byId('verdict').textContent = data.verdict;
-  byId('inferred-direction').textContent = 'Suggested direction: ' + data.inferredDirection;
+  byId('inferred-direction').textContent = data.inferredDirection;
   byId('percentile-note').textContent = data.percentileNote;
   byId('report-disclaimer').textContent = data.disclaimer;
   byId('orbit-action').textContent = data.nextOrbitAction;
-
   const ratings = byId('ratings');
   ratings.replaceChildren();
   for (const [key, label, max] of scoreDimensions) {
@@ -202,16 +285,13 @@ function render(data) {
     row.append(head, track);
     ratings.append(row);
   }
-  const strengths = byId('strengths'), gaps = byId('gaps'), companies = byId('companies');
-  strengths.replaceChildren(); gaps.replaceChildren(); companies.replaceChildren();
-  for (const item of data.strengths) paragraph(strengths, item.title, item.evidence);
-  for (const item of data.gaps) paragraph(gaps, item.title, item.evidence + ' Next step: ' + item.nextStep, item.priority);
-  for (const item of data.companyTargets) {
-    const row = element('div', 'rs-company');
-    row.append(element('b', '', item.company), element('span', '', item.role), element('span', 'rs-fit', item.fit), element('small', '', item.rationale));
-    companies.append(row);
-  }
+  const strengths = byId('strengths'), gaps = byId('gaps');
+  strengths.replaceChildren(); gaps.replaceChildren();
+  for (const item of data.strengths.slice(0, 3)) paragraph(strengths, item.title, item.evidence);
+  for (const item of data.gaps.slice(0, 3)) paragraph(gaps, item.title, item.nextStep, item.priority);
+  renderCompanyCloud(data.companyTargets);
 }
+
 byId('copy-report').addEventListener('click', async () => {
   if (!report) return;
   const summary = [
