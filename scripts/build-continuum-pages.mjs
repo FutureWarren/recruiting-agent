@@ -2,7 +2,7 @@ import { readFile, writeFile, mkdir } from 'node:fs/promises';
 
 // Local design routes only. Source content, form endpoints and service scripts
 // remain authoritative; this renderer neither publishes nor changes billing.
-export const pages = ['pricing', 'support', 'recruiting-guide', 'recruiting-news', 'privacy', 'terms', 'refunds', 'unsubscribe', 'start', 'continue', 'resume-score'];
+export const pages = ['pricing', 'support', 'recruiting-guide', 'recruiting-news', 'privacy', 'terms', 'refunds', 'unsubscribe', 'start', 'continue', 'resume-score', 'face-match'];
 export const prefix = '/preview/continuum';
 export function previewLinks(html) {
   return html.replace(/(<a\b[^>]*\bhref=")([^"\s]+)(")/g, (match, before, href, after) => {
