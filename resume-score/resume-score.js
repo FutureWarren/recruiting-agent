@@ -29,7 +29,14 @@ function clear(box) { box.textContent = ''; box.hidden = true; }
 async function api(path, options) {
   const response = await fetch(API + path, { ...options, cache: 'no-store' });
   const data = await response.json().catch(() => ({}));
-  if (!response.ok) throw new Error(data.error || 'Orbit could not complete that request.');
+  if (!response.ok) {
+    // Never display stack traces, model validation diagnostics or arbitrary server output.
+    const message = typeof data.error === 'string' ? data.error : '';
+    const safe = message.length > 0 && message.length <= 175 &&
+      !/[{}\[\]\\\r\n]/.test(message) &&
+      !/invalid.type|invalid.value|zod|expected|received|stack trace|traceback|json|schema|path.*strengths/i.test(message);
+    throw new Error(safe ? message : 'We couldn’t finish this review. Please try again.');
+  }
   return data;
 }
 function validateFile(file) {
@@ -227,7 +234,17 @@ function renderCompanyCloud(targets) {
     rationale: byId('company-detail-rationale')
   };
   const priority = { realistic: 0, stretch: 1, exploratory: 2 };
-  const sorted = [...targets].sort((a,b) => (priority[a.fit] ?? 2) - (priority[b.fit] ?? 2)).slice(0, 7);
+  const sorted = (Array.isArray(targets) ? [...targets] : []).sort((a,b) => (priority[a.fit] ?? 2) - (priority[b.fit] ?? 2)).slice(0, 7);
+  if (!sorted.length) {
+    container.classList.add('is-empty');
+    container.append(element('p', 'rs-cloud-empty', 'Company map unavailable for this review.'));
+    detail.fit.textContent = 'Score ready';
+    detail.company.textContent = 'Explore your next step';
+    detail.role.textContent = 'Your resume score is still available';
+    detail.rationale.textContent = 'Company suggestions didn’t complete. The scoring breakdown and next steps below are available.';
+    return;
+  }
+  container.classList.remove('is-empty');
   const items = [];
   // Avoid accidental hover selection when bubbles appear underneath an idle cursor.
   // The user must move the pointer inside the map after it is rendered.
@@ -276,6 +293,8 @@ function render(data) {
   byId('percentile-note').textContent = data.percentileNote;
   byId('report-disclaimer').textContent = data.disclaimer;
   byId('orbit-action').textContent = data.nextOrbitAction;
+  byId('result-status').textContent = data.analysisStatus === 'limited'
+    ? 'Your score is ready. Some optional AI suggestions were unavailable.' : '';
   const ratings = byId('ratings');
   ratings.replaceChildren();
   for (const [key, label, max] of scoreDimensions) {
