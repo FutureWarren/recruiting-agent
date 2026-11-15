@@ -390,3 +390,20 @@ byId('delete-report').addEventListener('click', async () => {
   }
 });
 void initialize();
+
+
+/** Anonymous acquisition measurement: no photo, resume, email or identity is sent. */
+function recordPublicToolPageview(){
+  try{
+    if(navigator.doNotTrack==='1'||navigator.globalPrivacyControl===true)return;
+    const key='orbit_labs_tab_session_v1';
+    let sessionId=sessionStorage.getItem(key);
+    if(!sessionId){sessionId=crypto.randomUUID();sessionStorage.setItem(key,sessionId);}
+    void fetch(API+'/api/public-tools/view',{
+      method:'POST',mode:'cors',credentials:'omit',cache:'no-store',keepalive:true,
+      headers:{'content-type':'application/json'},
+      body:JSON.stringify({tool:'resume-evaluation',sessionId})
+    }).catch(()=>undefined);
+  }catch{/* Tracking cannot block the free tool. */}
+}
+recordPublicToolPageview();
