@@ -116,6 +116,14 @@ function render(data){
     const fill=document.createElement('span');fill.style.setProperty('--score',match.score+'%');meter.append(fill);
     const score=document.createElement('div');score.className='fm-value';score.textContent=match.score;const unit=document.createElement('small');unit.textContent=' /100';score.append(unit);
     row.append(rank,name,meter,score);list.append(row);
+    if(!matchMedia('(prefers-reduced-motion: reduce)').matches){
+      const target=match.score,duration=900,delay=index*125,start=performance.now()+delay;
+      score.firstChild.textContent='0';
+      const tick=now=>{if(!row.isConnected)return;const progress=Math.max(0,Math.min(1,(now-start)/duration));
+        const eased=1-Math.pow(1-progress,3);score.firstChild.textContent=String(Math.round(target*eased));
+        if(progress<1)requestAnimationFrame(tick);
+      };requestAnimationFrame(tick);
+    }
   }
 }
 $('analyze').addEventListener('click',async()=>{
