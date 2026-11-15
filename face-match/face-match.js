@@ -12,8 +12,32 @@ const archetypes = [
 ];
 const MAX_BYTES = 5 * 1024 * 1024;
 let photo = null, previewUrl = null, stream = null, report = null, controller = null;
+let imageDetectorPromise = null, serverReady = false;
 function error(message){$('error').textContent=message;$('error').hidden=!message;}
-function enable(){ $('analyze').disabled = !(photo && $('consent').checked); }
+function enable(){ $('analyze').disabled = !(photo && $('consent').checked && serverReady); }
+async function detector(){
+  if(!imageDetectorPromise) imageDetectorPromise=(async()=>{
+    const mp=await import('https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.22/+esm');
+    const vision=await mp.FilesetResolver.forVisionTasks('https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.22/wasm');
+    return mp.FaceDetector.createFromOptions(vision,{baseOptions:{modelAssetPath:'https://storage.googleapis.com/mediapipe-models/face_detector/blaze_face_short_range/float16/1/blaze_face_short_range.tflite'},runningMode:'IMAGE',minDetectionConfidence:0.5});
+  })().catch(()=>null);
+  return imageDetectorPromise;
+}
+async function checkSingleFace(blob){
+  const model=await detector();if(!model) return {ok:true,warning:'On-device face checking unavailable; server will still analyze visual style.'};
+  const bitmap=await createImageBitmap(blob);
+  try{const faces=model.detect(bitmap).detections||[];
+    if(faces.length!==1)return {ok:false,message:faces.length===0?'We could not find one clear face. Try a brighter, front-facing photo.':'Please use a solo photo with just one face.'};
+    const b=faces[0].boundingBox;if(b&&Math.min(b.width,b.height)<65)return {ok:false,message:'Please choose a closer photo with a larger, clearer face.'};
+    return {ok:true};
+  }finally{bitmap.close();}
+}
+async function initialize(){
+  try{const response=await fetch(API+'/api/face-match/config',{cache:'no-store'});const data=await response.json();serverReady=response.ok&&data.ready===true;}
+  catch{serverReady=false;}
+  if(!serverReady){$('camera-note').textContent='Face Match analysis is not yet enabled. You can preview the interface, but scoring is temporarily unavailable.';}
+  enable();
+}
 function stopCamera(){ if(stream){stream.getTracks().forEach(track=>track.stop());stream=null;} $('camera').srcObject=null;$('camera').hidden=true;$('camera-actions').hidden=true;$('open-camera').hidden=false; }
 function clearPhoto(){stopCamera();if(previewUrl){URL.revokeObjectURL(previewUrl);previewUrl=null;}photo=null;$('photo-preview').hidden=true;$('photo-placeholder').hidden=false;$('photo-input').value='';enable();}
 async function usePhoto(file) {
@@ -31,7 +55,10 @@ async function usePhoto(file) {
     bitmap.close();
     const blob=await new Promise(resolve=>canvas.toBlob(resolve,'image/jpeg',.82));
     if(!blob) throw new Error('Image conversion failed.');
+    const checked=await checkSingleFace(blob);
+    if(!checked.ok){error(checked.message);return;}
     clearPhoto();photo=blob;previewUrl=URL.createObjectURL(blob);
+    if(checked.warning)$('camera-note').textContent=checked.warning;
     $('photo-preview').src=previewUrl;$('photo-preview').hidden=false;$('photo-placeholder').hidden=true;enable();
   } catch {error('Could not read that photo. Try a different image.');}
 }
@@ -144,3 +171,4 @@ $('share').addEventListener('click',async()=>{
 });
 $('reset').addEventListener('click',()=>{if(controller)controller.abort();report=null;clearPhoto();$('consent').checked=false;enable();show('capture');});
 window.addEventListener('pagehide',()=>{stopCamera();if(previewUrl)URL.revokeObjectURL(previewUrl);if(controller)controller.abort();});
+initialize();
