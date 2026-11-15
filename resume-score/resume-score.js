@@ -22,7 +22,7 @@ let ready = false, reportToken = '', report = null, captchaToken = '', captchaSi
 
 function show(stage) {
   for (const id of stages) byId(id).hidden = id !== stage;
-  byId(stage).scrollIntoView({ block: 'start', behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth' });
+  byId(stage).scrollIntoView({ block: 'start', behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
 }
 function fail(box, message) { box.textContent = message; box.hidden = false; }
 function clear(box) { box.textContent = ''; box.hidden = true; }
@@ -125,9 +125,11 @@ byId('resume-form').addEventListener('submit', async event => {
     byId('unlock-email').focus();
   } catch (err) {
     show('upload-stage');
+    reflectFile();
     fail(uploadError, err.message || 'Something went wrong. Try again.');
     if (window.turnstile) { window.turnstile.reset(); captchaToken = ''; }
-  } finally { reflectFile(); }
+  }
+  finally { if (!reportToken) button.disabled = false; }
 });
 byId('unlock-form').addEventListener('submit', async event => {
   event.preventDefault();
