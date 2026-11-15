@@ -129,16 +129,22 @@ function render(data){
 $('analyze').addEventListener('click',async()=>{
   error('');if(!photo||!$('consent').checked)return;
   $('analyze').disabled=true;show('loading');controller=new AbortController();
-  const timeout=setTimeout(()=>controller.abort(),25000);
+  const timeout=setTimeout(()=>controller.abort(),45000);
   try{
     const response=await fetch(API+'/api/face-match/analyze',{
       method:'POST',headers:{'Content-Type':'application/json'},
       body:JSON.stringify({imageBase64:await toBase64(photo),mimeType:'image/jpeg',consent:true}),
       signal:controller.signal,cache:'no-store'
     });
-    if(!response.ok)throw new Error('Analysis is not available yet. Please try again later.');
+    if(!response.ok){
+      const status=response.status;
+      if(status===429)throw new Error('Today\u2019s free analyses or your short-term request limit has been reached. Please try later.');
+      if(status===400)throw new Error('We couldn\u2019t read this photo. Please choose another photo.');
+      if(status===503 || status===502 || status===504)throw new Error('Our AI couldn\u2019t finish this analysis. Your photo is still ready; tap Reveal my aura to retry.');
+      throw new Error('The photo analysis failed. Please retry.');
+    }
     const data=await response.json();
-    if(!valid(data))throw new Error('The analysis returned an incomplete result. Please retry.');
+    if(!valid(data))throw new Error('The AI result was incomplete. Please tap Reveal my aura to try again.');
     render(data);show('results');
   }catch(e){
     show('capture');error(e.name==='AbortError'?'The analysis timed out. Please retry.':e.message||'Could not complete your analysis.');
