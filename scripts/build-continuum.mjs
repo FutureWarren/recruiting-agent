@@ -12,7 +12,6 @@ html = html.replace('<body>', '<body class="continuum continuum-dark"><div class
   .replace('src="/home.js?v=acquisition-v2-20261013"', 'src="/preview/continuum/home-services.js"')
   .replace('src="/media/3d/orbit-signature.js"', 'src="/preview/continuum/assets/continuum.js"')
   .replace('<a href="#how">How it works</a><a href="#demo">Watch demo</a>', '<a href="#demo">Demo</a><a href="#numbers">Results</a>')
-  .replace('<a href="#numbers">Results</a>', '<a href="/resume-score/">Free Resume Score</a><a href="#numbers">Results</a>')
   .replace('<div class="kicker">See the product</div>', '')
   .replace('or explore the workflow above.', 'or read the email example below.')
   .replace('<div class="kicker">Think beyond your circle</div>', '')
@@ -36,7 +35,7 @@ html = html.replace(/<section class="stats"[\s\S]*?<\/section>/, `<section class
 html = html.replace(/<section id="profile"[\s\S]*?<\/section>/, personalDemo);
 html = html.replace(/<section id="security"[\s\S]*?<\/section>/, '');
 html = html.replace(/<section id="recruiting-resources"[\s\S]*?<\/section>/, '');
-html = html.replace('<div class="footer-links">', '<div class="footer-links"><a href="/resume-score/">Free resume score</a><a href="/recruiting-guide/">Recruiting guide</a><a href="/recruiting-news/">News</a>');
+html = html.replace('<div class="footer-links">', '<div class="footer-links"><a href="/recruiting-guide/">Recruiting guide</a><a href="/recruiting-news/">News</a>');
 await mkdir('preview/continuum/assets', { recursive: true });
 await buildCompanionPages();
 await writeFile('preview/continuum/index.html', previewLinks(html));
