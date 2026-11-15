@@ -45,7 +45,7 @@ try {
         if (scenario === 'invalid_schema') return route.fulfill({ status:400, contentType:'application/json', body: JSON.stringify({ error:'[{"code":"invalid_type","expected":"object","path":["strengths",0]}]' }) })
         return route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({ready:true,token:'x'.repeat(43)})})
       }
-      if (url.pathname === '/api/resume-score/unlock') return route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({report})})
+      if (url.pathname === '/api/resume-score/unlock') return route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({report: scenario === 'limited' ? { ...report, companyTargets: [], analysisStatus: 'limited' } : report})})
       // No real image-provider request during tests. The UI must keep initials as fallback.
       return route.abort()
     })
@@ -77,6 +77,19 @@ try {
       assert.equal(await page.locator('.rs-bubble').first().evaluate(n => getComputedStyle(n).animationName),'none')
     }
     assert.equal(requests.filter(p => p === '/api/marketing/subscribe').length,0,'no implicit marketing opt in')
+    // AI outage fallback: score remains unlocked without invented employer matches.
+    scenario = 'limited'
+    await page.goto(server.base + '/resume-score/')
+    await page.locator('#resume-file').setInputFiles({name:'resume.pdf',mimeType:'application/pdf',buffer:Buffer.from('%PDF-1.7\n' + 'fake test only\n'.repeat(50))})
+    await page.locator('#analyze-button').click()
+    await page.locator('#gate-stage:not([hidden])').waitFor()
+    await page.locator('#unlock-email').fill('alex@example.test')
+    await page.locator('#unlock-button').click()
+    await page.locator('#result-stage:not([hidden])').waitFor()
+    assert.equal(await page.locator('#overall-score').innerText(), '82')
+    assert.equal(await page.locator('.rs-bubble').count(), 0)
+    assert.match(await page.locator('.rs-cloud-empty').innerText(), /unavailable/i)
+    assert.match(await page.locator('#result-status').innerText(), /score is ready/i)
     // Regression for the production incident: raw schema diagnostics must never reach the UI.
     scenario = 'invalid_schema'
     await page.goto(server.base + '/resume-score/')
