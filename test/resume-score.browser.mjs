@@ -36,7 +36,7 @@ const browser = await chromium.launch({headless:true})
 try {
   for (const [label, width, height] of [['desktop',1280,900], ['mobile',390,844]]) {
     const ctx = await browser.newContext({viewport:{width,height},reducedMotion:label==='mobile'?'reduce':'no-preference'})
-    const requests = [], errors = []
+    const requests = [], errors = [], handoffs = [], conversionEvents = []
     let scenario = 'success'
     await ctx.route('**/*', route => {
       const req = route.request(), url = new URL(req.url())
@@ -46,6 +46,15 @@ try {
         return route.fulfill({ status: 200, contentType: 'image/png', body: png })
       }
       requests.push(url.pathname)
+      if (url.pathname === '/api/public-tools/event') {
+        conversionEvents.push(req.postDataJSON());
+        return route.fulfill({status:204,body:''});
+      }
+      if (url.pathname === '/api/public-tools/view' || url.pathname === '/api/handoff/event') return route.fulfill({status:204,body:''});
+      if (url.pathname === '/api/handoff/start') {
+        handoffs.push(req.postDataJSON());
+        return route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({emailStatus:'accepted',continueUrl:server.base + '/continue/?token=fixture'})});
+      }
       if (url.pathname === '/api/resume-score/config') return route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({ready:true,captchaSiteKey:''})})
       if (url.pathname === '/api/resume-score/analyze') {
         if (scenario === 'invalid_schema') return route.fulfill({ status:400, contentType:'application/json', body: JSON.stringify({ error:'[{"code":"invalid_type","expected":"object","path":["strengths",0]}]' }) })
@@ -86,6 +95,26 @@ try {
       assert.equal(await page.locator('.rs-bubble').first().evaluate(n => getComputedStyle(n).animationName),'none')
     }
     assert.equal(requests.filter(p => p === '/api/marketing/subscribe').length,0,'no implicit marketing opt in')
+    // Result-to-action bridge: a company chosen on the report becomes a prepared,
+    // reviewed networking task, not an invented successful outreach campaign.
+    assert.match(await page.locator('#networking-next-heading').innerText(), /Morgan Stanley/)
+    assert.match(await page.locator('#networking-next-cta').innerText(), /Morgan Stanley/)
+    await page.locator('#networking-next-cta').click()
+    await page.waitForURL(/\/start\/\?/)
+    assert.equal(new URL(page.url()).searchParams.get('source'), 'resume_evaluation')
+    assert.match(await page.locator('#networking-prep-goal').innerText(),/Morgan Stanley/)
+    assert.equal(await page.locator('#email').inputValue(),'alex@example.test')
+    assert.equal(handoffs.length,0,'visiting start page must not email or submit anything')
+    await page.locator('#submit').click()
+    await page.locator('#success:not([hidden])').waitFor()
+    assert.equal(handoffs.length,1)
+    assert.equal(handoffs[0].email,'alex@example.test')
+    assert.equal(handoffs[0].source,'resume_evaluation')
+    assert.match(handoffs[0].goal,/Morgan Stanley/)
+    assert.match(handoffs[0].detail,/my approval/)
+    assert.equal(conversionEvents.filter(e=>e.event==='networking_cta_clicked').length,1)
+    assert.equal(conversionEvents.every(e=>!('email' in e)&&!('company' in e)&&!('goal' in e)),true)
+
     // AI outage fallback: score remains unlocked without invented employer matches.
     scenario = 'limited'
     await page.goto(server.base + '/resume-score/')

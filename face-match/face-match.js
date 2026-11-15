@@ -13,6 +13,9 @@ const archetypes = [
 const MAX_BYTES = 5 * 1024 * 1024;
 let photo = null, previewUrl = null, stream = null, report = null, controller = null;
 let imageDetectorPromise = null, serverReady = false;
+const networkingBridge = window.OrbitNetworkingBridge;
+const networkingVariant = networkingBridge?.variant('face-match') || 'a';
+let selectedNetworkingIndustry = '';
 function error(message){$('error').textContent=message;$('error').hidden=!message;}
 function enable(){ $('analyze').disabled = !(photo && $('consent').checked && serverReady); }
 async function detector(){
@@ -204,10 +207,57 @@ $('analyze').addEventListener('click',async()=>{
     const data=await response.json();
     if(!valid(data))throw new Error('The AI result was incomplete. Please tap Reveal my aura to try again.');
     render(data);show('results');
+    networkingBridge?.track('face-match','result_viewed',networkingVariant);
+    observeNetworkingBridge();
   }catch(e){
     show('capture');error(e.name==='AbortError'?'The analysis timed out. Please retry.':e.message||'Could not complete your analysis.');
   }finally{clearTimeout(timeout);controller=null;enable();}
 });
+// Face Match is entertainment only. These interests are actively chosen by the visitor
+// and are NOT inferred from facial characteristics or visual style.
+function updateNetworkingCTA() {
+  const cta = $('fm-networking-cta');
+  cta.href = networkingBridge?.href('face_match',networkingVariant) || '/start/';
+  if (!selectedNetworkingIndustry) {
+    cta.textContent = 'Start networking with Orbit ↗';
+    return;
+  }
+  cta.textContent = networkingVariant === 'b'
+    ? 'Start networking in ' + selectedNetworkingIndustry + ' ↗'
+    : 'Find alumni in ' + selectedNetworkingIndustry + ' ↗';
+}
+$('fm-industry-choices').querySelectorAll('[data-networking-interest]').forEach(button=>{
+  button.addEventListener('click',()=>{
+    const value=button.dataset.networkingInterest || '';
+    selectedNetworkingIndustry=selectedNetworkingIndustry===value?'':value;
+    $('fm-industry-choices').querySelectorAll('[data-networking-interest]').forEach(item=>{
+      item.setAttribute('aria-pressed',String(item.dataset.networkingInterest===selectedNetworkingIndustry));
+    });
+    updateNetworkingCTA();
+  });
+});
+$('fm-networking-cta').addEventListener('click',()=>{
+  networkingBridge?.prepare({source:'face_match',industry:selectedNetworkingIndustry});
+  networkingBridge?.track('face-match','networking_cta_clicked',networkingVariant);
+});
+let networkingObserver=null;
+function observeNetworkingBridge(){
+  if(networkingObserver)networkingObserver.disconnect();
+  if(!('IntersectionObserver' in window)){
+    networkingBridge?.track('face-match','networking_cta_viewed',networkingVariant);
+    return;
+  }
+  networkingObserver=new IntersectionObserver(entries=>{
+    if(entries.some(entry=>entry.isIntersecting)){
+      networkingBridge?.track('face-match','networking_cta_viewed',networkingVariant);
+      networkingObserver.disconnect();
+      networkingObserver=null;
+    }
+  },{threshold:0.3});
+  networkingObserver.observe($('fm-network-bridge'));
+}
+updateNetworkingCTA();
+
 function resultCanvas(){
   const canvas=document.createElement('canvas');canvas.width=1080;canvas.height=1350;
   const c=canvas.getContext('2d');c.fillStyle='#121019';c.fillRect(0,0,1080,1350);
@@ -236,7 +286,8 @@ $('save').addEventListener('click',async()=>{
   $('share-status').textContent='Share card saved to your device.';
 });
 $('share').addEventListener('click',async()=>{
-  if(!report)return;const blob=await blobForShare();if(!blob)return;
+  if(!report)return;
+  networkingBridge?.track('face-match','share_clicked',networkingVariant);const blob=await blobForShare();if(!blob)return;
   const file=new File([blob],'orbit-career-aura.png',{type:'image/png'});
   if(navigator.canShare?.({files:[file]})){try{await navigator.share({files:[file],title:'My Career Aura',text:'What is your career aura?'});return;}catch(e){if(e.name==='AbortError')return;}}
   if(navigator.share){try{await navigator.share({title:'My Career Aura',url:'https://orbit-reaches.com/face-match/'});return;}catch(e){if(e.name==='AbortError')return;}}

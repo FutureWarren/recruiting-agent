@@ -38,3 +38,26 @@
 @keyframes fm-brand-arrive{from{opacity:0;transform:translateY(18px) scale(.975);filter:blur(5px)}to{opacity:1;transform:none;filter:none}}
 @media(max-width:760px){.fm-brand-match{padding:18px;margin-top:20px}.fm-logo-frame{width:56px;height:56px;flex-basis:56px;border-radius:14px}.fm-logo-frame img{width:40px;height:40px}.fm-brand-feature{gap:13px}.fm-brand-feature h3{font-size:22px}.fm-brand-alt-list{gap:7px}.fm-brand-alt{padding:7px 9px}.fm-brand-alt span{font-size:11px}}
 @media(prefers-reduced-motion:reduce){.fm-brand-match{animation:none!important}}
+
+/* Face Match: playful acquisition bridge -> real, self-directed networking. */
+.fm-network-bridge{display:grid;grid-template-columns:1.13fr 1fr;gap:30px;align-items:center;
+  margin:25px 0 15px;padding:clamp(22px,4vw,38px);border:1px solid rgba(195,168,255,.3);
+  border-radius:22px;background:radial-gradient(circle at 3% 5%,rgba(146,99,247,.2),transparent 65%),#171420}
+.fm-network-intro h3{font-size:clamp(24px,3.4vw,40px);line-height:1.14;letter-spacing:-.045em;margin:15px 0 12px}
+.fm-network-intro>p{color:#c4b9d1;font-size:13px;line-height:1.6;max-width:460px;margin:0}
+.fm-network-action{display:flex;flex-direction:column;align-items:stretch;gap:12px}
+.fm-industry-label{font-size:11px;color:#d9cbe7;font-weight:650}
+.fm-industry-choices{display:flex;flex-wrap:wrap;gap:8px}
+.fm-industry-choices button{border:1px solid #63546e;background:rgba(255,255,255,.025);
+  padding:10px 12px;border-radius:99px;color:#dbd0ea;cursor:pointer;font-size:12px;
+  transition:background .16s,border-color .16s}
+.fm-industry-choices button[aria-pressed="true"]{background:#342943;border-color:#c3a8ff;color:#f1e9ff}
+.fm-industry-choices button:hover{border-color:#bca4f0}
+.fm-industry-choices button:focus-visible,.fm-networking-cta:focus-visible{outline:2px solid #f1e6ff;outline-offset:3px}
+.fm-networking-cta,.fm-networking-cta:visited{display:inline-flex;align-items:center;justify-content:center;
+  gap:15px;text-align:center;color:#1c132b!important;background:#d1beff!important;border:1px solid #d1beff!important;
+  font-size:13px;font-weight:750;padding:15px 18px;border-radius:12px;text-decoration:none}
+.fm-networking-cta:hover{background:#e0d4ff!important;color:#1c132b!important}
+.fm-network-action>small{font-size:11px;text-align:center;color:#a99ebd}
+@media(max-width:760px){.fm-network-bridge{grid-template-columns:1fr;padding:22px;gap:19px}.fm-network-intro h3{font-size:28px}.fm-industry-choices button{flex:1 1 auto}}
+@media(prefers-reduced-motion:reduce){.fm-industry-choices button{transition:none}}

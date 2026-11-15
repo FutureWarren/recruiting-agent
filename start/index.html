@@ -15,7 +15,7 @@
 <main class="shell">
   <section class="intro">
     <div class="eyebrow"><span></span>Phone → computer</div>
-    <h1>Orbit runs<br>on your computer.</h1>
+    <h1 id="start-heading">Orbit runs<br>on your computer.</h1>
     <p>Enter one email and we’ll send you the Mac or Windows download link. Install Orbit on your computer to get started.</p>
     <div class="handoff-line" aria-hidden="true"><span class="device phone">▯</span><i></i><span class="pulse-dot"></span><i></i><span class="device laptop">⌁</span></div>
     <div class="promise"><span>01</span><div><b>No phone app to install.</b><small>Orbit works on your Mac or Windows computer.</small></div></div>
@@ -26,11 +26,16 @@
   <section class="card-wrap">
     <div class="card" id="capture-card">
       <div class="card-top"><span>ORBIT / HANDOFF</span><span id="step-label">READY</span></div>
+      <div class="networking-prep" id="networking-prep" hidden>
+        <div class="networking-prep-kicker">YOUR FIRST ORBIT NETWORKING TASK</div>
+        <strong id="networking-prep-goal">Find relevant alumni</strong>
+        <p>Orbit can research relevant people and prepare introductions for your review. Sending is always subject to your approval.</p>
+      </div>
       <form id="handoff-form" novalidate>
         <div class="field">
           <label for="email">Where should we send the download link?</label>
           <input id="email" name="email" type="email" inputmode="email" autocomplete="email" placeholder="you@email.com" maxlength="254" required>
-          <div class="field-hint">Any email works. No school address required.</div>
+          <div class="field-hint" id="handoff-email-hint">Any email works. No school address required.</div>
         </div>
         <div class="error" id="form-error" role="alert" hidden></div>
         <button class="submit" id="submit" type="submit"><span>Email me the desktop link</span><b aria-hidden="true">→</b></button>
@@ -51,6 +56,7 @@
     <div class="privacy-note"><span>●</span> We use your email to deliver your desktop link, restore your setup, and understand where handoffs fail.</div>
   </section>
 </main>
-<script src="start.js?v=acquisition-v2-20261013" defer></script>
+<script src="networking-intent.js" defer></script>
+<script src="start.js?v=networking-bridge-20261115" defer></script>
 </body>
 </html>

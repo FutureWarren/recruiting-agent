@@ -11,3 +11,12 @@ form{padding-top:25px}.field{border:0;padding:0;margin:0 0 23px}.field label,.fi
 @media(max-width:800px){.topbar{height:64px}.shell{grid-template-columns:1fr;gap:24px;padding:18px 0 46px;align-items:start}.intro{padding-top:15px}.intro h1{font-size:clamp(44px,13vw,62px);margin:13px 0 17px}.intro>p{font-size:14px}.handoff-line{margin:23px 0 18px}.promise{display:none}.card{border-radius:20px;padding:21px 18px 22px}.goal-grid{grid-template-columns:1fr 1fr}.card-wrap{margin-top:2px}.privacy-note{padding-inline:8px}.time-note{font-size:9px}.ambient>i:nth-child(1){opacity:.65}}
 @media(max-width:390px){.topbar,.shell{width:calc(100% - 24px)}.goal-grid button{font-size:10px;padding:10px 8px}.card{padding-inline:15px}}
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
+
+/* Conversion bridge shown only after a free tool explicitly prepared a task. */
+.networking-prep{margin-top:22px;padding:17px 18px;border:1px solid rgba(92,92,242,.21);
+  border-radius:13px;background:linear-gradient(110deg,rgba(92,92,242,.09),rgba(255,255,255,.7))}
+.networking-prep-kicker{font:700 9px ui-monospace,monospace;letter-spacing:.12em;color:#5757c1;margin-bottom:8px}
+.networking-prep>strong{display:block;font-size:17px;line-height:1.3;letter-spacing:-.025em;color:#24232f}
+.networking-prep>p{font-size:11px;line-height:1.55;color:#6f6d7b;margin:9px 0 0}
+.networking-prep+form{padding-top:18px}
+@media(max-width:800px){.networking-prep{padding:15px;margin-top:14px}}

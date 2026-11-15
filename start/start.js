@@ -4,6 +4,20 @@ const form=document.getElementById('handoff-form'),email=document.getElementById
 const errorBox=document.getElementById('form-error'),submit=document.getElementById('submit'),success=document.getElementById('success'),stepLabel=document.getElementById('step-label');
 const sourceParams=['source','utm_source','utm_medium','utm_campaign','utm_content'];
 const query=new URLSearchParams(location.search);
+const preservedIntent=window.OrbitNetworkingBridge?.read?.() || null;
+const networkingIntent=preservedIntent &&
+ query.get('source')===preservedIntent.source && query.get('utm_campaign')==='networking_activation'
+ ? preservedIntent : null;
+if(networkingIntent){
+ const preview=document.getElementById('networking-prep');
+ const goal=document.getElementById('networking-prep-goal');
+ if(preview&&goal){preview.hidden=false;goal.textContent=networkingIntent.goal;}
+ if(networkingIntent.email)email.value=networkingIntent.email;
+ const headline=document.getElementById('start-heading');
+ if(headline)headline.textContent='Your next opportunity starts with a conversation.';
+ const hint=document.getElementById('handoff-email-hint');
+ if(hint&&networkingIntent.email)hint.textContent='Your report email is prefilled. Review it before sending the download link.';
+}
 const attribution=Object.fromEntries(sourceParams.map(k=>[k,(query.get(k)||'').slice(0,120)]));
 if(!attribution.source)attribution.source=attribution.utm_source||'direct';
 attribution.funnelVersion=2;
@@ -24,7 +38,7 @@ form.addEventListener('submit',async e=>{
  submit.disabled=true;submit.classList.add('loading');submit.querySelector('span').textContent='Sending the link…';stepLabel.textContent='SENDING';
  try{
   event('cta_clicked_v2');
-  const data=await api('/api/handoff/start',{method:'POST',body:JSON.stringify({email:address,visitorId,...attribution})});
+  const data=await api('/api/handoff/start',{method:'POST',body:JSON.stringify({email:address,visitorId,...attribution,...(networkingIntent?{goal:networkingIntent.goal,detail:networkingIntent.detail}:{})})});
   const link=document.getElementById('desktop-link');link.href=data.continueUrl;link.dataset.url=data.continueUrl;
   const delivered=data.emailStatus==='delivered';
   const accepted=data.emailStatus==='accepted'||data.emailStatus==='sent';
@@ -40,6 +54,10 @@ form.addEventListener('submit',async e=>{
     ?'The backup link works right away while the email is on its way.'
     :'The backup link is available now even if the email service fails.';
   form.hidden=true;success.hidden=false;stepLabel.textContent='READY ON DESKTOP';
+  if(networkingIntent){
+    document.getElementById('delivery-note').append(' Your networking target is saved with this handoff for review.');
+    window.OrbitNetworkingBridge?.clear?.();
+  }
   history.replaceState(null,'',location.pathname+'?saved=1');
   try{localStorage.setItem('orbit_handoff_continue',data.continueUrl)}catch(_){}
   success.scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'center'});
