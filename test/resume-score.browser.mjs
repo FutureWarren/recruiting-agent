@@ -35,7 +35,7 @@ try {
       const req = route.request(), url = new URL(req.url())
       if (url.origin === server.base) return route.continue()
       if (url.hostname === 'www.google.com' && url.pathname === '/s2/favicons') {
-        const png = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwsB9Yx7zO8AAAAASUVORK5CYII=', 'base64')
+        const png = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR4nGOoSLnzHwAFyAK47GcG/QAAAABJRU5ErkJggg==', 'base64')
         return route.fulfill({ status: 200, contentType: 'image/png', body: png })
       }
       requests.push(url.pathname)
