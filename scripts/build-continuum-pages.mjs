@@ -12,8 +12,14 @@ export function previewLinks(html) {
     return match;
   });
 }
-const nav = page => `<a class="site-skip" href="#page-content">Skip to content</a><header class="shell topbar"><a class="brand" href="/" aria-label="Orbit home"><span class="orbit-mark" aria-hidden="true"></span>Orbit</a><nav class="nav" aria-label="Primary navigation"><a href="/#demo">Demo</a><a href="/pricing/"${page === 'pricing' ? ' aria-current="page"' : ''}>Pricing</a><a href="/support/"${page === 'support' ? ' aria-current="page"' : ''}>Support</a><a class="primary" href="/#download">Get Orbit <span aria-hidden="true">↗</span></a></nav></header>`;
-const footer = `<footer class="site-footer"><div class="shell footer-inner"><a class="brand" href="/"><span class="orbit-mark" aria-hidden="true"></span>Orbit</a><div class="footer-links"><a href="/pricing/">Pricing</a><a href="/support/">Support</a><a href="/resume-score/">Resume Evaluation</a><a href="/face-match/">Face Match</a><a href="/recruiting-guide/">Recruiting guide</a><a href="/recruiting-news/">News</a><a href="/start/">Desktop link</a><a href="/terms/">Terms</a><a href="/privacy/">Privacy</a><a href="/refunds/">Refunds</a><a href="/unsubscribe/">Email preferences</a></div></div><div class="shell copyright">© 2026 Orbit · Operated by Angelic</div></footer>`;
+const orbitMasterMark = '<img class="rs-brand-icon" src="/resume-score/orbit-mark.svg" alt="" width="32" height="32">'
+const resumeNav = '<a class="site-skip" href="#page-content">Skip to content</a>' +
+  '<header class="shell topbar"><a class="brand" href="/" aria-label="Orbit home">' +
+  orbitMasterMark + 'Orbit</a><nav class="nav" aria-label="Primary navigation">' +
+  '<a href="/">Home</a><a href="/recruiting-guide/">Guide</a>' +
+  '<a class="primary" href="/#download">Get Orbit</a></nav></header>'
+const nav = page => page === 'resume-score' ? resumeNav : `<a class="site-skip" href="#page-content">Skip to content</a><header class="shell topbar"><a class="brand" href="/" aria-label="Orbit home"><span class="orbit-mark" aria-hidden="true"></span>Orbit</a><nav class="nav" aria-label="Primary navigation"><a href="/#demo">Demo</a><a href="/pricing/"${page === 'pricing' ? ' aria-current="page"' : ''}>Pricing</a><a href="/support/"${page === 'support' ? ' aria-current="page"' : ''}>Support</a><a class="primary" href="/#download">Get Orbit <span aria-hidden="true">↗</span></a></nav></header>`;
+const footer = page => `<footer class="site-footer"><div class="shell footer-inner"><a class="brand" href="/">${page === "resume-score" ? orbitMasterMark : '<span class="orbit-mark" aria-hidden="true"></span>'}Orbit</a><div class="footer-links"><a href="/pricing/">Pricing</a><a href="/support/">Support</a><a href="/resume-score/">Resume Evaluation</a><a href="/face-match/">Face Match</a><a href="/recruiting-guide/">Recruiting guide</a><a href="/recruiting-news/">News</a><a href="/start/">Desktop link</a><a href="/terms/">Terms</a><a href="/privacy/">Privacy</a><a href="/refunds/">Refunds</a><a href="/unsubscribe/">Email preferences</a></div></div><div class="shell copyright">© 2026 Orbit · Operated by Angelic</div></footer>`;
 
 export async function buildCompanionPages() {
   for (const page of pages) {
@@ -31,7 +37,7 @@ export async function buildCompanionPages() {
       html = html.replace(/<header\b[\s\S]*?<\/header>/, nav(page));
     }
     html = html.replace(/<footer\b[^>]*>[\s\S]*?<\/footer>/, '');
-    html = html.replace('</body>', footer + '\n</body>');
+    html = html.replace('</body>', footer(page) + '\n</body>');
     html = html.replace(/<main\b([^>]*)>/, (match, attrs) => /\bid=/.test(attrs) ? `<main${attrs} tabindex="-1">` : `<main${attrs} id="page-content" tabindex="-1">`);
     // The preferences form's established main ID is retained.
     if (page === 'unsubscribe') html = html.replace('href="#page-content"', 'href="#main"');

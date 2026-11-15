@@ -18,6 +18,28 @@ test('Resume Intelligence is a complete public route in the production build', (
   assert.match(stylesheet, /prefers-reduced-motion:reduce/)
 })
 
+test('Uses Orbit official desktop-brand geometry consistently across page', () => {
+  const logo = read('resume-score/orbit-mark.svg')
+  const appMark = "dark ring and #5c5cf2 satellite"
+  assert.match(logo, /stroke="#15151a"/)
+  assert.match(logo, /fill="#5c5cf2"/)
+  assert.match(logo, /cy="12"/)
+  assert.match(page, /rel="icon" type="image\/svg\+xml" href="\/resume-score\/orbit-mark\.svg"/)
+  assert.match(page, /class="rs-brand-icon" src="\/resume-score\/orbit-mark\.svg"/)
+  assert.match(page, /class="rs-hero-mark" src="\/resume-score\/orbit-mark\.svg"/)
+  assert.doesNotMatch(page, /class="rs-orbit"|class="orbit-mark"/)
+  void appMark
+})
+test('Displays source-based template deductions and readable Orbit CTA', () => {
+  assert.match(page, /id="template-score"/)
+  assert.match(page, /id="template-issues"/)
+  assert.match(page, /id="template-note"/)
+  assert.match(page, /id="template-all-issues"/)
+  assert.match(script, /'template', 'Template & layout', 15/)
+  assert.match(script, /renderTemplate\(data\.templateReview\)/)
+  assert.match(stylesheet, /\.rs-next \.rs-button,\.rs-next \.rs-button:visited/)
+})
+
 test('Email gate follows actual analysis, not a fabricated loading animation', () => {
   assert.match(page, /id="resume-form"/)
   assert.match(page, /id="resume-file"[^>]+type="file"/)
