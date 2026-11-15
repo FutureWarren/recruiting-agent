@@ -180,3 +180,20 @@ $('share').addEventListener('click',async()=>{
 $('reset').addEventListener('click',()=>{if(controller)controller.abort();report=null;clearPhoto();$('consent').checked=false;enable();show('capture');});
 window.addEventListener('pagehide',()=>{stopCamera();if(previewUrl)URL.revokeObjectURL(previewUrl);if(controller)controller.abort();});
 initialize();
+
+
+/** Anonymous acquisition measurement: no photo, resume, email or identity is sent. */
+function recordPublicToolPageview(){
+  try{
+    if(navigator.doNotTrack==='1'||navigator.globalPrivacyControl===true)return;
+    const key='orbit_labs_tab_session_v1';
+    let sessionId=sessionStorage.getItem(key);
+    if(!sessionId){sessionId=crypto.randomUUID();sessionStorage.setItem(key,sessionId);}
+    void fetch(API+'/api/public-tools/view',{
+      method:'POST',mode:'cors',credentials:'omit',cache:'no-store',keepalive:true,
+      headers:{'content-type':'application/json'},
+      body:JSON.stringify({tool:'face-match',sessionId})
+    }).catch(()=>undefined);
+  }catch{/* Tracking cannot block the free tool. */}
+}
+recordPublicToolPageview();
