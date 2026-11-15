@@ -34,6 +34,10 @@ try {
     await ctx.route('**/*', route => {
       const req = route.request(), url = new URL(req.url())
       if (url.origin === server.base) return route.continue()
+      if (url.hostname === 'www.google.com' && url.pathname === '/s2/favicons') {
+        const png = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwsB9Yx7zO8AAAAASUVORK5CYII=', 'base64')
+        return route.fulfill({ status: 200, contentType: 'image/png', body: png })
+      }
       requests.push(url.pathname)
       if (url.pathname === '/api/resume-score/config') return route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({ready:true,captchaSiteKey:''})})
       if (url.pathname === '/api/resume-score/analyze') return route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({ready:true,token:'x'.repeat(43)})})
