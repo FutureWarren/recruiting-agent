@@ -30,7 +30,7 @@ export async function buildCompanionPages() {
     } else {
       html = html.replace(/<header\b[\s\S]*?<\/header>/, nav(page));
     }
-    html = html.replace(/<footer>[\s\S]*?<\/footer>/, '');
+    html = html.replace(/<footer\b[^>]*>[\s\S]*?<\/footer>/, '');
     html = html.replace('</body>', footer + '\n</body>');
     html = html.replace(/<main\b([^>]*)>/, (match, attrs) => /\bid=/.test(attrs) ? `<main${attrs} tabindex="-1">` : `<main${attrs} id="page-content" tabindex="-1">`);
     // The preferences form's established main ID is retained.
