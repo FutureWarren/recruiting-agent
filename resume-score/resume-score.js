@@ -372,7 +372,8 @@ function render(data) {
   byId('inferred-direction').textContent = data.inferredDirection;
   byId('percentile-note').textContent = data.percentileNote;
   byId('report-disclaimer').textContent = data.disclaimer;
-  byId('orbit-action').textContent = data.nextOrbitAction;
+  // The Next Move now uses the selected company's real networking workflow,
+  // not the former generic AI nextOrbitAction placeholder.
   renderTemplate(data.templateReview);
   byId('result-status').textContent = data.analysisStatus === 'limited'
     ? 'Your score is ready. Some optional AI suggestions were unavailable.' : '';
