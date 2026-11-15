@@ -35,3 +35,24 @@ test('Face Match only shows custom upload action and explains transient server e
   assert.match(js,/Our AI couldn/);
   assert.doesNotMatch(js,/Analysis is not available yet\. Please try again later/);
 });
+
+test('Portrait-vibe v2 renders real editorial brand logos and positive tags',()=>{
+ const h=read('face-match/index.html');
+ const js=read('face-match/face-match.js');
+ const css=read('face-match/face-match.css');
+ assert.match(h,/id="brand-match"/);
+ assert.match(h,/id="brand-logo"/);
+ assert.match(h,/id="brand-alternates"/);
+ assert.match(h,/id="result-subtitle"/);
+ assert.match(js,/APPROVED_BRAND_DOMAINS/);
+ assert.match(js,/goldmansachs\.com/);
+ assert.match(js,/morganstanley\.com/);
+ assert.match(js,/figma\.com/);
+ assert.match(js,/google\.com/);
+ assert.match(js,/officialFaviconUrl/);
+ assert.match(js,/renderBrandVibe/);
+ assert.match(js,/data\.version==='photo-vibe-v2'/);
+ assert.match(css,/\.fm-brand-match/);
+ assert.doesNotMatch(js,/short-term request limit/);
+ assert.match(h,/not your outfit/);
+});
