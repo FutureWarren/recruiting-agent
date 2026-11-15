@@ -17,6 +17,14 @@ test('Production ships the approved design, not the old prototype or disabled pr
   }
   assert.match(html,/\/assets\/orbit\/continuum.js\?v=[0-9a-f]{12}/);
 });
+test('Production Resume Score uses Orbit brand master assets after the shared-page renderer', async()=>{
+  const resume = await read('dist/resume-score/index.html');
+  assert.match(resume,/rel="icon" type="image\/svg\+xml" href="\/resume-score\/orbit-mark\.svg"/);
+  assert.match(resume,/class="rs-hero-mark" src="\/resume-score\/orbit-mark\.svg"/);
+  assert.equal((resume.match(/class="rs-brand-icon"/g)||[]).length,2,'header and footer must use official Orbit mark');
+  assert.doesNotMatch(resume,/class="orbit-mark"/,'generic logo must not overwrite approved Orbit branding');
+  assert.match(await read('dist/resume-score/orbit-mark.svg'),/fill="#5c5cf2"/);
+});
 test('Deployed Hero differentiates transparent execution from generic DIY AI workflows',()=>{
   assert.match(html, /<title>Orbit — AI Networking Agent for Students<\/title>/);
   assert.match(html, /<h1>No black-box outreach\.<br><span>No AI to babysit\.<\/span><\/h1>/);

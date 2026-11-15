@@ -6,10 +6,16 @@ const { serve } = await import('./static-server.mjs')
 const server = await serve()
 const report = {
   score: 82,
-  rubricVersion: 'resume-rubric-v2',
+  rubricVersion: 'resume-rubric-v3',
   inferredDirection: 'Investment Banking',
   verdict: 'Strong finance profile. Add clearer outcomes to stand out.',
-  ratings: { experience: 25, impact: 16, relevance: 17, clarity: 12, skills: 8, ats: 4 },
+  ratings: { experience: 25, impact: 16, relevance: 15, clarity: 10, skills: 7, ats: 5, template: 4 },
+  templateReview: {
+    score:4, maximum:15, pageCount:3, pageCountVerified:true,
+    checked:['PDF page count','Body font size'],
+    issues:[{code:'overlong',title:'Too many pages',detail:'3 pages detected. Trim an early-career resume to one or two pages.',deduction:11}],
+    note:'PDF pages and observed typography checked.'
+  },
   strengths: [{ title: 'Finance exposure', evidence: 'Relevant internships' }, { title: 'Quantitative skills', evidence: 'Excel and valuation work' }],
   gaps: [{ title: 'Quantify your impact', evidence: 'Some bullets omit outcomes', nextStep: 'Add verified before-and-after numbers', priority: 'high' },
     { title: 'Tighten bullets', evidence: 'Descriptions run long', nextStep: 'Lead with a clear action verb', priority: 'medium' }],
@@ -71,7 +77,10 @@ try {
     assert.equal(await page.locator('#strengths .rs-insight').count(),2)
     assert.equal(await page.locator('#gaps .rs-insight').count(),2)
     await page.locator('#score-breakdown summary').click()
-    assert.equal(await page.locator('#ratings .rs-rating').count(),6)
+    assert.equal(await page.locator('#ratings .rs-rating').count(),7)
+    assert.match(await page.locator('#template-score').innerText(),/4\s*\/\s*15/)
+    assert.equal(await page.locator('#template-issues .rs-template-item').count(),1)
+    assert.match(await page.locator('#template-issues').innerText(),/Too many pages/)
     assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth),false,label+' horizontal overflow')
     if (label === 'mobile') {
       assert.equal(await page.locator('.rs-bubble').first().evaluate(n => getComputedStyle(n).animationName),'none')

@@ -6,8 +6,7 @@
 .rs-hero h1 span{color:#aaa4c4}.rs-hero p{color:#c0bfc9;line-height:1.7;font-size:16px;margin:0 auto;max-width:590px}
 .rs-tags{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:8px;margin-top:22px}
 .rs-tags span{border:1px solid var(--rs-line);padding:8px 12px;border-radius:30px;color:#b9b7c5;font-size:12px}
-.rs-orbit{width:70px;height:70px;margin:0 auto 28px;border:9px solid #c1b2ff;border-radius:50%;position:relative;background:radial-gradient(circle at 40% 60%,#22212f,#101117);box-shadow:0 0 55px rgba(145,112,255,.12)}
-.rs-satellite{width:15px;height:15px;background:#7d68fc;border-radius:100%;position:absolute;top:-15px;right:0;box-shadow:0 0 22px rgba(171,146,255,.5)}
+.rs-hero-mark{display:block;width:70px;height:70px;margin:0 auto 28px;border-radius:18px;box-shadow:0 0 55px rgba(145,112,255,.1)}
 .rs-surface{background:linear-gradient(145deg,#17181d 0%,#131418 55%,#111216 100%);border:1px solid rgba(224,221,245,.1);border-radius:24px;padding:clamp(24px,5vw,52px);box-shadow:0 32px 90px rgba(0,0,0,.24)}
 .rs-step{display:flex;justify-content:space-between;gap:15px;margin-bottom:30px;color:#b9a8ff}.rs-state{color:#8c8d9b}
 .rs-surface h2{font-size:clamp(23px,3.6vw,33px);letter-spacing:-.04em;font-weight:600;margin:0 0 10px}
@@ -53,14 +52,13 @@
 /* Orbit Career Signal v2: compact hierarchy, interactive logo constellation. */
 .topbar{max-width:1160px;margin:auto;padding:23px 28px;display:flex;align-items:center;justify-content:space-between;gap:16px}
 .topbar .brand{display:inline-flex;align-items:center;gap:11px;font-weight:730;font-size:21px;letter-spacing:-.055em;text-decoration:none}
-.topbar .orbit-mark{display:block;height:23px;width:23px;border:5px solid #c6b5ff;border-radius:50%;position:relative}
-.topbar .orbit-mark:after{content:"";position:absolute;right:-5px;top:-8px;width:7px;height:7px;border-radius:100%;background:#7d68fc}
+.topbar .rs-brand-icon{display:block;width:32px;height:32px;flex:none;border-radius:8px}
 .topbar .nav{display:flex;align-items:center;gap:26px}
 .topbar .nav a{font-size:13px;color:#aaa8b9;text-decoration:none}
 .topbar .nav a:hover{color:#fff}.topbar .nav .primary{color:#f6f2ff;border:1px solid #5a516d;background:#191822;border-radius:8px;padding:9px 13px}
 .rs-page{max-width:1080px;padding:40px 28px 65px}.rs-hero{margin-bottom:32px;max-width:850px}
 .rs-hero h1{font-size:clamp(44px,6vw,73px);line-height:1.04;font-weight:650;margin:14px 0 17px}
-.rs-hero p{font-size:15px;line-height:1.5}.rs-orbit{width:60px;height:60px;border-width:8px;margin-bottom:20px}
+.rs-hero p{font-size:15px;line-height:1.5}.rs-hero-mark{width:60px;height:60px;border-radius:15px;margin-bottom:20px}
 .rs-surface{padding:clamp(24px,4.2vw,42px)}.rs-step{margin-bottom:23px}.rs-drop{min-height:165px;margin-top:22px}
 .rs-disclosure{margin-top:17px}.rs-drop strong{font-size:18px}.rs-score-caption{font-size:12px;color:#9191a4;line-height:1.5}
 .rs-score-caption a{color:#b9aaff;text-underline-offset:3px}
@@ -147,3 +145,23 @@
 .rs-company-cloud.is-empty{height:215px;min-height:215px;display:flex;align-items:center;justify-content:center}
 .rs-company-cloud.is-empty:before,.rs-company-cloud.is-empty:after{display:none}
 .rs-cloud-empty{max-width:225px;text-align:center;color:#b4aec7;font-size:13px;line-height:1.6;border:1px dashed #655a7b;padding:18px;border-radius:13px}
+
+
+/* Verified brand mark and file-aware template audit. */
+.rs-template-check{margin-top:16px;border-radius:15px;padding:22px 24px;background:#1a1922;border:1px solid rgba(181,162,248,.2)}
+.rs-template-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}
+.rs-template-head h3{font-size:19px;letter-spacing:-.025em;margin:6px 0 0}
+.rs-template-head>strong{color:#dacdff;font-size:18px;font-weight:650;white-space:nowrap}
+.rs-template-issues{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.rs-template-item{padding:12px 14px;border:1px solid #3e354b;background:#211e2d;border-radius:10px;display:flex;flex-direction:column;gap:5px}
+.rs-template-item strong{font-size:12px;color:#f2eefc;font-weight:620}
+.rs-template-item span{color:#b0a7bf;font-size:11px;line-height:1.45}
+.rs-template-item .rs-template-deduction{color:#e9b3b9;font-size:11px}
+.rs-template-empty{color:#b6afc6;font-size:12px;margin:0}
+.rs-template-note{color:#a8a0b5;font-size:11px;line-height:1.55;margin:12px 0 0}
+.rs-template-full{margin-top:18px;display:grid;gap:8px}
+.rs-template-full .rs-template-item{background:#191922}
+.rs-next .rs-button,.rs-next .rs-button:visited{background:#c9b7ff!important;color:#171320!important;border:1px solid #c9b7ff!important;box-shadow:0 10px 30px rgba(125,104,252,.22);opacity:1!important;filter:none!important;font-weight:700}
+.rs-next .rs-button:hover,.rs-next .rs-button:focus-visible{background:#ddd2ff!important;color:#171320!important;box-shadow:0 14px 34px rgba(125,104,252,.3)}
+.rs-next .rs-button span{color:#171320!important}
+@media(max-width:620px){.rs-template-check{padding:19px}.rs-template-issues{grid-template-columns:1fr}}

@@ -6,12 +6,13 @@ const API = 'https://backend-production-2b40.up.railway.app';
 const byId = id => document.getElementById(id);
 const stages = ['upload-stage', 'loading-stage', 'gate-stage', 'result-stage'];
 const scoreDimensions = [
-  ['experience', 'Relevant experience', 30],
+  ['experience', 'Relevant experience', 25],
   ['impact', 'Quantified impact', 20],
-  ['relevance', 'Role relevance', 20],
-  ['clarity', 'Clarity and structure', 15],
+  ['relevance', 'Role relevance', 15],
+  ['clarity', 'Clarity and structure', 10],
   ['skills', 'Evidence of skills', 10],
-  ['ats', 'ATS readability', 5]
+  ['ats', 'ATS readability', 5],
+  ['template', 'Template & layout', 15]
 ];
 const fileInput = byId('resume-file');
 const button = byId('analyze-button');
@@ -286,6 +287,35 @@ function renderCompanyCloud(targets) {
   });
   if (sorted.length) select(0);
 }
+function renderTemplate(review) {
+  const preview = byId('template-issues');
+  const expanded = byId('template-all-issues');
+  preview.replaceChildren();
+  expanded.replaceChildren();
+  const score = byId('template-score');
+  const note = byId('template-note');
+  const issues = Array.isArray(review?.issues) ? review.issues : [];
+  if (!review || !Number.isInteger(review.score)) {
+    score.textContent = 'Not assessed';
+    preview.append(element('p', 'rs-template-empty', 'Analyze again to check formatting and page length.'));
+    note.textContent = '';
+    return;
+  }
+  score.textContent = review.score + ' / 15';
+  const pages = Number.isInteger(review.pageCount) ? review.pageCount + (review.pageCount === 1 ? ' page' : ' pages') : 'Page count unverified';
+  note.textContent = pages + ' · ' + (review.note || '');
+  function issueCard(item) {
+    const card = element('div', 'rs-template-item');
+    card.append(element('strong', '', item.title || 'Formatting issue'));
+    card.append(element('span', '', item.detail || ''));
+    if (item.deduction > 0) card.append(element('span', 'rs-template-deduction', '−' + item.deduction + ' template pts'));
+    return card;
+  }
+  if (!issues.length) preview.append(element('p', 'rs-template-empty',
+    review.checked?.length ? 'No major layout issues detected.' : 'Page layout could not be fully inspected.'));
+  for (const issue of issues.slice(0, 2)) preview.append(issueCard(issue));
+  for (const issue of issues) expanded.append(issueCard(issue));
+}
 function render(data) {
   byId('overall-score').textContent = String(data.score);
   byId('verdict').textContent = data.verdict;
@@ -293,11 +323,20 @@ function render(data) {
   byId('percentile-note').textContent = data.percentileNote;
   byId('report-disclaimer').textContent = data.disclaimer;
   byId('orbit-action').textContent = data.nextOrbitAction;
+  renderTemplate(data.templateReview);
   byId('result-status').textContent = data.analysisStatus === 'limited'
     ? 'Your score is ready. Some optional AI suggestions were unavailable.' : '';
   const ratings = byId('ratings');
   ratings.replaceChildren();
-  for (const [key, label, max] of scoreDimensions) {
+  const legacyDimensions = [
+    ['experience','Relevant experience',30],['impact','Quantified impact',20],
+    ['relevance','Role relevance',20],['clarity','Clarity and structure',15],
+    ['skills','Evidence of skills',10],['ats','ATS readability',5]
+  ];
+  const dimensions = data.rubricVersion === 'resume-rubric-v2' ? legacyDimensions : scoreDimensions;
+  for (const [key, label, max] of dimensions) {
+    // Reports issued before rubric v3 have no template score; don't falsely show 0/15.
+    if (!Number.isFinite(data.ratings?.[key])) continue;
     const value = Math.min(max, Math.max(0, Number(data.ratings[key]) || 0));
     const row = element('div', 'rs-rating');
     const head = element('div', 'rs-rating-head');
