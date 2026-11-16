@@ -63,7 +63,7 @@ test('Face Match explains the independently scored photo cues',()=>{
  const js=read('face-match/face-match.js');
  const css=read('face-match/face-match.css');
  assert.match(html,/id="fm-scoring-details"/);
- assert.match(html,/no category receives an automatic bonus/);
+ assert.match(html,/compares them with five fictional editorial style profiles/);
  assert.match(html,/Ethnicity, clothing and real hiring potential are not scoring criteria/);
  assert.match(js,/renderScoringDetails\(data\)/);
  assert.match(js,/data\?\.vibeBreakdown/);
@@ -223,4 +223,18 @@ test('Email invitation uses only existing handoff API and never uploads face-der
   assert.doesNotMatch(js,/imageBase64|report\.|result\.company|attractiveness/);
   assert.match(privacy,/Face Match optional email invitation/);
   assert.match(privacy,/does not itself register an Orbit account/);
+});
+
+test('V4 persona presentation maintains five compatible match rows and social card',()=>{
+  const html=read('face-match/index.html');
+  const js=read('face-match/face-match.js');
+  assert.match(html,/selects a more specific photo persona and positive tags/);
+  assert.match(html,/Close results blend two style worlds/);
+  assert.match(js,/subtitle:'Focused & cinematic'/);
+  assert.match(js,/subtitle:'Bright & composed'/);
+  assert.match(js,/subtitle:'Cool & playful'/);
+  assert.match(js,/subtitle:'Bold & expressive'/);
+  assert.match(js,/subtitle:'Warm & upbeat'/);
+  assert.match(js,/\$\('result-title'\)\.textContent=data\.title/);
+  assert.match(js,/shareWordWrap\(c,report\?\.title\|\|'My Career Aura'/);
 });

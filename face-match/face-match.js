@@ -4,11 +4,11 @@
 const API = 'https://backend-production-2b40.up.railway.app';
 const $ = id => document.getElementById(id);
 const archetypes = [
-  {id:'wall-street',title:'Wall Street',subtitle:'Tailored & polished'},
-  {id:'consulting',title:'Consulting',subtitle:'Composed & approachable'},
-  {id:'tech',title:'Tech',subtitle:'Relaxed & minimal'},
-  {id:'founder',title:'Founder',subtitle:'Expressive & individual'},
-  {id:'client-facing',title:'Client-facing',subtitle:'Warm & personable'}
+  {id:'wall-street',title:'Wall Street',subtitle:'Focused & cinematic'},
+  {id:'consulting',title:'Consulting',subtitle:'Bright & composed'},
+  {id:'tech',title:'Tech',subtitle:'Cool & playful'},
+  {id:'founder',title:'Founder',subtitle:'Bold & expressive'},
+  {id:'client-facing',title:'Client-facing',subtitle:'Warm & upbeat'}
 ];
 const MAX_BYTES = 5 * 1024 * 1024;
 let photo = null, analysisPhoto = null, previewUrl = null, stream = null, report = null, controller = null;
