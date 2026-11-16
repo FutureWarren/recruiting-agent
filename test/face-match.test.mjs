@@ -49,7 +49,8 @@ test('Portrait-vibe v2 renders real editorial brand logos and positive tags',()=
  assert.match(js,/morganstanley\.com/);
  assert.match(js,/figma\.com/);
  assert.match(js,/google\.com/);
- assert.match(js,/officialFaviconUrl/);
+ assert.match(js,/shareCompanyLogoUrl/);
+ assert.doesNotMatch(js,/officialFaviconUrl/);
  assert.match(js,/renderBrandVibe/);
  assert.match(js,/data\??\.version==='photo-vibe-v2'/);
  assert.match(css,/\.fm-brand-match/);
