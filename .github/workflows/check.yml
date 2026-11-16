@@ -17,6 +17,8 @@ jobs:
       - run: npm ci --no-audit --no-fund
       - run: npm run build
       - run: npx playwright install --with-deps chromium webkit
+      - name: Face Match photo and camera smoke (fast browser checks)
+        run: node test/face-match-v3.browser.mjs && node test/face-match-camera.browser.mjs
       - name: Installer, mobile first-paint and desktop isolation contracts
         shell: bash
         run: |

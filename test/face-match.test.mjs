@@ -85,3 +85,34 @@ test('Privacy discloses aggregate style counts and never links them to visitors'
   assert.match(privacy,/fictional Career Aura labels/);
   assert.match(privacy,/without connecting those labels to individual visitors/);
 });
+
+test('Selfie camera uses a fixed, accessible mobile shutter and matching front-camera mirror',()=>{
+  const html=read('face-match/index.html');
+  const css=read('face-match/face-match.css');
+  const js=read('face-match/face-match.js');
+  assert.match(html,/id="camera-modal"/);
+  assert.match(html,/aria-modal="true"/);
+  assert.match(html,/id="camera-frame"/);
+  assert.match(html,/id="camera-captured-preview"/);
+  assert.match(html,/id="snap"/);
+  assert.match(html,/id="retake-photo"/);
+  assert.match(html,/id="use-photo"/);
+  assert.match(css,/\.fm-camera-modal\{position:fixed/);
+  assert.match(css,/\.fm-camera-frame video\.is-mirrored\{transform:scaleX\(-1\)/);
+  assert.match(css,/env\(safe-area-inset-bottom/);
+  assert.match(css,/body\.fm-camera-open\{position:fixed/);
+  assert.match(js,/video\.classList\.toggle\('is-mirrored',cameraFacing==='user'\)/);
+  assert.match(js,/drawCameraFrame\(video,cameraFacing==='user'/);
+  assert.match(js,/if\(faceMirror\)\{ctx\.translate\(canvas\.width,0\);ctx\.scale\(-1,1\)/);
+  assert.match(js,/frame\.getBoundingClientRect\(\)/);
+  assert.match(js,/window\.scrollTo\(0,cameraScrollY\)/);
+  assert.doesNotMatch(html,/id="camera-actions"/);
+});
+
+test('Every hard-coded Face Match UI ID used by JavaScript exists in HTML',()=>{
+  const html=read('face-match/index.html');
+  const js=read('face-match/face-match.js');
+  const ids=new Set([...html.matchAll(/id="([^"]+)"/g)].map(match=>match[1]));
+  const references=new Set([...js.matchAll(/\$\('([^']+)'\)/g)].map(match=>match[1]));
+  assert.deepEqual([...references].filter(id=>!ids.has(id)),[],'missing HTML IDs crash camera/gallery interactions');
+});

@@ -41,7 +41,37 @@ async function initialize(){
   if(!serverReady){$('camera-note').textContent='Face Match analysis is not yet enabled. You can preview the interface, but scoring is temporarily unavailable.';}
   enable();
 }
-function stopCamera(){ if(stream){stream.getTracks().forEach(track=>track.stop());stream=null;} $('camera').srcObject=null;$('camera').hidden=true;$('camera-actions').hidden=true;$('open-camera').hidden=false; }
+// Capture lifecycle is isolated from the rest of Face Match onboarding.
+let cameraToken=0,cameraFacing='user',cameraScrollY=0,cameraReturnFocus=null;
+let capturedBlob=null,capturedObjectUrl=null;
+function clearCapturedPreview(){
+  if(capturedObjectUrl){URL.revokeObjectURL(capturedObjectUrl);capturedObjectUrl=null;}
+  capturedBlob=null;
+  $('camera-captured-preview').removeAttribute('src');
+  $('camera-captured-preview').hidden=true;
+}
+function stopCamera(){
+  cameraToken++;
+  if(stream){stream.getTracks().forEach(track=>track.stop());stream=null;}
+  const video=$('camera');
+  video.pause();video.srcObject=null;
+  video.classList.remove('is-mirrored');video.hidden=false;
+  clearCapturedPreview();
+  $('camera-modal').hidden=true;
+  $('camera-controls').hidden=false;
+  $('camera-review-actions').hidden=true;
+  $('snap').disabled=true;
+  $('flip-camera').disabled=true;
+  if(document.body.classList.contains('fm-camera-open')){
+    document.body.classList.remove('fm-camera-open');
+    document.body.style.top='';
+    window.scrollTo(0,cameraScrollY);
+  }
+  if(cameraReturnFocus?.isConnected){
+    try{cameraReturnFocus.focus({preventScroll:true})}catch{cameraReturnFocus.focus()}
+  }
+  cameraReturnFocus=null;
+}
 function clearPhoto(){stopCamera();if(previewUrl){URL.revokeObjectURL(previewUrl);previewUrl=null;}photo=null;analysisPhoto=null;$('photo-preview').hidden=true;$('photo-placeholder').hidden=false;$('photo-input').value='';enable();}
 
 /**
@@ -71,8 +101,8 @@ async function cropForVisualStyle(blob,box){
 
 async function usePhoto(file) {
   error('');
-  if(!file || !['image/jpeg','image/png','image/webp'].includes(file.type)){error('Please select a JPEG, PNG or WebP image.');return;}
-  if(file.size<100 || file.size>MAX_BYTES){error('Choose a photo smaller than 5 MB.');return;}
+  if(!file || !['image/jpeg','image/png','image/webp'].includes(file.type)){error('Please select a JPEG, PNG or WebP image.');return false;}
+  if(file.size<100 || file.size>MAX_BYTES){error('Choose a photo smaller than 5 MB.');return false;}
   // Downsample locally before any upload; avoids shipping huge original images.
   try {
     const bitmap=await createImageBitmap(file);
@@ -85,34 +115,183 @@ async function usePhoto(file) {
     const blob=await new Promise(resolve=>canvas.toBlob(resolve,'image/jpeg',.82));
     if(!blob) throw new Error('Image conversion failed.');
     const checked=await checkSingleFace(blob);
-    if(!checked.ok){error(checked.message);return;}
+    if(!checked.ok){error(checked.message);return false;}
     const faceOnly=await cropForVisualStyle(blob,checked.box);
     clearPhoto();photo=blob;analysisPhoto=faceOnly;previewUrl=URL.createObjectURL(blob);
     if(checked.warning)$('camera-note').textContent=checked.warning;
     $('photo-preview').src=previewUrl;$('photo-preview').hidden=false;$('photo-placeholder').hidden=true;enable();
-  } catch {error('Could not read that photo. Try a different image.');}
+    return true;
+  } catch {error('Could not read that photo. Try a different image.');return false;}
 }
 $('photo-input').addEventListener('change',event=>{if(event.target.files?.[0])usePhoto(event.target.files[0]);});
 $('consent').addEventListener('change',enable);
+function setCameraStatus(message){
+  const node=$('camera-status');
+  node.textContent=message;node.hidden=!message;
+}
+function enterCamera(){
+  if(!$('camera-modal').hidden)return;
+  cameraScrollY=window.scrollY;
+  cameraReturnFocus=document.activeElement;
+  document.body.style.top=(-cameraScrollY)+'px';
+  document.body.classList.add('fm-camera-open');
+  $('camera-modal').hidden=false;
+  $('camera-controls').hidden=false;
+  $('camera-review-actions').hidden=true;
+  $('camera-captured-preview').hidden=true;
+  $('camera-hint').textContent='Frame your face. The front preview mirrors like a selfie.';
+  $('camera-modal').focus({preventScroll:true});
+}
+async function startCamera(facing){
+  const token=++cameraToken;
+  $('snap').disabled=true;
+  $('flip-camera').disabled=true;
+  setCameraStatus('Opening '+(facing==='user'?'front':'rear')+' camera…');
+  try{
+    const next=await navigator.mediaDevices.getUserMedia({
+      audio:false,video:{facingMode:{ideal:facing},width:{ideal:1280},height:{ideal:1280}}
+    });
+    if(token!==cameraToken||$('camera-modal').hidden){next.getTracks().forEach(t=>t.stop());return;}
+    if(stream)stream.getTracks().forEach(track=>track.stop());
+    stream=next;
+    cameraFacing=facing;
+    const video=$('camera');
+    video.hidden=false;
+    video.srcObject=next;
+    video.classList.toggle('is-mirrored',cameraFacing==='user');
+    video.setAttribute('aria-label',cameraFacing==='user'?'Mirrored front camera preview':'Rear camera preview');
+    try{
+      // Don't block the shutter indefinitely if Safari delays play() resolution.
+      await Promise.race([
+        video.play().catch(()=>undefined),
+        new Promise(resolve=>setTimeout(resolve,1200))
+      ]);
+    }catch{
+      // Muted/playsinline autoplay may begin on metadata in some WebKit versions.
+    }
+    if(token!==cameraToken)return;
+    $('camera-facing-label').textContent=cameraFacing==='user'?'Mirrored selfie':'Rear camera';
+    $('camera-hint').textContent=cameraFacing==='user'
+      ?'Mirrored live preview · saved photo matches what you see'
+      :'Rear camera · saved photo matches what you see';
+    $('camera-review-actions').hidden=true;
+    $('camera-controls').hidden=false;
+    clearCapturedPreview();
+    setCameraStatus('');
+    $('snap').disabled=false;
+    $('flip-camera').disabled=false;
+    $('snap').focus({preventScroll:true});
+  }catch{
+    if(token!==cameraToken)return;
+    if(stream?.active){
+      setCameraStatus('That camera is unavailable. Your current camera is still active.');
+      $('snap').disabled=false;
+      $('flip-camera').disabled=false;
+    }else{
+      stopCamera();
+      error('Camera permission was denied or unavailable. You can upload a photo instead.');
+    }
+  }
+}
 $('open-camera').addEventListener('click',async()=>{
   error('');
-  if(!navigator.mediaDevices?.getUserMedia){error('Camera is unavailable here. Please upload a photo instead.');return;}
-  try{
-    stream=await navigator.mediaDevices.getUserMedia({audio:false,video:{facingMode:'user',width:{ideal:1280},height:{ideal:1280}}});
-    $('camera').srcObject=stream;$('camera').hidden=false;$('photo-preview').hidden=true;$('photo-placeholder').hidden=true;
-    $('camera-actions').hidden=false;$('open-camera').hidden=true;
-  }catch{error('Camera access was denied or unavailable. You can still upload a photo.');}
+  if(!navigator.mediaDevices?.getUserMedia){
+    error('Camera is unavailable in this browser. Please upload a photo instead.');
+    return;
+  }
+  enterCamera();
+  cameraFacing='user';
+  await startCamera('user');
 });
-$('cancel-camera').addEventListener('click',()=>{stopCamera();$('photo-preview').hidden=!photo;$('photo-placeholder').hidden=!!photo;});
-$('snap').addEventListener('click',async()=>{
-  const video=$('camera');
-  if(!video.videoWidth){error('Camera is still starting. Try again.');return;}
+$('cancel-camera').addEventListener('click',stopCamera);
+$('flip-camera').addEventListener('click',()=>startCamera(cameraFacing==='user'?'environment':'user'));
+function drawCameraFrame(video,faceMirror,frame){
+  const sourceWidth=video.videoWidth,sourceHeight=video.videoHeight;
+  const bounds=frame.getBoundingClientRect();
+  const wantedRatio=Math.max(.4,Math.min(2.2,bounds.width/Math.max(1,bounds.height)));
+  const sourceRatio=sourceWidth/sourceHeight;
+  let cropWidth=sourceWidth,cropHeight=sourceHeight;
+  if(sourceRatio>wantedRatio)cropWidth=sourceHeight*wantedRatio;
+  else cropHeight=sourceWidth/wantedRatio;
+  const sx=(sourceWidth-cropWidth)/2,sy=(sourceHeight-cropHeight)/2;
+  const maxSide=1280;
+  const width=wantedRatio>1?maxSide:Math.round(maxSide*wantedRatio);
+  const height=wantedRatio>1?Math.round(maxSide/wantedRatio):maxSide;
   const canvas=document.createElement('canvas');
-  const factor=Math.min(1,1280/Math.max(video.videoWidth,video.videoHeight));
-  canvas.width=Math.round(video.videoWidth*factor);canvas.height=Math.round(video.videoHeight*factor);
-  const ctx=canvas.getContext('2d');ctx.translate(canvas.width,0);ctx.scale(-1,1);ctx.drawImage(video,0,0,canvas.width,canvas.height);
-  const blob=await new Promise(resolve=>canvas.toBlob(resolve,'image/jpeg',.82));
-  stopCamera();if(blob)await usePhoto(new File([blob],'selfie.jpg',{type:'image/jpeg'}));else error('Could not capture the image.');
+  canvas.width=Math.max(1,width);canvas.height=Math.max(1,height);
+  const ctx=canvas.getContext('2d');
+  if(faceMirror){ctx.translate(canvas.width,0);ctx.scale(-1,1);}
+  ctx.drawImage(video,sx,sy,cropWidth,cropHeight,0,0,canvas.width,canvas.height);
+  return canvas;
+}
+$('snap').addEventListener('click',async()=>{
+  if(!stream||$('snap').disabled)return;
+  const video=$('camera');
+  if(!video.videoWidth||!video.videoHeight){
+    setCameraStatus('Camera is still focusing. Tap the shutter again.');
+    return;
+  }
+  $('snap').disabled=true;
+  try{
+    const canvas=drawCameraFrame(video,cameraFacing==='user',$('camera-frame'));
+    const blob=await new Promise(resolve=>canvas.toBlob(resolve,'image/jpeg',.86));
+    if(!blob)throw new Error('The camera could not save this shot.');
+    clearCapturedPreview();
+    capturedBlob=blob;capturedObjectUrl=URL.createObjectURL(blob);
+    const preview=$('camera-captured-preview');
+    preview.src=capturedObjectUrl;preview.hidden=false;
+    video.hidden=true;
+    if(stream){stream.getTracks().forEach(t=>t.stop());stream=null;}
+    video.pause();video.srcObject=null;
+    $('camera-controls').hidden=true;
+    $('camera-review-actions').hidden=false;
+    $('camera-hint').textContent='Looks good? Choose Use this photo, or retake it.';
+    setCameraStatus('');
+    $('use-photo').focus({preventScroll:true});
+  }catch{
+    $('snap').disabled=false;
+    setCameraStatus('Could not capture this photo. Please try again.');
+  }
+});
+$('retake-photo').addEventListener('click',async()=>{
+  clearCapturedPreview();
+  $('camera').hidden=false;
+  $('camera-review-actions').hidden=true;
+  $('camera-controls').hidden=false;
+  await startCamera(cameraFacing);
+});
+$('use-photo').addEventListener('click',async()=>{
+  if(!capturedBlob)return;
+  const button=$('use-photo');
+  button.disabled=true;
+  const original=button.textContent;
+  button.textContent='Checking your photo…';
+  try{
+    const accepted=await usePhoto(new File([capturedBlob],'selfie.jpg',{type:'image/jpeg'}));
+    if(accepted){
+      requestAnimationFrame(()=>{$('consent').scrollIntoView({
+        block:'center',
+        behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'
+      });});
+    }else{
+      setCameraStatus($('error').textContent||'Try another photo.');
+    }
+  }finally{button.disabled=false;button.textContent=original;}
+});
+// Keep keyboard access inside the modal and support Escape to close.
+document.addEventListener('keydown',event=>{
+  if($('camera-modal').hidden)return;
+  if(event.key==='Escape'){event.preventDefault();stopCamera();return;}
+  if(event.key!=='Tab')return;
+  const buttons=[...$('camera-modal').querySelectorAll('button:not([disabled])')]
+    .filter(node=>node.offsetParent!==null);
+  if(!buttons.length)return;
+  const first=buttons[0],last=buttons[buttons.length-1];
+  if(event.shiftKey&&document.activeElement===first){
+    event.preventDefault();last.focus();
+  }else if(!event.shiftKey&&document.activeElement===last){
+    event.preventDefault();first.focus();
+  }
 });
 async function toBase64(blob){
   const buffer=new Uint8Array(await blob.arrayBuffer());let raw='';
