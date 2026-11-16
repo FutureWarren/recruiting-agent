@@ -5,6 +5,21 @@ process.env.SITE_TEST_ROOT='dist'
 const {serve}=await import('./static-server.mjs')
 const server=await serve()
 const browser=await chromium.launch({headless:true})
+async function ensurePhotoReady(page){
+  try{await page.locator('#photo-preview:not([hidden])').waitFor({timeout:9000})}
+  catch(err){
+    const state=await page.evaluate(()=>({
+      hasPhoto:typeof photo!=='undefined'&&Boolean(photo),
+      ready:typeof serverReady!=='undefined'&&serverReady,
+      error:document.getElementById('error')?.textContent,
+      errorHidden:document.getElementById('error')?.hidden,
+      previewHidden:document.getElementById('photo-preview')?.hidden,
+      cameraModal:document.getElementById('camera-modal')?.hidden,
+      analyzeDisabled:document.getElementById('analyze')?.disabled
+    }))
+    throw Error('Synthetic photo upload did not complete: '+JSON.stringify(state)+'; '+err.message)
+  }
+}
 const moods=['sweet','bold','bright','cool','playful','composed','friendly','expressive']
 const mixed={
  version:'photo-vibe-v2',methodology:'independent-photo-cues-v3',mixed:true,
@@ -52,6 +67,7 @@ try{
    return [...new Uint8Array(await blob.arrayBuffer())]
  })
  await page.locator('#photo-input').setInputFiles({name:'private-fixture.jpg',mimeType:'image/jpeg',buffer:Buffer.from(jpeg)})
+ await ensurePhotoReady(page)
  await page.locator('#analyze').waitFor({state:'visible'})
  await page.locator('#consent').check()
  await page.locator('#analyze:enabled').click()
@@ -83,6 +99,7 @@ try{
  scenario='finance'
  await page.locator('#reset').click()
  await page.locator('#photo-input').setInputFiles({name:'private-fixture.jpg',mimeType:'image/jpeg',buffer:Buffer.from(jpeg)})
+ await ensurePhotoReady(page)
  await page.locator('#consent').check()
  await page.locator('#analyze:enabled').click()
  await page.locator('#results:not([hidden])').waitFor()
