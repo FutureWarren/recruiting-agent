@@ -173,6 +173,7 @@ function renderBrandVibe(data){
  shell.hidden=false;
  $('brand-name').textContent=data.company.name;
  $('brand-mood').textContent=data.company.mood;
+ $('brand-alternates-heading').textContent=data.mixed?'ANOTHER SIDE OF YOUR AURA':'MORE FROM THIS WORLD';
  attachBrandLogo($('brand-logo'),data.company,$('brand-fallback'));
  const row=$('brand-alternates');row.replaceChildren();
  for(const brand of (data.companyAlternates||[]).filter(allowedBrand).slice(0,2)){
