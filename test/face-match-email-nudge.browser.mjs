@@ -89,6 +89,7 @@ async function run(engine,browserType){
       'do not reprompt after successful opt-in')
 
     const another=await context.newPage()
+    await another.bringToFront()
     await another.clock.install()
     await another.goto(server.base+'/face-match/')
     await another.evaluate(data=>{window.render(data);window.show('results')},fixture)
@@ -103,6 +104,7 @@ async function run(engine,browserType){
     await another.close()
 
     const retry=await context.newPage()
+    await retry.bringToFront()
     await retry.clock.install()
     status=429
     await retry.goto(server.base+'/face-match/')
