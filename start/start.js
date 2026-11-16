@@ -9,20 +9,32 @@ const networkingIntent=preservedIntent &&
  query.get('source')===preservedIntent.source && query.get('utm_campaign')==='networking_activation'
  ? preservedIntent : null;
 if(networkingIntent){
+ document.body.classList.add('is-networking');
  const preview=document.getElementById('networking-prep');
  const goal=document.getElementById('networking-prep-goal');
- if(preview&&goal){preview.hidden=false;goal.textContent=networkingIntent.goal;}
+ const briefGoal=networkingIntent.source==='resume_evaluation'&&networkingIntent.company
+   ?'Find alumni at '+networkingIntent.company
+   :networkingIntent.source==='face_match'&&networkingIntent.industry
+     ?'Find alumni in '+networkingIntent.industry
+     :'Find relevant alumni';
+ if(preview&&goal){preview.hidden=false;goal.textContent=briefGoal;}
  if(networkingIntent.email)email.value=networkingIntent.email;
  const headline=document.getElementById('start-heading');
- if(headline)headline.textContent='Your next opportunity starts with a conversation.';
+ if(headline)headline.textContent='Start networking.';
  const eyebrow=document.querySelector('.intro .eyebrow');
- if(eyebrow)eyebrow.textContent='FROM INSIGHT TO OUTREACH';
+ if(eyebrow)eyebrow.textContent='YOUR NEXT STEP';
  const intro=document.querySelector('.intro > p');
- if(intro)intro.textContent='Your networking goal is prepared. Confirm where to send your Orbit desktop link and review the task after installing.';
+ if(intro)intro.textContent='Your task is ready. Email yourself the Orbit desktop link.';
  const submitLabel=submit.querySelector('span');
- if(submitLabel)submitLabel.textContent='Save my goal & email Orbit link';
+ if(submitLabel)submitLabel.textContent='Send my Orbit link';
  const hint=document.getElementById('handoff-email-hint');
- if(hint&&networkingIntent.email)hint.textContent='Your report email is prefilled. Review it before sending the download link.';
+ if(hint&&networkingIntent.email)hint.textContent='Confirm your email before sending the link.';
+ const back=document.getElementById('start-back');
+ if(back){
+   back.hidden=false;
+   back.href=networkingIntent.source==='face_match'?'/face-match/':'/resume-score/';
+   back.textContent=networkingIntent.source==='face_match'?'← Back to Face Match':'← Back to Resume Evaluation';
+ }
 }
 const attribution=Object.fromEntries(sourceParams.map(k=>[k,(query.get(k)||'').slice(0,120)]));
 if(!attribution.source)attribution.source=attribution.utm_source||'direct';
@@ -68,7 +80,7 @@ form.addEventListener('submit',async e=>{
   try{localStorage.setItem('orbit_handoff_continue',data.continueUrl)}catch(_){}
   success.scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'center'});
  }catch(err){errorBox.textContent=err.message||'Orbit could not save this yet. Please try again.';errorBox.hidden=false;stepLabel.textContent='TRY AGAIN'}
- finally{submit.disabled=false;submit.classList.remove('loading');submit.querySelector('span').textContent=networkingIntent?'Save my goal & email Orbit link':'Email me the desktop link'}
+ finally{submit.disabled=false;submit.classList.remove('loading');submit.querySelector('span').textContent=networkingIntent?'Send my Orbit link':'Email me the Orbit link'}
 });
 document.getElementById('share-link').addEventListener('click',async()=>{
  const url=document.getElementById('desktop-link').dataset.url;if(!url)return;
