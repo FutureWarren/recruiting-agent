@@ -329,24 +329,54 @@ function allowedBrand(brand){
   typeof brand.domain==='string' && APPROVED_BRAND_DOMAINS.has(brand.domain) &&
   typeof brand.mood==='string' && brand.mood.length<=90;
 }
-function officialFaviconUrl(domain){
- const url=new URL('https://www.google.com/s2/favicons');
- url.searchParams.set('domain',domain);
- url.searchParams.set('sz','128');
- return url.toString();
-}
+/**
+ * Render every result-page brand from the exact same local SVG allowlist as the
+ * default Story PNG. Never use low-resolution third-party favicons.
+ */
 function attachBrandLogo(img,brand,fallback){
- img.hidden=true;
- fallback.hidden=false;
- fallback.textContent=brand.name.split(/\s+/).map(w=>w[0]||'').slice(0,2).join('').toUpperCase();
- img.alt=brand.name+' logo';
- img.referrerPolicy='no-referrer';
- img.onload=()=>{
-   if(img.naturalWidth){img.hidden=false;fallback.hidden=true;}
- };
- img.onerror=()=>{img.hidden=true;fallback.hidden=false;};
- img.src=officialFaviconUrl(brand.domain);
+  const url=shareCompanyLogoUrl(brand?.domain);
+  const frame=img.parentElement;
+  const initials=String(brand?.name||'Company').split(/\s+/).map(word=>word[0]||'').slice(0,2).join('').toUpperCase();
+  img.hidden=true;
+  img.removeAttribute('src');
+  img.dataset.logoDomain=brand?.domain||'';
+  img.decoding='async';
+  img.alt=brand?.name?brand.name+' logo':'';
+  fallback.textContent=initials;
+  fallback.hidden=false;
+  frame?.classList.remove('fm-logo-wide','fm-logo-square');
+  const hide=()=>{
+    if(img.dataset.logoDomain!==brand?.domain)return;
+    img.hidden=true;
+    fallback.hidden=false;
+  };
+  img.onerror=hide;
+  img.onload=()=>{
+    if(img.dataset.logoDomain!==brand?.domain)return;
+    if(!img.naturalWidth||!img.naturalHeight){hide();return;}
+    frame?.classList.add(img.naturalWidth/img.naturalHeight>1.7?'fm-logo-wide':'fm-logo-square');
+    img.hidden=false;
+    fallback.hidden=true;
+  };
+  if(url)img.src=url;
 }
+function createSmallBrandMark(brand){
+  const frame=document.createElement('span');
+  frame.className='fm-brand-mark';
+  const img=document.createElement('img');
+  img.alt='';
+  img.decoding='async';
+  img.loading='eager';
+  img.hidden=true;
+  const fallback=document.createElement('span');
+  fallback.className='fm-brand-mark-fallback';
+  frame.append(img,fallback);
+  attachBrandLogo(img,brand,fallback);
+  // Adjacent visible text already identifies the brand.
+  img.alt='';
+  return frame;
+}
+
 function renderBrandVibe(data){
  const shell=$('brand-match');
  if(data.version!=='photo-vibe-v2' || !allowedBrand(data.company)){
@@ -360,16 +390,11 @@ function renderBrandVibe(data){
  const row=$('brand-alternates');row.replaceChildren();
  for(const brand of (data.companyAlternates||[]).filter(allowedBrand).slice(0,2)){
   const el=document.createElement('div');el.className='fm-brand-alt';
-  const img=document.createElement('img');
-  img.alt=brand.name+' logo';
-  img.width=22;img.height=22;img.loading='lazy';img.referrerPolicy='no-referrer';
-  img.onerror=()=>img.remove();
-  img.src=officialFaviconUrl(brand.domain);
-  const name=document.createElement('span');name.textContent=brand.name;
-  el.append(img,name);row.append(el);
+  const mark=createSmallBrandMark(brand);
+  const name=document.createElement('span');name.className='fm-brand-alt-name';name.textContent=brand.name;
+  el.append(mark,name);row.append(el);
  }
 }
-
 /** Explain the actual v3 photo-vibe rubric without storing image embeddings or PII. */
 function renderScoringDetails(data){
   const panel=$('fm-scoring-details');
@@ -411,6 +436,14 @@ function render(data){
     const rank=document.createElement('span');rank.className='fm-rank';rank.textContent=String(index+1).padStart(2,'0');
     const name=document.createElement('div');name.className='fm-match-name';name.textContent=type.title;
     const sub=document.createElement('small');sub.textContent=type.subtitle;name.append(sub);
+    const brand=shareBrandForMatch(data,match);
+    if(brand){
+      const brandExample=document.createElement('div');brandExample.className='fm-match-brand';
+      brandExample.title='Illustrative company aesthetic, not a hiring prediction';
+      const brandMark=createSmallBrandMark(brand);
+      const brandName=document.createElement('span');brandName.textContent=brand.name;
+      brandExample.append(brandMark,brandName);name.append(brandExample);
+    }
     const meter=document.createElement('div');meter.className='fm-meter';meter.setAttribute('role','progressbar');meter.setAttribute('aria-label',type.title+' visual style alignment');meter.setAttribute('aria-valuemin','0');meter.setAttribute('aria-valuemax','100');meter.setAttribute('aria-valuenow',String(match.score));
     const fill=document.createElement('span');fill.style.setProperty('--score',match.score+'%');meter.append(fill);
     const score=document.createElement('div');score.className='fm-value';score.textContent=match.score;const unit=document.createElement('small');unit.textContent=' /100';score.append(unit);
