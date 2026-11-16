@@ -78,3 +78,82 @@
 .fm-cue-meter>span{display:block;height:100%;border-radius:20px;background:linear-gradient(90deg,#8473d6,#c9b2ff)}
 .fm-scoring-footnote{font-size:11px!important;color:#898195!important;margin:17px 0 0!important}
 @media(max-width:760px){.fm-scoring-grid{grid-template-columns:1fr}.fm-scoring-details{padding:18px;margin:20px 0 36px}}
+
+
+/* Immersive phone camera: fixed controls, no scrolling to reach the shutter.
+   Safe-area aware for iOS Safari; video only is mirrored, never the overlays. */
+body.fm-camera-open{overflow:hidden;overscroll-behavior:none}
+.fm-camera-modal{position:fixed;inset:0;z-index:10000;display:flex;justify-content:center;align-items:center;
+ background:rgba(4,4,10,.98);color:#fff;overscroll-behavior:contain}
+.fm-camera-shell{box-sizing:border-box;width:min(100%,540px);height:min(96dvh,900px);height:min(96vh,900px);
+ height:min(96dvh,900px);display:flex;flex-direction:column;overflow:hidden;background:#09090e;
+ border:1px solid rgba(209,193,241,.2);border-radius:24px;box-shadow:0 30px 80px rgba(0,0,0,.45)}
+.fm-camera-toolbar{height:66px;min-height:66px;display:flex;align-items:center;justify-content:space-between;
+ gap:12px;padding:10px 20px}
+.fm-camera-heading{display:flex;align-items:center;gap:10px;font-weight:750;letter-spacing:.16em;
+ color:#d3c8ed;font-size:12px}
+.fm-camera-status-dot{width:8px;height:8px;background:#b89fff;border-radius:100%;box-shadow:0 0 13px #b59ff9aa}
+.fm-camera-close{width:46px;height:46px;display:grid;place-items:center;border-radius:50%;
+ border:1px solid rgba(255,255,255,.3);background:rgba(255,255,255,.12);color:white;font-size:20px;line-height:1}
+.fm-camera-close:hover{background:rgba(255,255,255,.2)}
+.fm-camera-frame{position:relative;flex:1;min-height:0;margin:0 15px;border-radius:19px;
+ overflow:hidden;background:radial-gradient(circle,#252133,#0b0b12 65%);border:1px solid #40374f}
+.fm-camera-frame video,.fm-camera-frame img{display:block;width:100%;height:100%;object-fit:cover;object-position:center center}
+.fm-camera-frame video.is-mirrored{transform:scaleX(-1)}
+.fm-camera-frame img{position:absolute;inset:0}
+.fm-camera-guide{position:absolute;inset:0;pointer-events:none;box-shadow:inset 0 0 0 1px rgba(255,255,255,.07);
+ background:linear-gradient(to bottom,rgba(0,0,0,.18),transparent 18%,transparent 75%,rgba(0,0,0,.18))}
+.fm-camera-guide-top,.fm-camera-guide-bottom{position:absolute;left:50%;transform:translateX(-50%);
+ width:70%;height:18px;border-color:rgba(232,214,255,.7)}
+.fm-camera-guide-top{top:14%;border-top:2px solid;border-left:2px solid;border-right:2px solid;border-radius:16px 16px 0 0}
+.fm-camera-guide-bottom{bottom:14%;border-bottom:2px solid;border-left:2px solid;border-right:2px solid;border-radius:0 0 16px 16px}
+.fm-camera-status{position:absolute;bottom:18px;left:16px;right:16px;margin:0 auto;max-width:365px;
+ text-align:center;border-radius:50px;background:rgba(0,0,0,.54);backdrop-filter:blur(10px);
+ font-size:12px;line-height:1.4;padding:9px 14px;color:#f2eaff;pointer-events:none}
+.fm-camera-controls{height:112px;min-height:112px;display:grid;grid-template-columns:1fr 100px 1fr;
+ align-items:center;gap:8px;padding:8px 24px}
+.fm-camera-shutter{display:grid;place-items:center;width:82px;height:82px;justify-self:center;
+ border:3px solid white;border-radius:50%;background:transparent;padding:6px;box-shadow:0 0 0 2px rgba(0,0,0,.36);
+ -webkit-tap-highlight-color:transparent;touch-action:manipulation}
+.fm-camera-shutter-inner{display:block;width:100%;height:100%;border-radius:50%;background:#fff;
+ transition:transform .12s ease,background .12s ease}
+.fm-camera-shutter:active .fm-camera-shutter-inner{transform:scale(.86)}
+.fm-camera-shutter:disabled{opacity:.5;cursor:not-allowed}
+.fm-camera-shutter:disabled .fm-camera-shutter-inner{background:#a8a3b1}
+.fm-camera-flip{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;
+ padding:9px 0;min-width:70px;max-width:95px;border:0;background:transparent;color:#ece5ff;
+ font-size:12px;font-weight:550;border-radius:12px;touch-action:manipulation}
+.fm-camera-flip span:first-child{font-size:27px;line-height:1}
+.fm-camera-flip:disabled{opacity:.45;cursor:not-allowed}
+.fm-camera-side-label{font-size:12px;line-height:1.5;text-align:center;color:#a9a0bb;justify-self:end;max-width:95px}
+.fm-camera-hint{font-size:11px;color:#b5aec2;text-align:center;line-height:1.5;padding:0 12px 13px;margin:0}
+.fm-camera-review-actions{display:flex;justify-content:space-between;align-items:center;gap:15px;
+ padding:20px 25px;min-height:112px}
+.fm-camera-retake,.fm-camera-use{min-height:56px;padding:13px 21px;font-size:15px;letter-spacing:.01em;
+ border-radius:14px;font-weight:750;touch-action:manipulation}
+.fm-camera-retake{background:#22212c;border:1px solid #716784;color:#f7f3ff;flex:1}
+.fm-camera-use{background:#bca9ff;border:1px solid #bca9ff;color:#181022;flex:1.4}
+.fm-camera-use:disabled,.fm-camera-retake:disabled{opacity:.52}
+.fm-camera-modal button:focus-visible{outline:3px solid #dbcaff;outline-offset:3px}
+.fm-camera-modal button{cursor:pointer;-webkit-user-select:none;user-select:none}
+@media(max-width:760px){
+ .fm-actions #open-camera{min-height:56px;flex:1 1 100%;font-size:15px}
+ .fm-actions .fm-secondary{flex:1 1 100%;min-height:52px}
+ .fm-camera-modal{align-items:stretch;background:#08080b}
+ .fm-camera-shell{height:100vh;height:100dvh;width:100%;max-width:none;border:0;border-radius:0;box-shadow:none}
+ .fm-camera-toolbar{height:calc(64px + env(safe-area-inset-top,0px));
+   min-height:calc(64px + env(safe-area-inset-top,0px));padding:calc(10px + env(safe-area-inset-top,0px)) 22px 8px}
+ .fm-camera-frame{margin:0 10px;border-radius:14px}
+ .fm-camera-controls{height:116px;min-height:116px;padding:7px 20px}
+ .fm-camera-shutter{width:86px;height:86px}
+ .fm-camera-hint{min-height:calc(23px + env(safe-area-inset-bottom,0px));
+   padding:2px 14px calc(9px + env(safe-area-inset-bottom,0px))}
+ .fm-camera-review-actions{padding:18px 21px}
+}
+@media(max-height:580px){
+ .fm-camera-toolbar{height:52px;min-height:52px;padding-top:4px;padding-bottom:4px}
+ .fm-camera-controls,.fm-camera-review-actions{height:90px;min-height:90px;padding-top:4px;padding-bottom:4px}
+ .fm-camera-shutter{width:70px;height:70px}
+ .fm-camera-hint{display:none}
+}
+@media(prefers-reduced-motion:reduce){.fm-camera-shutter-inner{transition:none}}
