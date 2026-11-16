@@ -382,18 +382,29 @@ function createSmallBrandMark(brand){
   return frame;
 }
 
+/** Legacy balanced responses can have company:null; still display vetted SVG examples. */
+function illustrationForMatch(data,match){
+ const example=shareBrandForMatch(data,match);
+ return example?{...example,mood:'A playful example of this photo style, not a hiring match.',category:match.id}:null;
+}
 function renderBrandVibe(data){
  const shell=$('brand-match');
- if(data.version!=='photo-vibe-v2' || !allowedBrand(data.company)){
-   shell.hidden=true;return;
- }
+ if(data.version!=='photo-vibe-v2'){shell.hidden=true;return;}
+ const ranked=[...data.matches].sort((a,b)=>b.score-a.score);
+ const chosen=allowedBrand(data.company)?data.company:illustrationForMatch(data,ranked[0]);
+ if(!allowedBrand(chosen)){shell.hidden=true;return;}
+ const alternatives=(Array.isArray(data.companyAlternates)&&data.companyAlternates.length===2
+  &&data.companyAlternates.every(allowedBrand))
+  ?data.companyAlternates
+  :ranked.slice(1,3).map(match=>illustrationForMatch(data,match)).filter(allowedBrand);
  shell.hidden=false;
- $('brand-name').textContent=data.company.name;
- $('brand-mood').textContent=data.company.mood;
- $('brand-alternates-heading').textContent=data.mixed?'ANOTHER SIDE OF YOUR AURA':'MORE FROM THIS WORLD';
- attachBrandLogo($('brand-logo'),data.company,$('brand-fallback'));
+ $('brand-name').textContent=chosen.name;
+ $('brand-mood').textContent=data.mixed
+  ?'One fun company-style example, not a definitive match.':chosen.mood;
+ $('brand-alternates-heading').textContent=data.mixed?'OTHER PHOTO-STYLE EXAMPLES':'MORE COMPANY STYLES';
+ attachBrandLogo($('brand-logo'),chosen,$('brand-fallback'));
  const row=$('brand-alternates');row.replaceChildren();
- for(const brand of (data.companyAlternates||[]).filter(allowedBrand).slice(0,2)){
+ for(const brand of alternatives.slice(0,2)){
   const el=document.createElement('div');el.className='fm-brand-alt';
   const mark=createSmallBrandMark(brand);
   const name=document.createElement('span');name.className='fm-brand-alt-name';name.textContent=brand.name;
@@ -423,14 +434,32 @@ function renderScoringDetails(data){
     meter.append(fill);row.append(title,value,meter);output.append(row);
   }
   panel.hidden=false;
+  panel.open=true;
 }
 
+/** Readable fallback for cached V3/V4 headline strings. */
+function readableHeadline(data){
+ const raw=String(data?.title||'').trim();
+ if(!/^(The\b|Mixed Career Aura$)/i.test(raw))return raw;
+ const tags=(data.tags||[]).join(' ').toLowerCase();
+ if(tags.includes('gentle')&&tags.includes('focus'))return 'Gentle & Focused';
+ if(tags.includes('playful')&&tags.includes('bright'))return 'Bright & Playful';
+ if(tags.includes('warm')&&tags.includes('friendly'))return 'Warm & Friendly';
+ if(tags.includes('gentle'))return 'Gentle & Relaxed';
+ if(tags.includes('focus'))return 'Calm & Focused';
+ const score=[...(data.vibeBreakdown||[])].filter(x=>Number.isInteger(x.value))
+  .sort((a,b)=>b.value-a.value);
+ const words={sweet:'Gentle',bold:'Bold',bright:'Bright',cool:'Cool',
+  playful:'Playful',composed:'Calm',friendly:'Friendly',expressive:'Expressive'};
+ const meaningful=score.filter(x=>x.value>=3&&words[x.id]).slice(0,2);
+ return meaningful.length===2?words[meaningful[0].id]+' & '+words[meaningful[1].id]:'Calm & Natural';
+}
 function render(data){
-  report=data;renderBrandVibe(data);renderScoringDetails(data);
+  report={...data,title:readableHeadline(data)};renderBrandVibe(report);renderScoringDetails(report);
   // Preload local brand marks so iPhone native sharing can stay responsive.
   void shareImagesForReport(data);
   const ordered=[...data.matches].sort((a,b)=>b.score-a.score);
-  $('result-photo').src=previewUrl;$('result-title').textContent=data.title;
+  $('result-photo').src=previewUrl;$('result-title').textContent=report.title;
   $('result-subtitle').textContent=data.subtitle||'YOUR STYLE ALTER EGO';
   $('result-line').textContent=data.tagline;$('result-reason').textContent=data.explanation;
   const tags=$('style-tags');tags.replaceChildren();for(const tag of data.tags){const el=document.createElement('span');el.textContent=tag;tags.append(el);}
@@ -775,10 +804,10 @@ async function resultCanvas(){
   // Bottom action region: real QR rather than a decorative fake square.
   shareRoundedRect(c,65,1391,950,458,27,'#14131d','rgba(190,174,225,.45)');
   c.fillStyle='#b9a7f4';c.font='500 18px Inter, -apple-system, sans-serif';
-  c.fillText(report?.company?.name?'YOUR BRAND-VIBE TWIN':'YOUR AURA, YOUR WAY',94,1434);
+  c.fillText('COMPANY STYLE INSPIRATION',94,1434);
   const primary=report?.company?.name
     ?{name:report.company.name,domain:report.company.domain}
-    :{name:'Your own mix',domain:''};
+    :shareBrandForMatch(report,ordered[0])||{name:'Photo-style example',domain:''};
   shareHeroCompany(c,primary,images.get(primary.domain));
   c.fillStyle='#a9a2b9';c.font='500 15px Inter, -apple-system, sans-serif';
   c.fillText('A CREATIVE MOODBOARD, NOT A HIRING PREDICTION',95,1589);

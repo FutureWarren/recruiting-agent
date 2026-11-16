@@ -72,7 +72,7 @@ try{
  await page.locator('#consent').check()
  await page.locator('#analyze:enabled').click()
  await page.locator('#results:not([hidden])').waitFor()
- assert.equal(await page.locator('#result-title').innerText(),'Mixed Career Aura')
+ assert.equal(await page.locator('#result-title').innerText(),'Calm & Focused')
  // The exported PNG is an Instagram Story, not the old 1080x1350 image.
  const sharePixels=await page.evaluate(async()=>{
    const cv=await resultCanvas()
@@ -91,10 +91,15 @@ try{
  assert.ok(sharePixels.light>13000,'QR white quiet zone and background should be present')
  assert.ok(sharePixels.dark>13000,'real QR dark modules should be visible')
 
- assert.equal(await page.locator('#brand-match').isVisible(),false,'no invented company on a flat portrait')
+ assert.equal(await page.locator('#brand-match').isVisible(),true,'illustrative company logos should not disappear on flat input')
+ await page.locator('#brand-logo:not([hidden])').waitFor({timeout:5000})
+ const logo=await page.locator('#brand-logo').evaluate(img=>({src:img.getAttribute('src'),width:img.naturalWidth}))
+ assert.match(logo.src,/^\/face-match\/brand-logos\/mckinsey\.svg$/)
+ assert.ok(logo.width>0,'flat results load an actual local SVG company logo')
+ assert.equal(await page.locator('#brand-alternates .fm-brand-alt').count(),2)
  assert.equal(await page.locator('.fm-match').count(),5)
  assert.equal(await page.locator('#fm-scoring-details').isVisible(),true)
- await page.locator('#fm-scoring-details summary').click()
+ assert.equal(await page.locator('#fm-scoring-details').getAttribute('open'),'','scoring should be expanded')
  assert.equal(await page.locator('.fm-cue-row').count(),8)
  assert.equal(await page.locator('.fm-chips span').count(),3)
  assert.equal(seen.length,1)
@@ -125,5 +130,5 @@ try{
  assert.equal(await page.locator('#brand-alternates .fm-brand-alt').count(),2)
  assert.deepEqual(errors,[])
  await context.close()
- console.log('PASS Face Match v3: mixed/no forced company, 8-cue disclosure, face-only crop, curated company and responsive UI')
+ console.log('PASS Face Match: mixed brand SVG fallback, visible 8-cue breakdown, face crop and mobile UI')
 }finally{await browser.close();await server.close()}

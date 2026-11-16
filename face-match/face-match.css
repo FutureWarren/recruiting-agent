@@ -281,3 +281,4 @@ body.fm-camera-open{position:fixed;left:0;right:0;width:100%;overflow:hidden;ove
  .fm-email-nudge{animation:none!important}
  .fm-email-nudge-form-row button,.fm-email-nudge-success-link{transition:none!important}
 }
+\n/* Put the brand SVG examples before the explanation inside the result hero. */\n.fm-result-text .fm-brand-match{margin-top:17px}\n.fm-result-text .fm-reason{margin-top:15px}\n
