@@ -122,9 +122,12 @@ async function toBase64(blob){
 function show(id){for(const x of ['capture','loading','results'])$(x).hidden=x!==id;$(id).scrollIntoView({block:'start',behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'});}
 function valid(data){
   const matches=data?.matches;
-  if(data?.version==='photo-vibe-v2' && (!allowedBrand(data.company)||
-     !Array.isArray(data.companyAlternates)||data.companyAlternates.length!==2||
-     !data.companyAlternates.every(allowedBrand)))return false;
+  const honestAmbiguity=data?.methodology==='independent-photo-cues-v3' &&
+    data?.mixed===true && data?.company===null &&
+    Array.isArray(data.companyAlternates)&&data.companyAlternates.length===0;
+  if(data?.version==='photo-vibe-v2' && !honestAmbiguity &&
+    (!allowedBrand(data.company)||!Array.isArray(data.companyAlternates)||
+     data.companyAlternates.length!==2||!data.companyAlternates.every(allowedBrand)))return false;
   if(!Array.isArray(matches)||matches.length!==5) return false;
   const ids=new Set();
   for(const match of matches){if(!archetypes.some(a=>a.id===match.id)||ids.has(match.id)||!Number.isInteger(match.score)||match.score<0||match.score>100)return false;ids.add(match.id);}
