@@ -173,7 +173,7 @@ test('Live Face Match results use the same all-15 local vector assets as Story e
  assert.match(js,/function attachBrandLogo\(img,brand,fallback\)/);
  assert.match(js,/const url=shareCompanyLogoUrl\(brand\?\.domain\)/);
  assert.match(js,/function createSmallBrandMark\(brand\)/);
- assert.match(js,/attachBrandLogo\(\$\('brand-logo'\),data\.company,\$\('brand-fallback'\)\)/);
+ assert.match(js,/attachBrandLogo\(\$\('brand-logo'\),chosen,\$\('brand-fallback'\)\)/);
  assert.match(js,/const mark=createSmallBrandMark\(brand\)/);
  assert.match(js,/const brand=shareBrandForMatch\(data,match\)/);
  assert.match(js,/brandExample\.append\(brandMark,brandName\)/);
