@@ -160,8 +160,33 @@ function renderBrandVibe(data){
  }
 }
 
+/** Explain the actual v3 photo-vibe rubric without storing image embeddings or PII. */
+function renderScoringDetails(data){
+  const panel=$('fm-scoring-details');
+  const output=$('fm-scoring-grid');
+  const list=data?.vibeBreakdown;
+  if(!Array.isArray(list)||list.length!==8){panel.hidden=true;return;}
+  const allowed=new Set(['sweet','bold','bright','cool','playful','composed','friendly','expressive']);
+  if(list.some(item=>!allowed.has(item.id)||!Number.isInteger(item.value)||item.value<0||item.value>4)){
+    panel.hidden=true;return;
+  }
+  output.replaceChildren();
+  for(const item of list){
+    const row=document.createElement('div');row.className='fm-cue-row';
+    const title=document.createElement('span');title.textContent=String(item.label||item.id).slice(0,40);
+    const value=document.createElement('strong');value.textContent=item.value+' / 4';
+    const meter=document.createElement('div');meter.className='fm-cue-meter';
+    meter.setAttribute('role','meter');meter.setAttribute('aria-valuemin','0');
+    meter.setAttribute('aria-valuemax','4');meter.setAttribute('aria-valuenow',String(item.value));
+    meter.setAttribute('aria-label',title.textContent+' strength in this photo');
+    const fill=document.createElement('span');fill.style.width=(item.value*25)+'%';
+    meter.append(fill);row.append(title,value,meter);output.append(row);
+  }
+  panel.hidden=false;
+}
+
 function render(data){
-  report=data;renderBrandVibe(data);const ordered=[...data.matches].sort((a,b)=>b.score-a.score);
+  report=data;renderBrandVibe(data);renderScoringDetails(data);const ordered=[...data.matches].sort((a,b)=>b.score-a.score);
   $('result-photo').src=previewUrl;$('result-title').textContent=data.title;
   $('result-subtitle').textContent=data.subtitle||'YOUR STYLE ALTER EGO';
   $('result-line').textContent=data.tagline;$('result-reason').textContent=data.explanation;
