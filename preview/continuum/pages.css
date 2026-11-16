@@ -176,3 +176,107 @@ body.orbit-pages { background:var(--bg); color:var(--ink); font:16px/1.65 var(--
 }
 @media(max-width:380px) { .orbit-pages .nav { gap:10px; } .orbit-pages .nav .primary { padding:8px 10px; } }
 @media(prefers-reduced-motion:reduce) { html { scroll-behavior:auto; } .orbit-pages *, .orbit-pages *:before,.orbit-pages *:after { animation:none!important; transition:none!important; } }
+
+
+/* START / NETWORKING HANDOFF — conversion-first, high-contrast mobile experience.
+   Only affects /start/, not Resume Evaluation, Face Match or the main site. */
+.orbit-pages.page-start main.shell{
+  width:min(1000px,calc(100% - 48px));
+  grid-template-columns:minmax(0,.85fr) minmax(0,1.15fr);
+  gap:clamp(24px,5vw,65px);
+  min-height:calc(100svh - 76px);
+  padding:42px 0 66px;
+  align-items:center;
+}
+.orbit-pages.page-start .intro{padding:0;min-width:0}
+.orbit-pages.page-start .eyebrow{font:650 11px/1.4 var(--font);letter-spacing:.15em;text-transform:uppercase;color:#bca9ff}
+.orbit-pages.page-start .eyebrow span{display:none}
+.orbit-pages.page-start .intro h1{font-size:clamp(38px,4.7vw,61px);line-height:1.07;font-weight:670;
+  letter-spacing:-.057em;color:#fbfaff;margin:14px 0 16px;overflow-wrap:normal}
+.orbit-pages.page-start .intro>p{color:#c1becc;font-size:16px;line-height:1.55;max-width:430px}
+.orbit-pages.page-start .intro .desktop-skip{margin:20px 0 0!important;font-size:12px!important;color:#b6afc7!important}
+.orbit-pages.page-start .intro .desktop-skip a{color:#c6b6ff;text-decoration-thickness:1px}
+.orbit-pages.page-start .back-link{display:inline-flex;align-items:center;color:#cfc1ff;
+  font:600 12px/1.4 var(--font);text-decoration:none;margin:0 0 23px}
+.orbit-pages.page-start .back-link[hidden]{display:none!important}
+.orbit-pages.page-start .card-wrap{margin:0;min-width:0}
+.orbit-pages.page-start .card{background:#17161e;border:1px solid #383445;border-radius:24px;
+  padding:23px 25px 24px;box-shadow:0 18px 55px rgba(0,0,0,.18);backdrop-filter:none}
+.orbit-pages.page-start .card-top{font-size:10px;letter-spacing:.11em;text-transform:uppercase;
+  color:#b2a9c0;gap:14px;padding-bottom:14px;border-bottom:1px solid #393444}
+.orbit-pages.page-start .card-top span:last-child{font-weight:700;color:#c0adff}
+.orbit-pages.page-start .networking-prep{background:#24212e;border:1px solid #494054;
+  border-radius:15px;padding:15px 16px;margin:17px 0 0}
+.orbit-pages.page-start .networking-prep-kicker{font:700 10px/1.4 var(--font);
+  text-transform:uppercase;letter-spacing:.1em;color:#bca9ff;margin:0 0 6px}
+.orbit-pages.page-start .networking-prep>strong{font-size:17px;line-height:1.32;font-weight:680;
+  letter-spacing:-.025em;color:#f9f6ff;overflow-wrap:break-word}
+.orbit-pages.page-start .networking-prep>p{font-size:12px;line-height:1.5;color:#c3bbd1;margin:8px 0 0}
+.orbit-pages.page-start .networking-prep+form{padding-top:17px}
+.orbit-pages.page-start form{padding-top:23px}
+.orbit-pages.page-start .field{margin:0 0 12px}
+.orbit-pages.page-start .field label{color:#f8f6ff;font-size:15px;font-weight:670;
+  margin:0 0 9px;line-height:1.35}
+.orbit-pages.page-start .field input[type=email]{display:block;width:100%;min-height:56px;
+  border:1px solid #6e647e;border-radius:13px;background:#26232f;color:#fff;
+  font-size:16px;line-height:1.4;padding:15px 16px;box-shadow:none;
+  -webkit-text-fill-color:#fff;caret-color:#d2c2ff}
+.orbit-pages.page-start .field input[type=email]::placeholder{color:#a5a0b1;opacity:1;
+  -webkit-text-fill-color:#a5a0b1}
+.orbit-pages.page-start .field input[type=email]:focus{border-color:#c6b6ff;
+  box-shadow:0 0 0 3px rgba(185,165,255,.17)}
+.orbit-pages.page-start .field-hint{font-size:12px;line-height:1.45;color:#b3acbf;margin-top:8px}
+.orbit-pages.page-start .submit{min-height:56px;padding:15px 18px;font-size:16px;font-weight:730;
+  border-radius:13px;background:#bba8ff;color:#1d1529;margin:15px 0 0;box-shadow:none}
+.orbit-pages.page-start .submit b{font-size:21px;line-height:1}
+.orbit-pages.page-start .submit:hover{background:#d0c3ff;box-shadow:0 6px 20px #a48cf533}
+.orbit-pages.page-start .submit:focus-visible{outline:3px solid #eee6ff;outline-offset:3px}
+.orbit-pages.page-start .fine{font-size:11px!important;color:#bdb5c9!important;
+  line-height:1.55!important;text-align:left!important;margin:12px 0 0!important}
+.orbit-pages.page-start .fine a{color:#d3c5ff;text-decoration:underline}
+.orbit-pages.page-start .fine .legal-links{white-space:nowrap}
+.orbit-pages.page-start .error{font-size:13px;line-height:1.5;background:#39242e;
+  border:1px solid #bc7387;color:#ffe2e7;border-radius:11px;padding:12px 14px;margin-top:10px}
+.orbit-pages.page-start .privacy-note{color:#9e98ac;font-size:11px;line-height:1.45;padding:12px 10px}
+.orbit-pages.page-start .privacy-note span{color:#a898ee}
+.orbit-pages.page-start .success h2{color:#f9f6ff;font-size:clamp(26px,3vw,36px)}
+.orbit-pages.page-start .success>p,.orbit-pages.page-start .delivery-note{color:#c5bdcf!important;font-size:13px!important}
+.orbit-pages.page-start .desktop-link{min-height:54px;background:#bba8ff;color:#1c1629;font-size:15px;
+  font-weight:700;border-radius:13px}
+.orbit-pages.page-start .share{color:#c7b8ff;font-size:13px}
+.orbit-pages.page-start .restart{color:#b5aec4;font-size:12px}
+.orbit-pages.page-start .success-orbit i{border-color:#eee9fc}
+.orbit-pages.page-start .goal-receipt{background:#24212e;border-color:#494054;color:#f9f6ff}
+.orbit-pages.page-start .goal-receipt strong{color:#f9f6ff}
+.orbit-pages.page-start .success-kicker{color:#c9b9ff}
+.orbit-pages.page-start.is-networking .desktop-skip{display:none}
+@media(max-width:700px){
+  .orbit-pages.page-start .topbar{height:62px;min-height:62px}
+  .orbit-pages.page-start .nav{display:none}
+  .orbit-pages.page-start main.shell{display:flex;flex-direction:column;align-items:stretch;
+    gap:16px;width:calc(100% - 36px);padding:19px 0 47px;min-height:0}
+  .orbit-pages.page-start .intro{padding:0;margin:0}
+  .orbit-pages.page-start .intro h1{font-size:clamp(34px,8.6vw,42px);line-height:1.08;
+    letter-spacing:-.052em;margin:9px 0 10px}
+  .orbit-pages.page-start .intro>p{font-size:14px;line-height:1.45;max-width:none;margin:0}
+  .orbit-pages.page-start .back-link{font-size:12px;margin:0 0 13px}
+  .orbit-pages.page-start .card{border-radius:20px;padding:18px 18px 19px}
+  .orbit-pages.page-start .card-top{padding-bottom:11px}
+  .orbit-pages.page-start .networking-prep{margin:13px 0 0;padding:13px 14px}
+  .orbit-pages.page-start .networking-prep>strong{font-size:15px}
+  .orbit-pages.page-start .networking-prep>p{font-size:11px;line-height:1.35;margin-top:6px}
+  .orbit-pages.page-start .networking-prep+form{padding-top:15px}
+  .orbit-pages.page-start form{padding-top:18px}
+  .orbit-pages.page-start .field label{font-size:14px;margin-bottom:8px}
+  .orbit-pages.page-start .field input[type=email]{min-height:54px;padding:13px 15px}
+  .orbit-pages.page-start .field-hint{font-size:11px;margin-top:6px}
+  .orbit-pages.page-start .submit{min-height:56px;font-size:15px;margin-top:14px}
+  .orbit-pages.page-start .fine{font-size:10px!important;margin-top:10px!important}
+  .orbit-pages.page-start.is-networking .privacy-note{display:none}
+}
+@media(max-width:380px){
+  .orbit-pages.page-start main.shell{width:calc(100% - 28px);padding-top:16px}
+  .orbit-pages.page-start .intro h1{font-size:32px}
+  .orbit-pages.page-start .card{padding:17px 16px}
+  .orbit-pages.page-start .back-link{margin-bottom:9px}
+}
