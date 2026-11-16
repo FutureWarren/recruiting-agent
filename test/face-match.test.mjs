@@ -164,3 +164,24 @@ test('Default Story always uses own-origin logo assets with fallback and no AI i
   assert.doesNotMatch(js,/drawImage\([^)]*officialFaviconUrl/,'external favicons are never used for Canvas');
   assert.match(js,/NOT AFFILIATED WITH SHOWN BRANDS/);
 });
+
+test('Live Face Match results use the same all-15 local vector assets as Story export',()=>{
+ const js=read('face-match/face-match.js');
+ const css=read('face-match/face-match.css');
+ assert.doesNotMatch(js,/officialFaviconUrl|https:\/\/www\.google\.com\/s2\/favicons/);
+ assert.match(js,/function attachBrandLogo\(img,brand,fallback\)/);
+ assert.match(js,/const url=shareCompanyLogoUrl\(brand\?\.domain\)/);
+ assert.match(js,/function createSmallBrandMark\(brand\)/);
+ assert.match(js,/attachBrandLogo\(\$\('brand-logo'\),data\.company,\$\('brand-fallback'\)\)/);
+ assert.match(js,/const mark=createSmallBrandMark\(brand\)/);
+ assert.match(js,/const brand=shareBrandForMatch\(data,match\)/);
+ assert.match(js,/brandExample\.append\(brandMark,brandName\)/);
+ assert.match(css,/\.fm-logo-frame\.fm-logo-wide img/);
+ assert.match(css,/\.fm-brand-alt-list\{display:grid/);
+ assert.match(css,/\.fm-match-brand/);
+ const approved=[...js.matchAll(/'(?:[a-z0-9-]+\.)+(?:com|so|app)'/g)]
+    .map(x=>x[0].slice(1,-1)).filter(x=>!x.includes('orbit-reaches.com'));
+ const allowed=approved.slice(0,15);
+ const raw=js.slice(js.indexOf('const SHARE_BRAND_LOGOS=Object.freeze'),js.indexOf('const SHARE_BRAND_EXAMPLES=Object.freeze'));
+ for(const domain of allowed)assert.ok(raw.includes("'"+domain+"':"),'Missing local logo mapping for '+domain);
+});
