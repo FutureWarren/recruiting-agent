@@ -186,3 +186,41 @@ test('Live Face Match results use the same all-15 local vector assets as Story e
  const raw=js.slice(js.indexOf('const SHARE_BRAND_LOGOS=Object.freeze'),js.indexOf('const SHARE_BRAND_EXAMPLES=Object.freeze'));
  for(const domain of allowed)assert.ok(raw.includes("'"+domain+"':"),'Missing local logo mapping for '+domain);
 });
+
+test('Face Match result surfaces a dismissible email prompt after exactly ten seconds',()=>{
+  const html=read('face-match/index.html');
+  const js=read('face-match/email-nudge.js');
+  const core=read('face-match/face-match.js');
+  const css=read('face-match/face-match.css');
+  assert.match(html,/id="fm-email-nudge"/);
+  assert.match(html,/id="fm-email-nudge-close"/);
+  assert.match(html,/id="fm-email-nudge-form"/);
+  assert.match(html,/id="fm-email-nudge-input" type="email"/);
+  assert.match(html,/id="fm-email-nudge-later"/);
+  assert.match(html,/id="fm-email-nudge-success"/);
+  assert.match(html,/\/face-match\/email-nudge\.js" defer/);
+  assert.match(js,/const DELAY_MS=10_000/);
+  assert.match(js,/timer=setTimeout\(\(\)=>/);
+  assert.match(js,/if\(document\.hidden\)/);
+  assert.match(js,/HANDLED_KEY='orbit_face_match_email_nudge_handled_v1'/);
+  assert.match(js,/markHandled\(\)/);
+  assert.match(core,/if\(id==='results'\)window\.OrbitFaceMatchEmailNudge\?\.schedule\?\.\(\)/);
+  assert.match(core,/else window\.OrbitFaceMatchEmailNudge\?\.cancel\?\.\(\)/);
+  assert.match(css,/\.fm-email-nudge\{[\s\S]*position:fixed/);
+  assert.match(css,/@media\(prefers-reduced-motion:reduce\)/);
+});
+test('Email invitation uses only existing handoff API and never uploads face-derived labels',()=>{
+  const js=read('face-match/email-nudge.js');
+  const privacy=read('privacy/index.html');
+  assert.match(js,/fetch\(API\+'\/api\/handoff\/start'/);
+  assert.match(js,/utm_campaign:'post_result_email'/);
+  assert.match(js,/source:'face_match'/);
+  assert.match(js,/funnelVersion:2/);
+  assert.match(js,/Never send messages without my approval/);
+  assert.match(js,/form\.addEventListener\('submit'/);
+  assert.match(js,/credentials:'omit'/);
+  assert.match(js,/handledInMemory=true/);
+  assert.doesNotMatch(js,/imageBase64|report\.|result\.company|attractiveness/);
+  assert.match(privacy,/Face Match optional email invitation/);
+  assert.match(privacy,/does not itself register an Orbit account/);
+});

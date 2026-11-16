@@ -298,7 +298,12 @@ async function toBase64(blob){
   for(let i=0;i<buffer.length;i+=8192)raw+=String.fromCharCode(...buffer.subarray(i,i+8192));
   return btoa(raw);
 }
-function show(id){for(const x of ['capture','loading','results'])$(x).hidden=x!==id;$(id).scrollIntoView({block:'start',behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'});}
+function show(id){
+  for(const x of ['capture','loading','results'])$(x).hidden=x!==id;
+  if(id==='results')window.OrbitFaceMatchEmailNudge?.schedule?.();
+  else window.OrbitFaceMatchEmailNudge?.cancel?.();
+  $(id).scrollIntoView({block:'start',behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'});
+}
 function valid(data){
   const matches=data?.matches;
   const honestAmbiguity=data?.methodology==='independent-photo-cues-v3' &&

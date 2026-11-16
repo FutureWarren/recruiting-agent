@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="theme-color" content="#0b0b10"><meta name="description" content="Discover your career aesthetic. A playful photo-based style match from Orbit."><title>Face Match — Your Career Aesthetic | Orbit</title><link rel="canonical" href="https://orbit-reaches.com/face-match/"><link rel="stylesheet" href="/face-match/face-match.css"></head>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="theme-color" content="#0b0b10"><meta name="description" content="Discover your career aesthetic. A playful photo-based style match from Orbit."><title>Face Match — Your Career Aesthetic | Orbit</title><link rel="canonical" href="https://orbit-reaches.com/face-match/"><link rel="stylesheet" href="/face-match/face-match.css?v=post-result-email-20261116"></head>
 <body><header class="fm-header"><a href="/" class="fm-brand" aria-label="Orbit home"><span class="fm-mark"></span>Orbit</a><nav aria-label="Tools"><a href="/resume-score/">Resume Evaluation</a><a href="/#download">Get Orbit ↗</a></nav></header>
 <main><section class="fm-intro"><div class="fm-kicker"><span class="fm-dot"></span> ORBIT LABS <span class="fm-sep">/</span> FACE MATCH</div><h1>What's your <em>career aura?</em></h1><p>One selfie. Three feel-good tags. One playful career aura and your brand-vibe twin. Based on the visual impression of your photo — not your outfit.</p><div class="fm-pills"><span>NO SIGNUP</span><span>GOOD VIBES ONLY</span><span>FREE</span></div></section>
 <section id="capture" class="fm-frame fm-capture" aria-labelledby="capture-heading"><div class="fm-topline" id="capture-heading"><span>01 / THE PHOTO</span><span>READY WHEN YOU ARE</span></div><div class="fm-capture-grid"><div class="fm-photo-well" id="photo-well"><img id="photo-preview" alt="Your selected photo" hidden><div id="photo-placeholder" class="fm-placeholder"><span class="fm-face-icon" aria-hidden="true">✧</span><span>YOUR PHOTO HERE</span><small>One person · clear face · good lighting</small></div><div class="fm-photo-corners" aria-hidden="true"></div></div><div class="fm-capture-copy"><div class="fm-kicker">YOUR FIRST IMPRESSION</div><h2>A little less serious.<br>A lot more you.</h2><p>We look at your expression, gaze and overall photo vibe — not your outfit, attractiveness, personality or job qualifications.</p><div class="fm-actions"><button type="button" class="fm-button" id="open-camera"> <span aria-hidden="true">◉</span> Take a selfie</button><label class="fm-secondary" for="photo-input">Upload a photo <span aria-hidden="true">↗</span></label><input id="photo-input" class="fm-visually-hidden" type="file" accept="image/jpeg,image/png,image/webp" aria-label="Upload a photo"></div><p id="camera-note" class="fm-micro">Tap Take a selfie to open the camera. Your photo is analyzed only after you agree.</p><p id="error" class="fm-error" role="alert" hidden></p></div></div><div class="fm-bottomline"><label class="fm-consent"><input type="checkbox" id="consent"> I agree to send this photo for a one-time AI style analysis. <a href="/privacy/" target="_blank" rel="noopener">Privacy</a></label><button id="analyze" class="fm-button fm-button-primary" disabled>Reveal my aura <span aria-hidden="true">→</span></button></div></section>
@@ -25,7 +25,34 @@
 <a id="fm-networking-cta" class="fm-button fm-networking-cta" href="/start/">Start networking with Orbit <span aria-hidden="true">↗</span></a>
 <small>Free to start · Review every draft before sending</small></div>
 </section><div class="fm-frame fm-share"><div><p class="fm-kicker">MAKE IT A CONVERSATION</p><h2>Your Aura. Your Story.</h2><p>Save an Instagram-ready Story with Orbit branding and a scannable Face Match QR. Created on your device.</p></div><div class="fm-share-buttons"><button id="share" class="fm-button" type="button">Share result ↗</button><button id="save" class="fm-secondary" type="button">Save Story ↓</button><button id="reset" class="fm-link" type="button">Try another photo</button></div><p id="share-status" role="status" class="fm-micro"></p></div><p class="fm-disclaimer">A playful interpretation of this photo's visible expression and overall vibe. This does not evaluate beauty, personality, skills, job suitability or any company's likelihood of hiring you. Brand references are not endorsements. Scores are creative style-alignment indicators, not probabilities.</p><div class="fm-next"><span>WANT AN ACTUAL CAREER ASSESSMENT?</span><h3>Your face is just a vibe.<br>Your resume tells the real story.</h3><a class="fm-button" href="/resume-score/?utm_source=face_match&utm_medium=lab&utm_campaign=career_aura">Evaluate my resume ↗</a></div></section>
-<footer class="fm-footer">© 2026 Orbit <span>Face Match is separate from Resume Evaluation.</span> <a href="/privacy/">Privacy</a></footer></main><section id="camera-modal" class="fm-camera-modal" role="dialog" aria-modal="true" aria-label="Take your Face Match selfie" tabindex="-1" hidden>
+<footer class="fm-footer">© 2026 Orbit <span>Face Match is separate from Resume Evaluation.</span> <a href="/privacy/">Privacy</a></footer></main>
+<aside id="fm-email-nudge" class="fm-email-nudge" role="region" aria-labelledby="fm-email-nudge-title" hidden>
+  <div class="fm-email-nudge-top">
+    <span class="fm-email-nudge-kicker"><span class="fm-email-nudge-orbit" aria-hidden="true"></span> ORBIT / YOUR NEXT MOVE</span>
+    <button id="fm-email-nudge-close" class="fm-email-nudge-close" type="button" aria-label="Dismiss Orbit invitation">×</button>
+  </div>
+  <div id="fm-email-nudge-ask">
+    <h2 id="fm-email-nudge-title">Your vibe is just the start.</h2>
+    <p class="fm-email-nudge-copy">Make real connections with Orbit. Find alumni in your field and prepare personalized networking drafts.</p>
+    <form id="fm-email-nudge-form" novalidate>
+      <label for="fm-email-nudge-input">Get your free Orbit setup link</label>
+      <div class="fm-email-nudge-form-row">
+        <input id="fm-email-nudge-input" type="email" inputmode="email" autocomplete="email" autocapitalize="off" spellcheck="false" maxlength="254" placeholder="Your email address" required>
+        <button id="fm-email-nudge-submit" type="submit">Send link <span aria-hidden="true">→</span></button>
+      </div>
+      <p id="fm-email-nudge-error" class="fm-email-nudge-error" role="alert" hidden></p>
+      <button id="fm-email-nudge-later" class="fm-email-nudge-later" type="button">Not now — keep exploring my result</button>
+      <p class="fm-email-nudge-disclosure">We email a one-time desktop link. Create an account after installing; all outreach stays subject to your approval. <a href="/privacy/">Privacy</a> · <a href="/terms/">Terms</a></p>
+    </form>
+  </div>
+  <div id="fm-email-nudge-success" class="fm-email-nudge-success" hidden>
+    <h2 id="fm-email-nudge-success-title">Your Orbit setup is ready.</h2>
+    <p id="fm-email-nudge-success-copy" role="status">Open your setup link on a computer to continue.</p>
+    <a id="fm-email-nudge-link" class="fm-email-nudge-success-link" href="/start/">Open my setup <span aria-hidden="true">↗</span></a>
+    <button id="fm-email-nudge-done" class="fm-email-nudge-done" type="button">Back to my result</button>
+  </div>
+</aside>
+<section id="camera-modal" class="fm-camera-modal" role="dialog" aria-modal="true" aria-label="Take your Face Match selfie" tabindex="-1" hidden>
   <div class="fm-camera-shell">
     <div class="fm-camera-toolbar">
       <div class="fm-camera-heading"><span class="fm-camera-status-dot" aria-hidden="true"></span><span>ORBIT CAMERA</span></div>
@@ -45,4 +72,4 @@
     <div id="camera-review-actions" class="fm-camera-review-actions" hidden><button id="retake-photo" class="fm-camera-retake" type="button">Retake</button><button id="use-photo" class="fm-camera-use" type="button">Use this photo <span aria-hidden="true">→</span></button></div>
     <p class="fm-camera-hint" id="camera-hint">Keep your face in the frame. Preview and photo will match.</p>
   </div>
-</section><script src="/start/networking-intent.js" defer></script><script src="/face-match/face-match.js" defer></script></body></html>
+</section><script src="/start/networking-intent.js" defer></script><script src="/face-match/email-nudge.js" defer></script><script src="/face-match/face-match.js?v=post-result-email-20261116" defer></script></body></html>
