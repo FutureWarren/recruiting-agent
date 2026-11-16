@@ -65,7 +65,7 @@ test('Face Match explains the independently scored photo cues',()=>{
  assert.match(html,/id="fm-scoring-details"/);
  assert.match(html,/compares them with five fictional editorial style profiles/);
  assert.match(html,/Ethnicity, clothing and real hiring potential are not scoring criteria/);
- assert.match(js,/renderScoringDetails\(data\)/);
+ assert.match(js,/renderScoringDetails\(report\)/);
  assert.match(js,/data\?\.vibeBreakdown/);
  assert.match(js,/meter\.setAttribute\('aria-valuenow'/);
  assert.match(css,/\.fm-scoring-grid/);
