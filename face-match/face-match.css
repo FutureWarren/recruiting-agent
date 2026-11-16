@@ -157,3 +157,47 @@ body.fm-camera-open{position:fixed;left:0;right:0;width:100%;overflow:hidden;ove
  .fm-camera-hint{display:none}
 }
 @media(prefers-reduced-motion:reduce){.fm-camera-shutter-inner{transition:none}}
+
+
+/* Face Match brand asset parity: live results use the same vetted SVG marks as
+   the default downloadable Story. Wide wordmarks retain their original aspect. */
+.fm-brand-feature{gap:16px;min-width:0}
+.fm-brand-feature>div:last-child{min-width:0}
+.fm-logo-frame{width:120px;height:76px;flex:0 0 120px;border-radius:14px;background:#f8f7fb;
+  border:1px solid rgba(223,214,241,.9);box-shadow:none}
+.fm-logo-frame img{object-fit:contain;max-width:105px;max-height:58px}
+.fm-logo-frame.fm-logo-wide img{width:105px;height:54px}
+.fm-logo-frame.fm-logo-square img{width:51px;height:51px}
+.fm-logo-frame [hidden],.fm-brand-mark [hidden]{display:none!important}
+.fm-brand-mark{flex:0 0 78px;width:78px;height:44px;display:grid;place-items:center;
+  border-radius:9px;background:#f8f7fb;border:1px solid rgba(222,214,236,.75);overflow:hidden;
+  position:relative}
+.fm-brand-mark img{display:block;width:68px;height:34px;object-fit:contain}
+.fm-brand-mark.fm-logo-wide img{width:68px;height:33px}
+.fm-brand-mark.fm-logo-square img{width:29px;height:29px}
+.fm-brand-mark-fallback{font-size:14px;font-weight:750;color:#49415f;letter-spacing:-.03em}
+.fm-brand-alt-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.fm-brand-alt{display:flex;gap:11px;align-items:center;min-width:0;padding:9px 10px;
+  background:rgba(255,255,255,.035);border:1px solid rgba(203,189,231,.21);border-radius:12px}
+.fm-brand-alt .fm-brand-alt-name{display:block;flex:1;min-width:0;font-size:12px;font-weight:630;line-height:1.35;
+  overflow-wrap:break-word;color:#e3dced}
+.fm-brand-alt .fm-brand-mark img{background:transparent;border:0;border-radius:0;max-width:100%}
+.fm-match-name{min-width:0}
+.fm-match-brand{display:flex;align-items:center;gap:8px;min-width:0;margin-top:9px;line-height:1.3}
+.fm-match-brand .fm-brand-mark{width:55px;height:30px;flex:0 0 55px;border-radius:6px}
+.fm-match-brand .fm-brand-mark img{width:49px;height:24px}
+.fm-match-brand .fm-brand-mark.fm-logo-square img{width:22px;height:22px}
+.fm-match-brand .fm-brand-mark-fallback{font-size:10px}
+.fm-match-brand>span:last-child{font-size:10px;color:#a9a1b8;white-space:normal;overflow-wrap:break-word;min-width:0}
+@media(max-width:760px){
+ .fm-logo-frame{width:100px;height:65px;flex-basis:100px;border-radius:12px}
+ .fm-logo-frame.fm-logo-wide img{width:90px;height:47px}
+ .fm-logo-frame.fm-logo-square img{width:45px;height:45px}
+ .fm-brand-feature{gap:12px}
+ .fm-brand-alt-list{grid-template-columns:1fr}
+ .fm-brand-alt{min-height:60px}
+ .fm-match-brand{gap:6px;margin-top:7px}
+}
+@media(min-width:761px) and (max-width:970px){
+ .fm-brand-alt-list{grid-template-columns:1fr}
+}
