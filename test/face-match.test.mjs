@@ -56,3 +56,32 @@ test('Portrait-vibe v2 renders real editorial brand logos and positive tags',()=
  assert.doesNotMatch(js,/short-term request limit/);
  assert.match(h,/not your outfit/);
 });
+
+test('Face Match explains the independently scored photo cues',()=>{
+ const html=read('face-match/index.html');
+ const js=read('face-match/face-match.js');
+ const css=read('face-match/face-match.css');
+ assert.match(html,/id="fm-scoring-details"/);
+ assert.match(html,/no category receives an automatic bonus/);
+ assert.match(html,/Ethnicity, clothing and real hiring potential are not scoring criteria/);
+ assert.match(js,/renderScoringDetails\(data\)/);
+ assert.match(js,/data\?\.vibeBreakdown/);
+ assert.match(js,/meter\.setAttribute\('aria-valuenow'/);
+ assert.match(css,/\.fm-scoring-grid/);
+ assert.doesNotMatch(html,/Looking at outfit, color and composition/);
+});
+
+test('Face Match V3 crops the image for inference, preserving original preview/share',()=>{
+  const js=read('face-match/face-match.js');
+  assert.match(js,/async function cropForVisualStyle\(blob,box\)/);
+  assert.match(js,/analysisPhoto=faceOnly/);
+  assert.match(js,/toBase64\(analysisPhoto\|\|photo\)/);
+  assert.match(js,/photo=null;analysisPhoto=null/);
+  assert.match(js,/honestAmbiguity/);
+});
+test('Privacy discloses aggregate style counts and never links them to visitors',()=>{
+  const privacy=read('privacy/index.html');
+  assert.match(privacy,/aggregate daily request counts/);
+  assert.match(privacy,/fictional Career Aura labels/);
+  assert.match(privacy,/without connecting those labels to individual visitors/);
+});

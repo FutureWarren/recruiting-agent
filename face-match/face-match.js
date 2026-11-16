@@ -11,7 +11,7 @@ const archetypes = [
   {id:'client-facing',title:'Client-facing',subtitle:'Warm & personable'}
 ];
 const MAX_BYTES = 5 * 1024 * 1024;
-let photo = null, previewUrl = null, stream = null, report = null, controller = null;
+let photo = null, analysisPhoto = null, previewUrl = null, stream = null, report = null, controller = null;
 let imageDetectorPromise = null, serverReady = false;
 const networkingBridge = window.OrbitNetworkingBridge;
 const networkingVariant = networkingBridge?.variant('face-match') || 'a';
@@ -27,12 +27,12 @@ async function detector(){
   return imageDetectorPromise;
 }
 async function checkSingleFace(blob){
-  const model=await detector();if(!model) return {ok:true,warning:'On-device face checking unavailable; server will still analyze visual style.'};
+  const model=await detector();if(!model) return {ok:true,box:null,warning:'On-device photo framing check unavailable; photo will still be analyzed.'};
   const bitmap=await createImageBitmap(blob);
   try{const faces=model.detect(bitmap).detections||[];
     if(faces.length!==1)return {ok:false,message:faces.length===0?'We could not find one clear face. Try a brighter, front-facing photo.':'Please use a solo photo with just one face.'};
     const b=faces[0].boundingBox;if(b&&Math.min(b.width,b.height)<65)return {ok:false,message:'Please choose a closer photo with a larger, clearer face.'};
-    return {ok:true};
+    return {ok:true,box:b||null};
   }finally{bitmap.close();}
 }
 async function initialize(){
@@ -42,7 +42,33 @@ async function initialize(){
   enable();
 }
 function stopCamera(){ if(stream){stream.getTracks().forEach(track=>track.stop());stream=null;} $('camera').srcObject=null;$('camera').hidden=true;$('camera-actions').hidden=true;$('open-camera').hidden=false; }
-function clearPhoto(){stopCamera();if(previewUrl){URL.revokeObjectURL(previewUrl);previewUrl=null;}photo=null;$('photo-preview').hidden=true;$('photo-placeholder').hidden=false;$('photo-input').value='';enable();}
+function clearPhoto(){stopCamera();if(previewUrl){URL.revokeObjectURL(previewUrl);previewUrl=null;}photo=null;analysisPhoto=null;$('photo-preview').hidden=true;$('photo-placeholder').hidden=false;$('photo-input').value='';enable();}
+
+/**
+ * Preserve the original photo for previews and sharing, but provide Qwen a
+ * face-centered crop for this expression-only fictional aesthetic quiz.
+ * Bounding boxes are geometric framing signals, not identity or beauty metrics.
+ */
+async function cropForVisualStyle(blob,box){
+  if(!box||![box.originX,box.originY,box.width,box.height].every(Number.isFinite)||
+    box.width<65||box.height<65)return blob;
+  let bitmap;
+  try{
+    bitmap=await createImageBitmap(blob);
+    const iw=bitmap.width,ih=bitmap.height;
+    const width=Math.min(iw,Math.max(1,box.width*1.5));
+    const height=Math.min(ih,Math.max(1,box.height*1.36));
+    const x=Math.max(0,Math.min(iw-width,box.originX+box.width/2-width/2));
+    const y=Math.max(0,Math.min(ih-height,box.originY-box.height*.2));
+    const canvas=document.createElement('canvas');
+    canvas.width=Math.min(1024,Math.max(1,Math.round(width)));
+    canvas.height=Math.min(1024,Math.max(1,Math.round(height)));
+    canvas.getContext('2d').drawImage(bitmap,x,y,width,height,0,0,canvas.width,canvas.height);
+    return await new Promise(resolve=>canvas.toBlob(resolve,'image/jpeg',.82))||blob;
+  }catch{return blob;}
+  finally{bitmap?.close();}
+}
+
 async function usePhoto(file) {
   error('');
   if(!file || !['image/jpeg','image/png','image/webp'].includes(file.type)){error('Please select a JPEG, PNG or WebP image.');return;}
@@ -60,7 +86,8 @@ async function usePhoto(file) {
     if(!blob) throw new Error('Image conversion failed.');
     const checked=await checkSingleFace(blob);
     if(!checked.ok){error(checked.message);return;}
-    clearPhoto();photo=blob;previewUrl=URL.createObjectURL(blob);
+    const faceOnly=await cropForVisualStyle(blob,checked.box);
+    clearPhoto();photo=blob;analysisPhoto=faceOnly;previewUrl=URL.createObjectURL(blob);
     if(checked.warning)$('camera-note').textContent=checked.warning;
     $('photo-preview').src=previewUrl;$('photo-preview').hidden=false;$('photo-placeholder').hidden=true;enable();
   } catch {error('Could not read that photo. Try a different image.');}
@@ -95,9 +122,12 @@ async function toBase64(blob){
 function show(id){for(const x of ['capture','loading','results'])$(x).hidden=x!==id;$(id).scrollIntoView({block:'start',behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'});}
 function valid(data){
   const matches=data?.matches;
-  if(data?.version==='photo-vibe-v2' && (!allowedBrand(data.company)||
-     !Array.isArray(data.companyAlternates)||data.companyAlternates.length!==2||
-     !data.companyAlternates.every(allowedBrand)))return false;
+  const honestAmbiguity=data?.methodology==='independent-photo-cues-v3' &&
+    data?.mixed===true && data?.company===null &&
+    Array.isArray(data.companyAlternates)&&data.companyAlternates.length===0;
+  if(data?.version==='photo-vibe-v2' && !honestAmbiguity &&
+    (!allowedBrand(data.company)||!Array.isArray(data.companyAlternates)||
+     data.companyAlternates.length!==2||!data.companyAlternates.every(allowedBrand)))return false;
   if(!Array.isArray(matches)||matches.length!==5) return false;
   const ids=new Set();
   for(const match of matches){if(!archetypes.some(a=>a.id===match.id)||ids.has(match.id)||!Number.isInteger(match.score)||match.score<0||match.score>100)return false;ids.add(match.id);}
@@ -146,6 +176,7 @@ function renderBrandVibe(data){
  shell.hidden=false;
  $('brand-name').textContent=data.company.name;
  $('brand-mood').textContent=data.company.mood;
+ $('brand-alternates-heading').textContent=data.mixed?'ANOTHER SIDE OF YOUR AURA':'MORE FROM THIS WORLD';
  attachBrandLogo($('brand-logo'),data.company,$('brand-fallback'));
  const row=$('brand-alternates');row.replaceChildren();
  for(const brand of (data.companyAlternates||[]).filter(allowedBrand).slice(0,2)){
@@ -160,8 +191,33 @@ function renderBrandVibe(data){
  }
 }
 
+/** Explain the actual v3 photo-vibe rubric without storing image embeddings or PII. */
+function renderScoringDetails(data){
+  const panel=$('fm-scoring-details');
+  const output=$('fm-scoring-grid');
+  const list=data?.vibeBreakdown;
+  if(!Array.isArray(list)||list.length!==8){panel.hidden=true;return;}
+  const allowed=new Set(['sweet','bold','bright','cool','playful','composed','friendly','expressive']);
+  if(list.some(item=>!allowed.has(item.id)||!Number.isInteger(item.value)||item.value<0||item.value>4)){
+    panel.hidden=true;return;
+  }
+  output.replaceChildren();
+  for(const item of list){
+    const row=document.createElement('div');row.className='fm-cue-row';
+    const title=document.createElement('span');title.textContent=String(item.label||item.id).slice(0,40);
+    const value=document.createElement('strong');value.textContent=item.value+' / 4';
+    const meter=document.createElement('div');meter.className='fm-cue-meter';
+    meter.setAttribute('role','meter');meter.setAttribute('aria-valuemin','0');
+    meter.setAttribute('aria-valuemax','4');meter.setAttribute('aria-valuenow',String(item.value));
+    meter.setAttribute('aria-label',title.textContent+' strength in this photo');
+    const fill=document.createElement('span');fill.style.width=(item.value*25)+'%';
+    meter.append(fill);row.append(title,value,meter);output.append(row);
+  }
+  panel.hidden=false;
+}
+
 function render(data){
-  report=data;renderBrandVibe(data);const ordered=[...data.matches].sort((a,b)=>b.score-a.score);
+  report=data;renderBrandVibe(data);renderScoringDetails(data);const ordered=[...data.matches].sort((a,b)=>b.score-a.score);
   $('result-photo').src=previewUrl;$('result-title').textContent=data.title;
   $('result-subtitle').textContent=data.subtitle||'YOUR STYLE ALTER EGO';
   $('result-line').textContent=data.tagline;$('result-reason').textContent=data.explanation;
@@ -194,7 +250,7 @@ $('analyze').addEventListener('click',async()=>{
   try{
     const response=await fetch(API+'/api/face-match/analyze',{
       method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({imageBase64:await toBase64(photo),mimeType:'image/jpeg',consent:true}),
+      body:JSON.stringify({imageBase64:await toBase64(analysisPhoto||photo),mimeType:'image/jpeg',consent:true}),
       signal:controller.signal,cache:'no-store'
     });
     if(!response.ok){

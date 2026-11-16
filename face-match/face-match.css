@@ -61,3 +61,20 @@
 .fm-network-action>small{font-size:11px;text-align:center;color:#a99ebd}
 @media(max-width:760px){.fm-network-bridge{grid-template-columns:1fr;padding:22px;gap:19px}.fm-network-intro h3{font-size:28px}.fm-industry-choices button{flex:1 1 auto}}
 @media(prefers-reduced-motion:reduce){.fm-industry-choices button{transition:none}}
+
+
+/* Transparent scoring details: expandable, small and legible on phones */
+.fm-scoring-details{margin:24px 0 44px;padding:20px 23px;border:1px solid rgba(192,175,231,.22);background:#14121c;border-radius:16px}
+.fm-scoring-details summary{cursor:pointer;list-style:none;display:flex;justify-content:space-between;gap:10px;color:#d9cbff;font-weight:680;font-size:14px}
+.fm-scoring-details summary::-webkit-details-marker{display:none}
+.fm-scoring-details summary span{font-size:22px;line-height:1;color:#a997ee;font-weight:450}
+.fm-scoring-details[open] summary span{transform:rotate(45deg)}
+.fm-scoring-details>p{max-width:800px;color:#b2aabd;line-height:1.7;font-size:13px;margin:17px 0}
+.fm-scoring-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px 25px;padding:6px 0 8px}
+.fm-cue-row{display:grid;grid-template-columns:1fr auto;gap:6px 10px;align-items:center;min-width:0}
+.fm-cue-row>span{font-size:12px;color:#d4cbde}
+.fm-cue-row>strong{font-size:11px;color:#bca7ed;font-variant-numeric:tabular-nums}
+.fm-cue-meter{grid-column:1/-1;height:5px;border-radius:20px;background:#363046;overflow:hidden}
+.fm-cue-meter>span{display:block;height:100%;border-radius:20px;background:linear-gradient(90deg,#8473d6,#c9b2ff)}
+.fm-scoring-footnote{font-size:11px!important;color:#898195!important;margin:17px 0 0!important}
+@media(max-width:760px){.fm-scoring-grid{grid-template-columns:1fr}.fm-scoring-details{padding:18px;margin:20px 0 36px}}
