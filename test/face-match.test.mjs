@@ -130,3 +130,37 @@ test('Export is a 9:16 Orbit Story with original brand mark and offline URL QR',
  assert.match(js,/async function blobForShare\(\)/);
  assert.doesNotMatch(js,/www\.google\.com\/s2\/favicons[^\n]*resultCanvas/);
 });
+
+test('Every Face Match Story company domain has a local, self-contained vector logo',()=>{
+  const js=read('face-match/face-match.js');
+  const names=['goldmansachs','jpmorgan','morganstanley','mckinsey','bcg','bain','google','meta','nvidia','notion','figma','linear','salesforce','airbnb','hubspot'];
+  for(const name of names){
+    const svg=read('face-match/brand-logos/'+name+'.svg');
+    assert.match(svg,/<svg\b/i,name+' is an SVG');
+    assert.match(svg,/viewBox=/i,name+' preserves the original icon geometry');
+    assert.doesNotMatch(svg,/<script\b|<foreignObject\b|<image\b|<use\b|onload=|href=|url\(/i,name+' is self-contained and cannot fetch remote content');
+    assert.match(js,new RegExp(":'"+name+"'"),name+' is mapped to a fixed local asset');
+  }
+  assert.match(js,/SHARE_BRAND_LOGOS=Object\.freeze/);
+  assert.match(js,/function shareCompanyTile\(ctx,brand,logo/);
+  assert.match(js,/function shareHeroCompany\(ctx,brand,logo/);
+  assert.match(js,/function shareLogoImage\(brand\)/);
+  assert.match(js,/const images=await shareImagesForReport\(report\)/);
+  assert.match(js,/void shareImagesForReport\(data\)/);
+  assert.match(js,/shareLogoImage\(brand\)/);
+  assert.match(js,/SHARE_BRAND_EXAMPLES=Object\.freeze/);
+  assert.doesNotMatch(js,/SHARE_BRAND_NAMES=/,'the old wordmark-only template is removed');
+  assert.match(js,/async function blobForShare\(\)/,'default Share and Save still use this canvas');
+});
+test('Default Story always uses own-origin logo assets with fallback and no AI image generation',()=>{
+  const js=read('face-match/face-match.js');
+  assert.match(js,/return slug\?'\/face-match\/brand-logos\/'\+slug\+'\.svg'/);
+  assert.match(js,/function shareBrandForMatch\(data,match\)/);
+  assert.match(js,/const brand=shareBrandForMatch\(report,match\)/);
+  assert.match(js,/shareCompanyTile\(c,brand,images\.get\(brand\?\.domain\)/);
+  assert.match(js,/shareHeroCompany\(c,primary,images\.get\(primary\.domain\)/);
+  assert.match(js,/if\(logo\)\{/);
+  assert.match(js,/ctx\.fillText\(label/);
+  assert.doesNotMatch(js,/drawImage\([^)]*officialFaviconUrl/,'external favicons are never used for Canvas');
+  assert.match(js,/NOT AFFILIATED WITH SHOWN BRANDS/);
+});
