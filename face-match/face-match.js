@@ -160,8 +160,14 @@ async function startCamera(facing){
     video.srcObject=next;
     video.classList.toggle('is-mirrored',cameraFacing==='user');
     video.setAttribute('aria-label',cameraFacing==='user'?'Mirrored front camera preview':'Rear camera preview');
-    try{await video.play();}catch{
-      // Some Safari versions start the muted playsinline video on metadata.
+    try{
+      // Don't block the shutter indefinitely if Safari delays play() resolution.
+      await Promise.race([
+        video.play().catch(()=>undefined),
+        new Promise(resolve=>setTimeout(resolve,1200))
+      ]);
+    }catch{
+      // Muted/playsinline autoplay may begin on metadata in some WebKit versions.
     }
     if(token!==cameraToken)return;
     $('camera-facing-label').textContent=cameraFacing==='user'?'Mirrored selfie':'Rear camera';
