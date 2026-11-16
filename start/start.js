@@ -62,18 +62,18 @@ form.addEventListener('submit',async e=>{
   const accepted=data.emailStatus==='accepted'||data.emailStatus==='sent';
   document.getElementById('success-title').textContent=delivered?'Check your inbox.':accepted?'Your link is on its way.':'Your desktop link is ready.';
   document.getElementById('success-copy').textContent=delivered
-   ?'Your download link was delivered to '+address+'. Open it on your Mac or Windows computer to install Orbit.'
+   ?'Open the link in your inbox on a Mac or Windows computer.'
    :accepted
-    ?'Your email provider accepted the link for '+address+'. Open it on your computer when it arrives, or copy the backup link below.'
-    :'Email delivery could not be confirmed. Copy the desktop link below and open it on your computer.';
+    ?'Delivery to '+address+' was accepted. Open the link on your computer, or use the backup below.'
+    :'Email delivery was not confirmed. Copy the backup link below to continue on your computer.';
   document.getElementById('delivery-note').textContent=delivered
-   ?'No need to scan the QR code again. After installing, sign in with Google.'
+   ?'Sign in with Google after installing.'
    :accepted
-    ?'The backup link works right away while the email is on its way.'
-    :'The backup link is available now even if the email service fails.';
+    ?'The backup link is available now.'
+    :'You can use the backup link even if email fails.';
   form.hidden=true;success.hidden=false;stepLabel.textContent='READY ON DESKTOP';
   if(networkingIntent){
-    document.getElementById('delivery-note').append(' Your networking target is saved with this handoff for review.');
+    document.getElementById('delivery-note').append(' Your networking task is saved for review.');
     window.OrbitNetworkingBridge?.clear?.();
   }
   history.replaceState(null,'',location.pathname+'?saved=1');
