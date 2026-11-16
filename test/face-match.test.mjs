@@ -108,3 +108,11 @@ test('Selfie camera uses a fixed, accessible mobile shutter and matching front-c
   assert.match(js,/window\.scrollTo\(0,cameraScrollY\)/);
   assert.doesNotMatch(html,/id="camera-actions"/);
 });
+
+test('Every hard-coded Face Match UI ID used by JavaScript exists in HTML',()=>{
+  const html=read('face-match/index.html');
+  const js=read('face-match/face-match.js');
+  const ids=new Set([...html.matchAll(/id="([^"]+)"/g)].map(match=>match[1]));
+  const references=new Set([...js.matchAll(/\$\('([^']+)'\)/g)].map(match=>match[1]));
+  assert.deepEqual([...references].filter(id=>!ids.has(id)),[],'missing HTML IDs crash camera/gallery interactions');
+});
