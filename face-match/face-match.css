@@ -82,7 +82,7 @@
 
 /* Immersive phone camera: fixed controls, no scrolling to reach the shutter.
    Safe-area aware for iOS Safari; video only is mirrored, never the overlays. */
-body.fm-camera-open{overflow:hidden;overscroll-behavior:none}
+body.fm-camera-open{position:fixed;left:0;right:0;width:100%;overflow:hidden;overscroll-behavior:none}
 .fm-camera-modal{position:fixed;inset:0;z-index:10000;display:flex;justify-content:center;align-items:center;
  background:rgba(4,4,10,.98);color:#fff;overscroll-behavior:contain}
 .fm-camera-shell{box-sizing:border-box;width:min(100%,540px);height:min(96dvh,900px);height:min(96vh,900px);
