@@ -73,6 +73,24 @@ try{
  await page.locator('#analyze:enabled').click()
  await page.locator('#results:not([hidden])').waitFor()
  assert.equal(await page.locator('#result-title').innerText(),'Mixed Career Aura')
+ // The exported PNG is an Instagram Story, not the old 1080x1350 image.
+ const sharePixels=await page.evaluate(async()=>{
+   const cv=await resultCanvas()
+   const ctx=cv.getContext('2d')
+   const area=ctx.getImageData(726,1527,263,263).data
+   let light=0,dark=0
+   for(let i=0;i<area.length;i+=4){
+     const v=(area[i]+area[i+1]+area[i+2])/3
+     if(v>230)light++
+     if(v<50)dark++
+   }
+   return {width:cv.width,height:cv.height,light,dark}
+ })
+ assert.equal(sharePixels.width,1080)
+ assert.equal(sharePixels.height,1920)
+ assert.ok(sharePixels.light>13000,'QR white quiet zone and background should be present')
+ assert.ok(sharePixels.dark>13000,'real QR dark modules should be visible')
+
  assert.equal(await page.locator('#brand-match').isVisible(),false,'no invented company on a flat portrait')
  assert.equal(await page.locator('.fm-match').count(),5)
  assert.equal(await page.locator('#fm-scoring-details').isVisible(),true)
