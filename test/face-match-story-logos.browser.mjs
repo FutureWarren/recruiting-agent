@@ -107,7 +107,9 @@ for(const [engine,browserType] of [['Chromium',chromium],['WebKit',webkit]]){
     await page.evaluate(value=>window.render(value),data)
     await page.waitForFunction(expected=>{
       const img=document.getElementById('brand-logo')
-      return img.dataset.logoDomain===expected&&img.naturalWidth>0&&!img.hidden
+      const all=[...document.querySelectorAll('.fm-brand-alt .fm-brand-mark img,.fm-match-brand .fm-brand-mark img')]
+      return img.dataset.logoDomain===expected&&img.naturalWidth>0&&!img.hidden&&
+        all.length===7&&all.every(i=>i.naturalWidth>0&&!i.hidden)
     },domain,{timeout:8000})
     const result=await page.evaluate(()=>{
       const main=document.getElementById('brand-logo')
