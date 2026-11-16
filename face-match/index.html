@@ -25,7 +25,33 @@
 <a id="fm-networking-cta" class="fm-button fm-networking-cta" href="/start/">Start networking with Orbit <span aria-hidden="true">↗</span></a>
 <small>Free to start · Review every draft before sending</small></div>
 </section><div class="fm-frame fm-share"><div><p class="fm-kicker">MAKE IT A CONVERSATION</p><h2>Your Aura. Your Story.</h2><p>Save an Instagram-ready Story with Orbit branding and a scannable Face Match QR. Created on your device.</p></div><div class="fm-share-buttons"><button id="share" class="fm-button" type="button">Share result ↗</button><button id="save" class="fm-secondary" type="button">Save Story ↓</button><button id="reset" class="fm-link" type="button">Try another photo</button></div><p id="share-status" role="status" class="fm-micro"></p></div><p class="fm-disclaimer">A playful interpretation of this photo's visible expression and overall vibe. This does not evaluate beauty, personality, skills, job suitability or any company's likelihood of hiring you. Brand references are not endorsements. Scores are creative style-alignment indicators, not probabilities.</p><div class="fm-next"><span>WANT AN ACTUAL CAREER ASSESSMENT?</span><h3>Your face is just a vibe.<br>Your resume tells the real story.</h3><a class="fm-button" href="/resume-score/?utm_source=face_match&utm_medium=lab&utm_campaign=career_aura">Evaluate my resume ↗</a></div></section>
-<footer class="fm-footer">© 2026 Orbit <span>Face Match is separate from Resume Evaluation.</span> <a href="/privacy/">Privacy</a></footer></main><section id="camera-modal" class="fm-camera-modal" role="dialog" aria-modal="true" aria-label="Take your Face Match selfie" tabindex="-1" hidden>
+<footer class="fm-footer">© 2026 Orbit <span>Face Match is separate from Resume Evaluation.</span> <a href="/privacy/">Privacy</a></footer></main>
+<aside id="fm-email-nudge" class="fm-email-nudge" role="region" aria-labelledby="fm-email-nudge-title" hidden>
+  <div class="fm-email-nudge-top">
+    <span class="fm-email-nudge-kicker"><span class="fm-email-nudge-orbit" aria-hidden="true"></span> ORBIT / YOUR NEXT MOVE</span>
+    <button id="fm-email-nudge-close" class="fm-email-nudge-close" type="button" aria-label="Dismiss Orbit invitation">×</button>
+  </div>
+  <div id="fm-email-nudge-ask">
+    <h2 id="fm-email-nudge-title">Your vibe is just the start.</h2>
+    <p class="fm-email-nudge-copy">Make real connections with Orbit. Find alumni in your field and prepare personalized networking drafts.</p>
+    <form id="fm-email-nudge-form" novalidate>
+      <label for="fm-email-nudge-input">Get your free Orbit setup link</label>
+      <div class="fm-email-nudge-form-row">
+        <input id="fm-email-nudge-input" type="email" inputmode="email" autocomplete="email" autocapitalize="off" spellcheck="false" maxlength="254" placeholder="Your email address" required>
+        <button id="fm-email-nudge-submit" type="submit">Send link <span aria-hidden="true">→</span></button>
+      </div>
+      <p id="fm-email-nudge-error" class="fm-email-nudge-error" role="alert" hidden></p>
+      <p class="fm-email-nudge-disclosure">We email a one-time desktop link. Create an account after installing; all outreach stays subject to your approval. <a href="/privacy/">Privacy</a> · <a href="/terms/">Terms</a></p>
+    </form>
+  </div>
+  <div id="fm-email-nudge-success" class="fm-email-nudge-success" hidden>
+    <h2 id="fm-email-nudge-success-title">Your Orbit setup is ready.</h2>
+    <p id="fm-email-nudge-success-copy" role="status">Open your setup link on a computer to continue.</p>
+    <a id="fm-email-nudge-link" class="fm-email-nudge-success-link" href="/start/">Open my setup <span aria-hidden="true">↗</span></a>
+    <button id="fm-email-nudge-done" class="fm-email-nudge-done" type="button">Back to my result</button>
+  </div>
+</aside>
+<section id="camera-modal" class="fm-camera-modal" role="dialog" aria-modal="true" aria-label="Take your Face Match selfie" tabindex="-1" hidden>
   <div class="fm-camera-shell">
     <div class="fm-camera-toolbar">
       <div class="fm-camera-heading"><span class="fm-camera-status-dot" aria-hidden="true"></span><span>ORBIT CAMERA</span></div>
