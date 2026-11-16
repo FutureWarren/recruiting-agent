@@ -7,39 +7,37 @@
 <meta name="description" content="Orbit runs on Mac and Windows. Enter one email and get a link to download it on your computer.">
 <link rel="canonical" href="https://orbit-reaches.com/start/">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='21' fill='none' stroke='%2317171c' stroke-width='6'/%3E%3Ccircle cx='32' cy='10' r='7' fill='%235c5cf2'/%3E%3C/svg%3E">
-<link rel="stylesheet" href="start.css?v=email-only-20261012">
+<link rel="stylesheet" href="start.css?v=quick-start-20261116">
 </head>
 <body>
 <div class="ambient" aria-hidden="true"><i></i><i></i><i></i><span class="ambient-dot d1"></span><span class="ambient-dot d2"></span><span class="ambient-dot d3"></span></div>
 <header class="topbar"><a class="brand" href="/" aria-label="Orbit home"><span class="orbit-mark"></span><b>Orbit</b></a><span class="time-note">one email · no signup form</span></header>
 <main class="shell">
   <section class="intro">
-    <div class="eyebrow"><span></span>Phone → computer</div>
-    <h1 id="start-heading">Orbit runs<br>on your computer.</h1>
-    <p>Enter one email and we’ll send you the Mac or Windows download link. Install Orbit on your computer to get started.</p>
-    <div class="handoff-line" aria-hidden="true"><span class="device phone">▯</span><i></i><span class="pulse-dot"></span><i></i><span class="device laptop">⌁</span></div>
-    <div class="promise"><span>01</span><div><b>No phone app to install.</b><small>Orbit works on your Mac or Windows computer.</small></div></div>
-    <div class="promise"><span>02</span><div><b>No signup form.</b><small>Sign in with Google after installing Orbit.</small></div></div>
-    <p class="desktop-skip">Already on a computer? <a href="/">Download Orbit directly ↗</a></p>
+    <a id="start-back" class="back-link" href="/" hidden>← Back to my result</a>
+    <div class="eyebrow"><span></span> ONE STEP TO GET STARTED</div>
+    <h1 id="start-heading">Get Orbit on your computer.</h1>
+    <p>We’ll email you a link to download Orbit on Mac or Windows.</p>
+    <p class="desktop-skip">Already on a computer? <a href="/">Download directly ↗</a></p>
   </section>
 
   <section class="card-wrap">
     <div class="card" id="capture-card">
-      <div class="card-top"><span>ORBIT / HANDOFF</span><span id="step-label">READY</span></div>
+      <div class="card-top"><span>YOUR ORBIT SETUP</span><span id="step-label">READY</span></div>
       <div class="networking-prep" id="networking-prep" hidden>
-        <div class="networking-prep-kicker">YOUR FIRST ORBIT NETWORKING TASK</div>
+        <div class="networking-prep-kicker">YOUR FIRST NETWORKING TASK</div>
         <strong id="networking-prep-goal">Find relevant alumni</strong>
-        <p>Orbit can research relevant people and prepare introductions for your review. Sending is always subject to your approval.</p>
+        <p>You review every draft before anything is sent.</p>
       </div>
       <form id="handoff-form" novalidate>
         <div class="field">
-          <label for="email">Where should we send the download link?</label>
-          <input id="email" name="email" type="email" inputmode="email" autocomplete="email" placeholder="you@email.com" maxlength="254" required>
-          <div class="field-hint" id="handoff-email-hint">Any email works. No school address required.</div>
+          <label for="email">Your email</label>
+          <input id="email" name="email" type="email" inputmode="email" autocomplete="email" placeholder="name@example.com" maxlength="254" required>
+          <div class="field-hint" id="handoff-email-hint">Open the link on your computer to continue.</div>
         </div>
         <div class="error" id="form-error" role="alert" hidden></div>
-        <button class="submit" id="submit" type="submit"><span>Email me the desktop link</span><b aria-hidden="true">→</b></button>
-        <p class="fine">By continuing, you agree to Orbit’s <a href="/terms/">Terms</a> and acknowledge the <a href="/privacy/">Privacy Policy</a>.</p>
+        <button class="submit" id="submit" type="submit"><span>Email me the Orbit link</span><b aria-hidden="true">→</b></button>
+        <p class="fine">Only a download link is emailed. You approve any outreach before sending.<span class="legal-links"> <a href="/terms/">Terms</a> · <a href="/privacy/">Privacy</a></span></p>
       </form>
 
       <div class="success" id="success" hidden>
@@ -53,10 +51,10 @@
         <p class="delivery-note" id="delivery-note"></p>
       </div>
     </div>
-    <div class="privacy-note"><span>●</span> We use your email to deliver your desktop link, restore your setup, and understand where handoffs fail.</div>
+    <div class="privacy-note"><span>●</span> Your email is used to deliver the link and restore this setup.</div>
   </section>
 </main>
 <script src="/start/networking-intent.js" defer></script>
-<script src="start.js?v=networking-bridge-20261115" defer></script>
+<script src="start.js?v=networking-quick-start-20261116" defer></script>
 </body>
 </html>
