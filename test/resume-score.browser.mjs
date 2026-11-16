@@ -95,11 +95,14 @@ try {
       assert.equal(await page.locator('.rs-bubble').first().evaluate(n => getComputedStyle(n).animationName),'none')
     }
     assert.equal(requests.filter(p => p === '/api/marketing/subscribe').length,0,'no implicit marketing opt in')
-    // Result-to-action bridge: a company chosen on the report becomes a prepared,
-    // reviewed networking task, not an invented successful outreach campaign.
+    // Result-to-action bridge: ensure keyboard-selected target remains stable.
+    // Mouse travel over floating bubbles can legitimately change the hovered company.
+    await page.locator('.rs-bubble[aria-label^="Morgan Stanley"]').focus()
+    await page.keyboard.press('Enter')
     assert.match(await page.locator('#networking-next-heading').innerText(), /Morgan Stanley/)
     assert.match(await page.locator('#networking-next-cta').innerText(), /Morgan Stanley/)
-    await page.locator('#networking-next-cta').click()
+    await page.locator('#networking-next-cta').focus()
+    await page.keyboard.press('Enter')
     await page.waitForURL(/\/start\/\?/)
     assert.equal(new URL(page.url()).searchParams.get('source'), 'resume_evaluation')
     assert.match(await page.locator('#networking-prep-goal').innerText(),/Morgan Stanley/)
