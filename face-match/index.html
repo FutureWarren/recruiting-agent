@@ -33,6 +33,7 @@
     </div>
     <div id="camera-frame" class="fm-camera-frame">
       <video id="camera" playsinline autoplay muted disablepictureinpicture aria-label="Live camera view"></video>
+      <img id="camera-captured-preview" alt="Review your captured selfie" hidden>
       <div class="fm-camera-guide" aria-hidden="true"><span class="fm-camera-guide-top"></span><span class="fm-camera-guide-bottom"></span></div>
       <p id="camera-status" class="fm-camera-status" role="status">Opening camera…</p>
     </div>
@@ -41,6 +42,7 @@
       <button id="snap" type="button" class="fm-camera-shutter" aria-label="Capture photo" disabled><span class="fm-camera-shutter-inner" aria-hidden="true"></span></button>
       <div class="fm-camera-side-label" id="camera-facing-label">Front camera</div>
     </div>
-    <p class="fm-camera-hint">Keep your face in the frame. Preview and photo will match.</p>
+    <div id="camera-review-actions" class="fm-camera-review-actions" hidden><button id="retake-photo" class="fm-camera-retake" type="button">Retake</button><button id="use-photo" class="fm-camera-use" type="button">Use this photo <span aria-hidden="true">→</span></button></div>
+    <p class="fm-camera-hint" id="camera-hint">Keep your face in the frame. Preview and photo will match.</p>
   </div>
 </section><script src="/start/networking-intent.js" defer></script><script src="/face-match/face-match.js" defer></script></body></html>
