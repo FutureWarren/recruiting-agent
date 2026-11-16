@@ -1,6 +1,6 @@
-# Face Match Story — Local Company Logo Assets
+# Face Match — Unified Local Company Logo Assets
 
-These self-contained SVG marks are loaded from the same `orbit-reaches.com` origin for the **1080 × 1920 Face Match Story PNG**. No external image host is contacted at export time, so iOS Safari/Chrome can use Canvas export without CORS tainting.
+These self-contained SVG marks are loaded from the same `orbit-reaches.com` origin for the **Face Match results page and the 1080 × 1920 Face Match Story PNG**. No external image host is contacted at export time, so iOS Safari/Chrome can use Canvas export without CORS tainting.
 
 ## Sources
 
@@ -15,6 +15,14 @@ These self-contained SVG marks are loaded from the same `orbit-reaches.com` orig
 | `bcg.svg` | `confident-ai/deepeval/docs/public/icons/companies/bcg.svg` |
 
 The icons are used *only* as playful, descriptive editorial references to brand aesthetics. The matching results do not measure hiring potential, and the listed brands have not sponsored, endorsed or affiliated themselves with Orbit. Trademark rights remain with their respective owners. Some companies publish further usage restrictions; check approval before using their marks in paid advertising, co-branded promotions or official partnership claims.
+
+## Live results and Story parity
+
+- **Main Brand-Vibe Twin:** displays the approved company SVG within a readable wide logo tile, with an initials fallback.
+- **Other company choices:** display their own company SVGs rather than blurred favicon proxies; company names remain visible.
+- **All five Career Aura rows:** display representative sector company SVGs alongside the scores; the user's specifically selected match supersedes the representative when its category matches.
+- Every brand domain returned by the backend maps to exactly one local SVG. No Google favicon URLs or third-party requests are needed for result-page logos.
+- The official company SVGs are not modified or AI-generated. Company names remain visible if an SVG fails to load. No endorsement or employment prediction is implied.
 
 ## Implementation contract
 

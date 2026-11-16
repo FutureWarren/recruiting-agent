@@ -81,6 +81,59 @@ for(const [engine,browserType] of [['Chromium',chromium],['WebKit',webkit]]){
   },Object.keys(names))
   assert.deepEqual(assets.filter(a=>!a.ready),[],engine+' unable to render some local logo SVGs')
   assert.deepEqual(assets.filter(a=>a.colored<10),[],engine+' vector has no visible logo')
+
+  // The actual live results page must render the same high-resolution SVGs,
+  // including McKinsey and every other allowed backend company.
+  const sectors={
+    'goldmansachs.com':'wall-street','jpmorgan.com':'wall-street','morganstanley.com':'wall-street',
+    'mckinsey.com':'consulting','bcg.com':'consulting','bain.com':'consulting',
+    'google.com':'tech','meta.com':'tech','nvidia.com':'tech',
+    'notion.so':'founder','figma.com':'founder','linear.app':'founder',
+    'salesforce.com':'client-facing','airbnb.com':'client-facing','hubspot.com':'client-facing'
+  }
+  for(const [domain,slug] of Object.entries(names)){
+    const sector=sectors[domain]
+    const company={
+      name:domain==='mckinsey.com'?'McKinsey & Company':domain.split('.')[0],
+      domain,category:sector,mood:'A playful editorial reference'
+    }
+    const data={
+      ...finance,company,
+      companyAlternates:[
+        {name:'NVIDIA',domain:'nvidia.com',category:'tech',mood:'Bold and modern'},
+        {name:'BCG',domain:'bcg.com',category:'consulting',mood:'Bright and creative'}
+      ]
+    }
+    await page.evaluate(value=>window.render(value),data)
+    await page.waitForFunction(expected=>{
+      const img=document.getElementById('brand-logo')
+      const all=[...document.querySelectorAll('.fm-brand-alt .fm-brand-mark img,.fm-match-brand .fm-brand-mark img')]
+      return img.dataset.logoDomain===expected&&img.naturalWidth>0&&!img.hidden&&
+        all.length===7&&all.every(i=>i.naturalWidth>0&&!i.hidden)
+    },domain,{timeout:8000})
+    const result=await page.evaluate(()=>{
+      const main=document.getElementById('brand-logo')
+      const alt=[...document.querySelectorAll('.fm-brand-alt .fm-brand-mark img')]
+      const ranked=[...document.querySelectorAll('.fm-match-brand .fm-brand-mark img')]
+      return {
+        mainSource:new URL(main.src).pathname,visible:!main.hidden,mode:main.parentElement.className,
+        alternatives:alt.map(i=>({src:new URL(i.src).pathname,loaded:!i.hidden&&i.naturalWidth>0})),
+        ranked:ranked.map(i=>({src:new URL(i.src).pathname,loaded:!i.hidden&&i.naturalWidth>0})),
+        fallbackVisible:!document.getElementById('brand-fallback').hidden
+      }
+    })
+    assert.equal(result.mainSource,'/face-match/brand-logos/'+slug+'.svg',engine+': '+domain+' must use its real local logo')
+    assert.equal(result.visible,true,engine+': '+domain+' main logo should be visible')
+    assert.equal(result.fallbackVisible,false,engine+': '+domain+' must not show monogram fallback')
+    assert.equal(result.alternatives.length,2)
+    assert.ok(result.alternatives.every(i=>i.src.startsWith('/face-match/brand-logos/')&&i.loaded),
+      engine+': alternative logos must render from local SVGs')
+    assert.equal(result.ranked.length,5)
+    assert.ok(result.ranked.every(i=>i.src.startsWith('/face-match/brand-logos/')&&i.loaded),
+      engine+': career list must contain all representative company logos')
+  }
+  assert.ok(!requests.some(x=>x.includes('s2/favicons')),'Never fetch Google favicons on the live result page')
+
   const story=await page.evaluate(async data=>{
     window.render(data)
     const image=document.getElementById('result-photo')
