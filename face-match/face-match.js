@@ -493,28 +493,154 @@ function observeNetworkingBridge(){
 }
 updateNetworkingCTA();
 
-function resultCanvas(){
-  const canvas=document.createElement('canvas');canvas.width=1080;canvas.height=1350;
-  const c=canvas.getContext('2d');c.fillStyle='#121019';c.fillRect(0,0,1080,1350);
-  c.fillStyle='#c2b0ff';c.font='bold 30px sans-serif';c.fillText('ORBIT  /  FACE MATCH',70,86);
-  const image=$('result-photo');const x=70,y=142,w=420,h=600;
-  const scale=Math.max(w/image.naturalWidth,h/image.naturalHeight),sw=w/scale,sh=h/scale;
-  c.drawImage(image,(image.naturalWidth-sw)/2,(image.naturalHeight-sh)/2,sw,sh,x,y,w,h);
-  c.fillStyle='#bda7ff';c.font='bold 28px sans-serif';c.fillText('MY CAREER AURA',535,193);
-  c.fillStyle='#faf6ff';c.font='bold 54px sans-serif';
-  const words=report.title.split(' ');let line='',yy=280;
-  for(const word of words){const next=line?line+' '+word:word;if(c.measureText(next).width>475&&line){c.fillText(line,535,yy);yy+=65;line=word;}else line=next;}
-  c.fillText(line,535,yy);
-  c.font='21px sans-serif';c.fillStyle='#d7cbe7';c.fillText((report.tags||[]).slice(0,2).join(' · ').slice(0,37),535,690);
-  c.strokeStyle='#40354f';c.beginPath();c.moveTo(70,810);c.lineTo(1010,810);c.stroke();
-  c.font='bold 28px sans-serif';c.fillStyle='#f5edff';c.fillText('TOP MATCHES',70,873);
-  const top=[...report.matches].sort((a,b)=>b.score-a.score).slice(0,3);
-  top.forEach((m,i)=>{const item=archetypes.find(a=>a.id===m.id);const yy=945+i*94;c.font='25px sans-serif';c.fillStyle='#f5edff';c.fillText(item.title,70,yy);c.fillStyle='#b9a4ff';c.fillRect(395,yy-18,Math.round(430*m.score/100),12);c.font='bold 25px sans-serif';c.fillText(String(m.score),890,yy);});
-  if(report.company?.name){c.fillStyle='#bca8ff';c.font='bold 18px sans-serif';c.fillText('YOUR BRAND-VIBE TWIN',70,1205);c.fillStyle='#f8f4ff';c.font='bold 31px sans-serif';c.fillText(report.company.name,70,1250);}
-  c.fillStyle='#a99cb7';c.font='18px sans-serif';c.fillText('orbit-reaches.com/face-match/ · Just for fun',70,1320);
+/**
+ * Orbit Face Match share card — exact brand mark, native canvas typography and
+ * an OFFLINE, hardcoded, tested QR symbol for https://orbit-reaches.com/face-match/.
+ * QR modules include a four-module white quiet zone. Never generate QR data
+ * with the vision model or load untrusted images into the export canvas.
+ */
+const FACE_MATCH_SHARE_URL='https://orbit-reaches.com/face-match/';
+const FACE_MATCH_QR_SIZE=37;
+const FACE_MATCH_QR_PACKED='AAAAAAAAAAAAAAAAAAAAAAAAAP7q4/gEF4PQQC6r4roBdJe10Auta66AQQMFBAP6qq/gAAhhAACf59y4AkLbrYA2gtAoAGIUlpADO/PwgErw8fwAnA1AoBom0dUAkmkZQAUBS+WAMunF0gHo6VXAD61N/wAAcpRgA/q36wAQWYsTALrcn8gF1/loQC6U3W4BBGwO0A/tcYAAAAAAAAAAAAAAAAAAAAAAAAAAAA==';
+const SHARE_BRAND_NAMES={
+  consulting:'McKinsey & Co.',tech:'Meta',
+  'wall-street':'Goldman Sachs',founder:'Figma','client-facing':'Airbnb'
+};
+function shareRoundedRect(ctx,x,y,w,h,r,fill,stroke){
+  ctx.beginPath();
+  ctx.roundRect(x,y,w,h,r);
+  if(fill){ctx.fillStyle=fill;ctx.fill();}
+  if(stroke){ctx.strokeStyle=stroke;ctx.lineWidth=2;ctx.stroke();}
+}
+function shareCoverImage(ctx,img,x,y,w,h,r){
+  if(!img?.naturalWidth||!img?.naturalHeight)return;
+  const scale=Math.max(w/img.naturalWidth,h/img.naturalHeight);
+  const sourceW=w/scale,sourceH=h/scale;
+  const sx=(img.naturalWidth-sourceW)/2,sy=(img.naturalHeight-sourceH)/2;
+  ctx.save();
+  ctx.beginPath();ctx.roundRect(x,y,w,h,r);ctx.clip();
+  ctx.drawImage(img,sx,sy,sourceW,sourceH,x,y,w,h);
+  ctx.restore();
+}
+function shareWordWrap(ctx,message,maxWidth,maxLines=3){
+  const words=String(message||'Your Career Aura').trim().split(/\s+/);
+  const lines=[];let current='';
+  for(const word of words){
+    const candidate=current?current+' '+word:word;
+    if(ctx.measureText(candidate).width>maxWidth&&current){
+      lines.push(current);current=word;
+    }else current=candidate;
+  }
+  if(current)lines.push(current);
+  return lines.slice(0,maxLines);
+}
+function shareQR(ctx,x,y,side){
+  // Data is the 37x37 QR matrix for the canonical Face Match URL with ECC M.
+  const bits=Uint8Array.from(atob(FACE_MATCH_QR_PACKED),chr=>chr.charCodeAt(0));
+  const unit=Math.floor(side/FACE_MATCH_QR_SIZE);
+  const actual=unit*FACE_MATCH_QR_SIZE;
+  const sx=x+Math.floor((side-actual)/2),sy=y+Math.floor((side-actual)/2);
+  shareRoundedRect(ctx,x-10,y-10,side+20,side+20,20,'#ffffff',null);
+  ctx.fillStyle='#111018';
+  for(let i=0;i<FACE_MATCH_QR_SIZE*FACE_MATCH_QR_SIZE;i++){
+    if(bits[i>>3]&(1<<(7-(i&7)))){
+      const col=i%FACE_MATCH_QR_SIZE,row=Math.floor(i/FACE_MATCH_QR_SIZE);
+      ctx.fillRect(sx+col*unit,sy+row*unit,unit,unit);
+    }
+  }
+}
+async function resultCanvas(){
+  const canvas=document.createElement('canvas');canvas.width=1080;canvas.height=1920;
+  const c=canvas.getContext('2d');
+  const W=canvas.width,H=canvas.height;
+  const bg=c.createLinearGradient(0,0,W,H);
+  bg.addColorStop(0,'#19142e');bg.addColorStop(.25,'#0c0b14');
+  bg.addColorStop(.75,'#0c0b15');bg.addColorStop(1,'#21183a');
+  c.fillStyle=bg;c.fillRect(0,0,W,H);
+  // Understated orbital grid and a single satellite dot from Orbit's visual system.
+  c.save();c.strokeStyle='rgba(176,154,250,.12)';c.lineWidth=1;
+  for(let y=195;y<1850;y+=122){c.beginPath();c.moveTo(0,y);c.lineTo(W,y);c.stroke();}
+  for(let x=95;x<W;x+=125){c.beginPath();c.moveTo(x,0);c.lineTo(x,H);c.stroke();}
+  c.beginPath();c.ellipse(520,590,850,520,-.48,2.68,6.08);c.strokeStyle='rgba(167,130,249,.32)';c.lineWidth=2;c.stroke();
+  c.fillStyle='#8f75ff';c.beginPath();c.arc(918,111,12,0,Math.PI*2);c.fill();
+  c.restore();
+  // Brand is based on Orbit's actual mark: one open ring plus satellite at 12 o'clock.
+  c.strokeStyle='#f2f2f5';c.lineWidth=6;c.beginPath();c.arc(93,107,23,0,Math.PI*2);c.stroke();
+  c.fillStyle='#5c5cf2';c.beginPath();c.arc(93,71,7,0,Math.PI*2);c.fill();
+  c.fillStyle='#f2f2f5';c.font='650 48px Inter, -apple-system, sans-serif';c.fillText('Orbit',132,125);
+  c.fillStyle='rgba(207,198,230,.5)';c.fillRect(307,82,2,49);
+  c.fillStyle='#c8beeb';c.font='500 31px Inter, -apple-system, sans-serif';c.fillText('FACE MATCH',331,121);
+  c.fillStyle='#b8aaff';c.font='500 22px Inter, -apple-system, sans-serif';c.fillText('001',952,122);
+  c.strokeStyle='rgba(209,202,233,.4)';c.lineWidth=1;c.beginPath();c.moveTo(65,166);c.lineTo(1015,166);c.stroke();
+  c.fillStyle='#b3a4f6';c.font='600 21px Inter, -apple-system, sans-serif';c.fillText('YOUR CAREER AURA',67,215);
+  c.fillStyle='#a6a0b9';c.font='500 15px Inter, -apple-system, sans-serif';c.textAlign='right';
+  c.fillText('ORBIT LABS  /  JUST FOR FUN',1015,212);c.textAlign='left';
+  const img=$('result-photo');
+  try{if(img?.decode)await img.decode();}catch{}
+  shareRoundedRect(c,64,246,468,662,27,'#17141e','rgba(199,177,255,.72)');
+  shareCoverImage(c,img,67,249,462,656,25);
+  // Poster title: editorial, not generic AI-glow typography.
+  c.fillStyle='#bdaeff';c.font='600 18px Inter, -apple-system, sans-serif';c.fillText('THE RESULTS',567,284);
+  c.fillStyle='#f4f1fa';c.font='650 73px Inter, -apple-system, sans-serif';
+  const headline=shareWordWrap(c,report?.title||'My Career Aura',430,3);
+  headline.forEach((line,i)=>c.fillText(line,565,366+i*84));
+  c.fillStyle='#5c5cf2';c.fillRect(566,624,91,5);
+  c.font='600 20px Inter, -apple-system, sans-serif';c.fillStyle='#dbd4f3';
+  const tags=(report?.tags||[]).slice(0,2);
+  tags.forEach((tag,i)=>c.fillText(String(tag).toUpperCase().slice(0,23),566,689+i*37));
+  c.fillStyle='#aaa1ba';c.font='500 15px Inter, -apple-system, sans-serif';
+  c.fillText('ONE SELFIE  /  YOUR OWN VIBE',566,850);
+  // Three top matches with recognizable real-company wordmarks rendered as text,
+  // so export stays offline-safe and doesn't invent a corporate logo graphic.
+  shareRoundedRect(c,65,949,1015-65,401,25,'#14131d','rgba(190,174,225,.48)');
+  c.fillStyle='#f3f2f8';c.font='650 31px Inter, -apple-system, sans-serif';c.fillText('TOP MATCHES',92,1000);
+  c.fillStyle='#b2a4e1';c.font='500 15px Inter, -apple-system, sans-serif';
+  c.textAlign='right';c.fillText('STYLE ALIGNMENT',987,994);c.textAlign='left';
+  const ordered=[...(report?.matches||[])].sort((a,b)=>b.score-a.score).slice(0,3);
+  ordered.forEach((match,i)=>{
+    const y=1043+i*97;
+    if(i){c.strokeStyle='rgba(155,145,178,.24)';c.beginPath();c.moveTo(94,y-5);c.lineTo(985,y-5);c.stroke();}
+    shareRoundedRect(c,92,y+13,199,62,13,'#282538','rgba(180,161,211,.42)');
+    const wordmark=report?.company?.category===match.id?report.company.name:SHARE_BRAND_NAMES[match.id]||match.id;
+    c.textAlign='center';c.font=(wordmark.length>13?'600 16px':'600 19px')+' Inter, -apple-system, sans-serif';
+    c.fillStyle='#f0edf6';c.fillText(wordmark.slice(0,22),191,y+50);c.textAlign='left';
+    const name=archetypes.find(a=>a.id===match.id)?.title||match.id;
+    c.fillStyle='#e7e3f1';c.font='650 17px Inter, -apple-system, sans-serif';c.fillText(name.toUpperCase(),308,y+49);
+    shareRoundedRect(c,536,y+36,311,13,7,'#524b67',null);
+    const value=Math.max(0,Math.min(100,Number(match.score)||0));
+    shareRoundedRect(c,536,y+36,Math.max(7,Math.round(311*value/100)),13,7,'#6554e4',null);
+    c.fillStyle='#c2b2ff';c.font='650 38px Inter, -apple-system, sans-serif';
+    c.textAlign='right';c.fillText(String(value),982,y+59);c.textAlign='left';
+  });
+  // Bottom action region: real QR rather than a decorative fake square.
+  shareRoundedRect(c,65,1391,950,458,27,'#14131d','rgba(190,174,225,.45)');
+  c.fillStyle='#b9a7f4';c.font='500 18px Inter, -apple-system, sans-serif';
+  c.fillText(report?.company?.name?'YOUR BRAND-VIBE TWIN':'YOUR AURA, YOUR WAY',94,1434);
+  const primary=report?.company?.name||'Your own mix';
+  c.fillStyle='#f5f2f9';c.font='650 43px Inter, -apple-system, sans-serif';
+  const brandLines=shareWordWrap(c,primary,586,2);
+  brandLines.forEach((line,i)=>c.fillText(line,93,1506+i*48));
+  c.fillStyle='#a9a2b9';c.font='500 15px Inter, -apple-system, sans-serif';
+  c.fillText('A CREATIVE MOODBOARD, NOT A HIRING PREDICTION',95,1589);
+  c.strokeStyle='rgba(165,149,195,.38)';c.beginPath();c.moveTo(95,1609);c.lineTo(681,1609);c.stroke();
+  c.fillStyle='#f2eff9';c.font='500 23px Inter, -apple-system, sans-serif';c.fillText("WHAT'S YOUR",95,1666);
+  c.fillStyle='#c0b0ff';c.font='750 41px Inter, -apple-system, sans-serif';c.fillText('CAREER AURA?',94,1711);
+  c.fillStyle='#f0ebf8';c.font='500 21px Inter, -apple-system, sans-serif';c.fillText('Scan to try Face Match.',94,1777);
+  c.fillStyle='#beb7ce';c.font='500 18px Inter, -apple-system, sans-serif';
+  c.fillText('orbit-reaches.com/face-match/',94,1821);
+  shareQR(c,726,1527,263);
+  c.fillStyle='#c5b9f7';c.font='600 14px Inter, -apple-system, sans-serif';
+  c.textAlign='center';c.fillText('SCAN ME',859,1834);c.textAlign='left';
+  c.fillStyle='#ada6c4';c.font='500 15px Inter, -apple-system, sans-serif';
+  c.fillText('ORBIT  /  FIND YOUR NEXT CONNECTION',66,1892);
+  c.fillStyle='#938ba9';c.font='500 13px Inter, -apple-system, sans-serif';
+  c.textAlign='right';c.fillText('JUST FOR FUN',1013,1892);c.textAlign='left';
   return canvas;
 }
-async function blobForShare(){return new Promise(resolve=>resultCanvas().toBlob(resolve,'image/png'));}
+async function blobForShare(){
+  const canvas=await resultCanvas();
+  return new Promise(resolve=>canvas.toBlob(resolve,'image/png'));
+}
 $('save').addEventListener('click',async()=>{
   if(!report)return;const blob=await blobForShare();if(!blob)return;
   const url=URL.createObjectURL(blob),link=document.createElement('a');link.href=url;link.download='orbit-career-aura.png';link.click();setTimeout(()=>URL.revokeObjectURL(url),1000);

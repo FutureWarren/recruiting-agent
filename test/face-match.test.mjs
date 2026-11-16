@@ -116,3 +116,17 @@ test('Every hard-coded Face Match UI ID used by JavaScript exists in HTML',()=>{
   const references=new Set([...js.matchAll(/\$\('([^']+)'\)/g)].map(match=>match[1]));
   assert.deepEqual([...references].filter(id=>!ids.has(id)),[],'missing HTML IDs crash camera/gallery interactions');
 });
+
+test('Export is a 9:16 Orbit Story with original brand mark and offline URL QR',()=>{
+ const js=read('face-match/face-match.js');
+ assert.match(js,/canvas.width=1080;canvas.height=1920/);
+ assert.match(js,/FACE_MATCH_SHARE_URL='https:\/\/orbit-reaches\.com\/face-match\/'/);
+ assert.match(js,/FACE_MATCH_QR_SIZE=37/);
+ assert.match(js,/FACE_MATCH_QR_PACKED=/);
+ assert.match(js,/function shareQR\(ctx,x,y,side\)/);
+ assert.match(js,/ctx\.fillRect\(sx\+col\*unit,sy\+row\*unit,unit,unit\)/);
+ assert.match(js,/c\.arc\(93,107,23/);
+ assert.match(js,/c\.arc\(93,71,7/);
+ assert.match(js,/async function blobForShare\(\)/);
+ assert.doesNotMatch(js,/www\.google\.com\/s2\/favicons[^\n]*resultCanvas/);
+});
