@@ -396,7 +396,10 @@ function renderScoringDetails(data){
 }
 
 function render(data){
-  report=data;renderBrandVibe(data);renderScoringDetails(data);const ordered=[...data.matches].sort((a,b)=>b.score-a.score);
+  report=data;renderBrandVibe(data);renderScoringDetails(data);
+  // Preload local brand marks so iPhone native sharing can stay responsive.
+  void shareImagesForReport(data);
+  const ordered=[...data.matches].sort((a,b)=>b.score-a.score);
   $('result-photo').src=previewUrl;$('result-title').textContent=data.title;
   $('result-subtitle').textContent=data.subtitle||'YOUR STYLE ALTER EGO';
   $('result-line').textContent=data.tagline;$('result-reason').textContent=data.explanation;
@@ -502,10 +505,130 @@ updateNetworkingCTA();
 const FACE_MATCH_SHARE_URL='https://orbit-reaches.com/face-match/';
 const FACE_MATCH_QR_SIZE=37;
 const FACE_MATCH_QR_PACKED='AAAAAAAAAAAAAAAAAAAAAAAAAP7q4/gEF4PQQC6r4roBdJe10Auta66AQQMFBAP6qq/gAAhhAACf59y4AkLbrYA2gtAoAGIUlpADO/PwgErw8fwAnA1AoBom0dUAkmkZQAUBS+WAMunF0gHo6VXAD61N/wAAcpRgA/q36wAQWYsTALrcn8gF1/loQC6U3W4BBGwO0A/tcYAAAAAAAAAAAAAAAAAAAAAAAAAAAA==';
-const SHARE_BRAND_NAMES={
-  consulting:'McKinsey & Co.',tech:'Meta',
-  'wall-street':'Goldman Sachs',founder:'Figma','client-facing':'Airbnb'
-};
+// Offline-safe vector company marks shipped from the same Orbit origin.
+// Both selected and illustrative brands are resolved by a closed, trusted domain map.
+const SHARE_BRAND_LOGOS=Object.freeze({
+  'goldmansachs.com':'goldmansachs',
+  'jpmorgan.com':'jpmorgan',
+  'morganstanley.com':'morganstanley',
+  'mckinsey.com':'mckinsey',
+  'bcg.com':'bcg',
+  'bain.com':'bain',
+  'google.com':'google',
+  'meta.com':'meta',
+  'nvidia.com':'nvidia',
+  'notion.so':'notion',
+  'figma.com':'figma',
+  'linear.app':'linear',
+  'salesforce.com':'salesforce',
+  'airbnb.com':'airbnb',
+  'hubspot.com':'hubspot'
+});
+const SHARE_BRAND_EXAMPLES=Object.freeze({
+  'wall-street':{name:'Goldman Sachs',domain:'goldmansachs.com'},
+  consulting:{name:'McKinsey & Company',domain:'mckinsey.com'},
+  tech:{name:'Meta',domain:'meta.com'},
+  founder:{name:'Figma',domain:'figma.com'},
+  'client-facing':{name:'Airbnb',domain:'airbnb.com'}
+});
+const SHARE_LOGO_CACHE=new Map();
+function shareCompanyLogoUrl(domain){
+  const slug=SHARE_BRAND_LOGOS[domain];
+  return slug?'/face-match/brand-logos/'+slug+'.svg':'';
+}
+function shareBrandForMatch(data,match){
+  const selected=data?.company;
+  return selected?.category===match.id && shareCompanyLogoUrl(selected.domain)
+    ?{name:selected.name,domain:selected.domain}
+    :SHARE_BRAND_EXAMPLES[match.id]||null;
+}
+function shareLogoImage(brand){
+  const url=shareCompanyLogoUrl(brand?.domain);
+  if(!url)return Promise.resolve(null);
+  if(SHARE_LOGO_CACHE.has(url))return SHARE_LOGO_CACHE.get(url);
+  // SVG from our own origin means the browser can safely draw it into a PNG canvas.
+  const loaded=new Promise(resolve=>{
+    const image=new Image();
+    let done=false;
+    const finish=value=>{
+      if(done)return;
+      done=true;clearTimeout(timeout);
+      image.onload=null;image.onerror=null;resolve(value);
+    };
+    const timeout=setTimeout(()=>finish(null),3500);
+    image.onload=()=>finish(image.naturalWidth>0&&image.naturalHeight>0?image:null);
+    image.onerror=()=>finish(null);
+    image.decoding='async';
+    image.src=url;
+  });
+  SHARE_LOGO_CACHE.set(url,loaded);
+  return loaded;
+}
+async function shareImagesForReport(data){
+  const matches=[...(data?.matches||[])].sort((a,b)=>b.score-a.score).slice(0,3);
+  const brands=matches.map(match=>shareBrandForMatch(data,match));
+  if(data?.company?.domain)brands.push(data.company);
+  const loaded=await Promise.all(brands.map(shareLogoImage));
+  const byDomain=new Map();
+  brands.forEach((brand,i)=>{if(brand?.domain)byDomain.set(brand.domain,loaded[i]);});
+  return byDomain;
+}
+function shareFitLogo(ctx,image,x,y,w,h){
+  if(!image?.naturalWidth||!image?.naturalHeight)return false;
+  const ratio=Math.min(w/image.naturalWidth,h/image.naturalHeight);
+  const rw=image.naturalWidth*ratio,rh=image.naturalHeight*ratio;
+  ctx.drawImage(image,x+(w-rw)/2,y+(h-rh)/2,rw,rh);
+  return true;
+}
+function shareCompanyTile(ctx,brand,logo,x,y,w=199,h=62){
+  shareRoundedRect(ctx,x,y,w,h,13,'#f8f7fb',null);
+  const name=String(brand?.name||'').slice(0,55);
+  const aspect=logo?.naturalWidth&&logo?.naturalHeight
+    ?logo.naturalWidth/logo.naturalHeight:0;
+  if(logo&&aspect>1.9){
+    if(shareFitLogo(ctx,logo,x+13,y+11,w-26,h-22))return;
+  }
+  if(logo){
+    shareFitLogo(ctx,logo,x+12,y+10,42,42);
+    ctx.fillStyle='#25202e';
+    const label=name.length>15?name.split(' ').slice(0,2).join(' '):name;
+    let size=15;
+    do{ctx.font='650 '+size+'px Inter, -apple-system, sans-serif';size--}
+    while(size>=10&&ctx.measureText(label).width>126);
+    ctx.textAlign='left';ctx.fillText(label,x+65,y+36,125);
+    return;
+  }
+  // Fail safely without a fake corporate mark if an asset cannot load.
+  ctx.textAlign='center';ctx.fillStyle='#2c2733';
+  const label=name||'Company';
+  let size=18;
+  do{ctx.font='650 '+size+'px Inter, -apple-system, sans-serif';size--}
+  while(size>=11&&ctx.measureText(label).width>w-23);
+  ctx.fillText(label,x+w/2,y+h/2+6,w-23);ctx.textAlign='left';
+}
+function shareHeroCompany(ctx,brand,logo){
+  const x=94,y=1457;
+  if(logo){
+    const aspect=logo.naturalWidth/logo.naturalHeight;
+    if(aspect>2){
+      shareRoundedRect(ctx,x,y,218,73,14,'#f8f7fb',null);
+      shareFitLogo(ctx,logo,x+11,y+11,196,51);
+      ctx.fillStyle='#f4effa';ctx.font='650 31px Inter, -apple-system, sans-serif';
+      const name=shareWordWrap(ctx,brand.name,330,2);
+      name.forEach((line,i)=>ctx.fillText(line,330,1494+i*37));
+      return;
+    }
+    shareRoundedRect(ctx,x,y,82,78,14,'#f8f7fb',null);
+    shareFitLogo(ctx,logo,x+14,y+12,54,54);
+    ctx.fillStyle='#f4effa';ctx.font='650 38px Inter, -apple-system, sans-serif';
+    const name=shareWordWrap(ctx,brand.name,490,2);
+    name.forEach((line,i)=>ctx.fillText(line,195,1505+i*43));
+    return;
+  }
+  ctx.fillStyle='#f4effa';ctx.font='650 43px Inter, -apple-system, sans-serif';
+  shareWordWrap(ctx,brand.name,586,2).forEach((line,i)=>ctx.fillText(line,94,1506+i*48));
+}
+
 function shareRoundedRect(ctx,x,y,w,h,r,fill,stroke){
   ctx.beginPath();
   ctx.roundRect(x,y,w,h,r);
@@ -550,6 +673,7 @@ function shareQR(ctx,x,y,side){
   }
 }
 async function resultCanvas(){
+  const images=await shareImagesForReport(report);
   const canvas=document.createElement('canvas');canvas.width=1080;canvas.height=1920;
   const c=canvas.getContext('2d');
   const W=canvas.width,H=canvas.height;
@@ -600,10 +724,8 @@ async function resultCanvas(){
   ordered.forEach((match,i)=>{
     const y=1043+i*97;
     if(i){c.strokeStyle='rgba(155,145,178,.24)';c.beginPath();c.moveTo(94,y-5);c.lineTo(985,y-5);c.stroke();}
-    shareRoundedRect(c,92,y+13,199,62,13,'#282538','rgba(180,161,211,.42)');
-    const wordmark=report?.company?.category===match.id?report.company.name:SHARE_BRAND_NAMES[match.id]||match.id;
-    c.textAlign='center';c.font=(wordmark.length>13?'600 16px':'600 19px')+' Inter, -apple-system, sans-serif';
-    c.fillStyle='#f0edf6';c.fillText(wordmark.slice(0,22),191,y+50);c.textAlign='left';
+    const brand=shareBrandForMatch(report,match);
+    shareCompanyTile(c,brand,images.get(brand?.domain),92,y+13,199,62);
     const name=archetypes.find(a=>a.id===match.id)?.title||match.id;
     c.fillStyle='#e7e3f1';c.font='650 17px Inter, -apple-system, sans-serif';c.fillText(name.toUpperCase(),308,y+49);
     shareRoundedRect(c,536,y+36,311,13,7,'#524b67',null);
@@ -616,10 +738,10 @@ async function resultCanvas(){
   shareRoundedRect(c,65,1391,950,458,27,'#14131d','rgba(190,174,225,.45)');
   c.fillStyle='#b9a7f4';c.font='500 18px Inter, -apple-system, sans-serif';
   c.fillText(report?.company?.name?'YOUR BRAND-VIBE TWIN':'YOUR AURA, YOUR WAY',94,1434);
-  const primary=report?.company?.name||'Your own mix';
-  c.fillStyle='#f5f2f9';c.font='650 43px Inter, -apple-system, sans-serif';
-  const brandLines=shareWordWrap(c,primary,586,2);
-  brandLines.forEach((line,i)=>c.fillText(line,93,1506+i*48));
+  const primary=report?.company?.name
+    ?{name:report.company.name,domain:report.company.domain}
+    :{name:'Your own mix',domain:''};
+  shareHeroCompany(c,primary,images.get(primary.domain));
   c.fillStyle='#a9a2b9';c.font='500 15px Inter, -apple-system, sans-serif';
   c.fillText('A CREATIVE MOODBOARD, NOT A HIRING PREDICTION',95,1589);
   c.strokeStyle='rgba(165,149,195,.38)';c.beginPath();c.moveTo(95,1609);c.lineTo(681,1609);c.stroke();
@@ -634,7 +756,7 @@ async function resultCanvas(){
   c.fillStyle='#ada6c4';c.font='500 15px Inter, -apple-system, sans-serif';
   c.fillText('ORBIT  /  FIND YOUR NEXT CONNECTION',66,1892);
   c.fillStyle='#938ba9';c.font='500 13px Inter, -apple-system, sans-serif';
-  c.textAlign='right';c.fillText('JUST FOR FUN',1013,1892);c.textAlign='left';
+  c.textAlign='right';c.fillText('NOT AFFILIATED WITH SHOWN BRANDS',1013,1892);c.textAlign='left';
   return canvas;
 }
 async function blobForShare(){
