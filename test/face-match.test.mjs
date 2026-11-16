@@ -229,12 +229,24 @@ test('V4 persona presentation maintains five compatible match rows and social ca
   const html=read('face-match/index.html');
   const js=read('face-match/face-match.js');
   assert.match(html,/selects a more specific photo persona and positive tags/);
-  assert.match(html,/Close results blend two style worlds/);
+  assert.match(html,/company logos are visual examples/);
   assert.match(js,/subtitle:'Focused & cinematic'/);
   assert.match(js,/subtitle:'Bright & composed'/);
   assert.match(js,/subtitle:'Cool & playful'/);
   assert.match(js,/subtitle:'Bold & expressive'/);
   assert.match(js,/subtitle:'Warm & upbeat'/);
-  assert.match(js,/\$\('result-title'\)\.textContent=data\.title/);
+  assert.match(js,/function readableHeadline\(data\)/);
+   assert.match(js,/\$\('result-title'\)\.textContent=report\.title/);
   assert.match(js,/shareWordWrap\(c,report\?\.title\|\|'My Career Aura'/);
+});
+
+test('Balanced results retain 3 local brand icons and scoring is expanded by default',()=>{
+ const html=read('face-match/index.html'),js=read('face-match/face-match.js');
+ assert.match(html,/id="fm-scoring-details" class="fm-scoring-details" open hidden/);
+ assert.match(js,/panel\.open=true/);
+ assert.match(html,/COMPANY STYLE EXAMPLES/);
+ assert.match(js,/function illustrationForMatch\(data,match\)/);
+ assert.match(js,/allowedBrand\(data\.company\)\?data\.company:illustrationForMatch\(data,ranked\[0\]\)/);
+ assert.match(js,/COMPANY STYLE INSPIRATION/);
+ assert.match(js,/shareBrandForMatch\(report,ordered\[0\]\)/);
 });
