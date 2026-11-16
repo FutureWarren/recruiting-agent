@@ -56,3 +56,17 @@ test('Portrait-vibe v2 renders real editorial brand logos and positive tags',()=
  assert.doesNotMatch(js,/short-term request limit/);
  assert.match(h,/not your outfit/);
 });
+
+test('Face Match explains the independently scored photo cues',()=>{
+ const html=read('face-match/index.html');
+ const js=read('face-match/face-match.js');
+ const css=read('face-match/face-match.css');
+ assert.match(html,/id="fm-scoring-details"/);
+ assert.match(html,/no category receives an automatic bonus/);
+ assert.match(html,/Ethnicity, clothing and real hiring potential are not scoring criteria/);
+ assert.match(js,/renderScoringDetails\(data\)/);
+ assert.match(js,/data\?\.vibeBreakdown/);
+ assert.match(js,/meter\.setAttribute\('aria-valuenow'/);
+ assert.match(css,/\.fm-scoring-grid/);
+ assert.doesNotMatch(html,/Looking at outfit, color and composition/);
+});
