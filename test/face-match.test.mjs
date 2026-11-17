@@ -172,7 +172,7 @@ test('Default Story always uses own-origin logo assets with fallback and no AI i
   const js=read('face-match/face-match.js');
   assert.match(js,/return slug\?'\/face-match\/brand-logos\/'\+slug\+'\.svg'/);
   assert.match(js,/function shareBrandForMatch\(data,match\)/);
-  assert.match(js,/const brand=shareBrandForMatch\(report,match\)/);
+  assert.match(js,/brand=shareBrandForMatch\(report,match\)/);
   assert.match(js,/shareCompanyTile\(c,brand,images\.get\(brand\?\.domain\)/);
   assert.match(js,/const topBrand=allowedBrand\(report\?\.company\)/);
   assert.match(js,/if\(logo\)\{/);
