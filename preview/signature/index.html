@@ -24,7 +24,7 @@ body:has([data-orbit-download][data-download-state="handoff"]) .mobile-desktop-r
 </style>
 <!-- Mobile-only first-paint handoff. Desktop UA never receives this class. -->
 <script id="orbit-mobile-bootstrap">(()=>{const u=navigator.userAgent||'';if(/Android|iPhone|iPad|iPod/i.test(u)||(/Macintosh/.test(u)&&(navigator.maxTouchPoints||0)>1))document.documentElement.classList.add('orbit-mobile','orbit-mobile-pending')})();</script>
-<link rel="stylesheet" href="/mobile.css?v=resume-first-20261117-1">
+<link rel="stylesheet" href="/mobile.css?v=resume-inline-20261117">
 <script src="/preview/guard.js"></script>
 <link rel="stylesheet" href="/preview/signature/signature.css">
 </head>
@@ -42,14 +42,6 @@ body:has([data-orbit-download][data-download-state="handoff"]) .mobile-desktop-r
     <div class="signature-intro">PERSONAL AI COLD EMAILING · BUILT FOR STUDENTS</div>
     <h1>Your Personal AI<br><span>for Cold Emailing.</span></h1>
     <p class="signature-description">Find alumni and professionals, discover their work emails, and prepare personalized cold email drafts in Gmail. Orbit handles the research and writing. You review and approve before sending.</p>
-    <aside class="resume-first" aria-label="Free Resume Evaluation">
-      <div class="resume-first-copy">
-        <span class="resume-first-kicker">FREE RESUME EVALUATION</span>
-        <strong>Check your resume before your first cold email.</strong>
-        <span>Get AI feedback on strengths, gaps and next steps. Enter an email to unlock the full report.</span>
-      </div>
-      <a class="resume-first-cta" href="/resume-score/?utm_source=orbit_home&amp;utm_medium=hero&amp;utm_campaign=resume_first">Evaluate my resume <span aria-hidden="true">↗</span></a>
-    </aside>
     <div class="actions">
       <a class="btn" id="dl-btn" data-orbit-download href="https://github.com/FutureWarren/recruiting-agent/releases/latest">Download Orbit <span aria-hidden="true">↗</span></a>
       <a class="btn btn-secondary" href="#demo" data-watch-demo>Watch Orbit work <span aria-hidden="true">↗</span></a>
@@ -63,6 +55,14 @@ body:has([data-orbit-download][data-download-state="handoff"]) .mobile-desktop-r
 </header>
 </div><section class="company-section hero-companies" id="companies"><div class="shell"><div class="company-head"><div><div class="kicker">Think beyond your circle</div><p>Explore firms like these.</p></div><div class="company-controls"><button type="button" id="company-prev" aria-label="Previous companies">←</button><button type="button" id="company-next" aria-label="Next companies">→</button></div></div><div class="company-window" tabindex="0" role="region" aria-label="Company examples. Drag horizontally or use the arrow keys."><div class="company-track"><div class="company-set"><span class="company-name serif">J.P. Morgan</span><span class="company-name ">Morgan Stanley</span><span class="company-name bold">Citi</span><span class="company-name serif">UBS</span><span class="company-name bold">PwC</span><span class="company-name serif">Raymond James</span><span class="company-name serif">Barings</span><span class="company-name bold">Barclays</span><span class="company-name ">Standard Chartered</span><span class="company-name serif">BNY Mellon</span><span class="company-name ">SMBC</span><span class="company-name bold">KPMG</span><span class="company-name bold">BCG</span></div></div></div><p class="company-note">Company examples — not endorsements or verified offer outcomes.</p></div></section></div>
 <section id="demo" class="demo-section"><div class="shell demo-showcase"><div class="demo-copy"><div class="kicker">See the product</div><h2>The proof is in the browser.</h2><p>Watch Orbit research LinkedIn profiles, find work emails, and prepare personalized Gmail drafts—not just deliver a list.</p></div><div><div class="video-frame"><div class="video-top"><span>Orbit · product walkthrough / HD</span><span id="video-duration">20s · HD</span></div><video class="demo-video" id="hero-demo" muted autoplay loop playsinline controls preload="metadata" width="1280" height="720" poster="/media/orbit-demo-light-poster.jpg" aria-label="Orbit 20-second light-mode product demo" aria-describedby="demo-transcript"><source src="/media/orbit-demo-light-20261108.mp4" type="video/mp4">Your browser does not support HTML5 video.</video><div class="video-caption"><span>Light-mode demo · 20 seconds · silent, looping</span><a class="text-link" href="/media/orbit-demo-light-20261108.mp4" target="_blank" rel="noopener noreferrer">Open video ↗</a></div><div class="video-fallback" id="video-fallback" hidden>Video unavailable here. <a href="/media/orbit-demo-light-20261108.mp4">Open the MP4 directly</a>.</div></div><p class="demo-illustrative-note">Illustrative product demo. Sending requires your approval.</p><details class="demo-transcript"><summary>What happens in the demo?</summary><p id="demo-transcript">An illustrative light-mode demo of Orbit researching professionals, working in LinkedIn, and handling Gmail outreach and follow-ups. Sending requires your approval; names and results are examples.</p></details></div></div></section>
+<section id="resume-evaluation" class="home-resume" aria-labelledby="home-resume-heading">
+  <div class="home-resume-inner">
+    <p class="home-resume-kicker">01 / FREE RESUME EVALUATION</p>
+    <h2 id="home-resume-heading">Upload your resume. Get real feedback.</h2>
+    <p class="home-resume-intro">Choose a PDF or DOCX below. Orbit will analyze it here, then show your report after an email unlock. No app download required.</p>
+    <iframe id="resume-embed-frame" class="home-resume-frame" title="Upload your resume and view your Orbit evaluation" src="/resume-score/?embedded=1&amp;utm_source=orbit_home&amp;utm_medium=inline&amp;utm_campaign=resume_first" loading="eager" referrerpolicy="strict-origin-when-cross-origin"></iframe>
+  </div>
+</section>
 <section id="how" class="story"><div class="shell story-pin"><div class="story-copy"><div class="kicker">Move through the work</div><h2>You set the goal.<br>Orbit connects<br>the dots.</h2><p>Scroll to follow the task — from a thought to a thoughtful introduction. Scroll back to retrace it.</p><div class="story-steps" aria-label="Workflow chapters"><button class="story-step" type="button" data-step="0" aria-pressed="true"><small>01</small>Your brief</button><button class="story-step" type="button" data-step="1" aria-pressed="false"><small>02</small>Research</button><button class="story-step" type="button" data-step="2" aria-pressed="false"><small>03</small>Contact</button><button class="story-step" type="button" data-step="3" aria-pressed="false"><small>04</small>Your draft</button></div></div>
 <div class="story-stage" data-step="0"><div class="story-top"><span class="brand"><i class="orbit-mark" aria-hidden="true"></i>Orbit</span><span>ILLUSTRATIVE WORKFLOW</span></div><div class="story-scene">
 <article class="scene-layer is-current" data-scene="0"><div class="scene-eyebrow">01 / Start with an intention</div><h3>What are you looking for?</h3><div class="prompt-card">Find NYU alumni in investment banking in New York. Help me introduce myself.</div></article>
@@ -110,7 +110,7 @@ body:has([data-orbit-download][data-download-state="handoff"]) .mobile-desktop-r
 </div>
 <div class="cursor-aura" aria-hidden="true"></div>
 
-<script src="/mobile.js?v=resume-first-20261117" defer></script>
+<script src="/mobile.js?v=resume-inline-20261117" defer></script>
 <script src="/home.js?v=acquisition-v2-20261013" defer></script>
 <script type="module" src="/media/3d/orbit-signature.js"></script>
 </body>

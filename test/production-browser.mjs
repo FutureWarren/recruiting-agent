@@ -13,6 +13,15 @@ const releases=[
   {tag_name:'v9.9.9',assets:[{name:'Orbit-9.9.9-arm64.dmg',size:120000000,browser_download_url:'https://example.test/mac.dmg'}]},
   {tag_name:'v9.9.8',assets:[{name:'Orbit-9.9.8-x64-Setup.exe',size:120000000,browser_download_url:'https://example.test/win.exe'}]}
 ];
+const exampleReport={
+  score:82,rubricVersion:'resume-rubric-v3',verdict:'Relevant experience; improve your quantified results.',
+  inferredDirection:'Investment Banking',
+  ratings:{experience:25,impact:16,relevance:15,clarity:10,skills:7,ats:5,template:4},
+  templateReview:{score:4,pageCount:3,note:'PDF page count checked',issues:[],checked:[]},
+  strengths:[{title:'Finance exposure',evidence:'Relevant finance experience'}],
+  gaps:[{title:'Quantify impact',evidence:'Some bullets lack outcomes',nextStep:'Add verified figures',priority:'high'}],
+  companyTargets:[],percentileNote:'No verified cohort',disclaimer:'Illustrative fit, not hiring odds.'
+};
 async function setup(browser,{ua=UA.phone,width=390,height=844,touch=1,arch='arm',status='delivered',reduced='reduce',releaseFailure=false}={}) {
   const ctx=await browser.newContext({viewport:{width,height},userAgent:ua,hasTouch:touch>0,reducedMotion:reduced});
   const requests=[],errors=[];
@@ -23,6 +32,10 @@ async function setup(browser,{ua=UA.phone,width=390,height=844,touch=1,arch='arm
     if(url.host==='backend-production-2b40.up.railway.app') {
       requests.push({path:url.pathname,body:req.postDataJSON()});
       if(url.pathname==='/api/handoff/start')return route.fulfill({status:status==='error'?500:200,contentType:'application/json',body:JSON.stringify(status==='error'?{error:'Please try again.'}:{emailStatus:status,continueUrl:server.base+'/continue/?token=abcdefghijklmnopqrstuvwx.abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQ'})});
+      if(url.pathname==='/api/resume-score/config')return route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({ready:true,captchaSiteKey:''})});
+      if(url.pathname==='/api/resume-score/analyze')return route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({ready:true,token:'x'.repeat(43)})});
+      if(url.pathname==='/api/resume-score/unlock')return route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({report:exampleReport})});
+      if(url.pathname==='/api/public-tools/view'||url.pathname==='/api/public-tools/event')return route.fulfill({status:204,body:''});
       return route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({firstName:'',goal:'',detail:'',items:[]})});
     }
     return route.abort();
@@ -53,13 +66,16 @@ try {
       for(const [device,width,height,ua,touch] of [['phone',390,844,UA.phone,1],['small-phone',320,568,UA.phone,1],['android',360,740,UA.android,1],['ipad',1024,768,UA.mac,5]]) {
         const t=await setup(browser,{ua,width,height,touch});
         await t.page.goto(server.base+'/?source=internal_test&utm_campaign=approved_design');
-        await t.page.locator('.resume-first-cta').waitFor({state:'visible'});
-        assert.match(await t.page.locator('.resume-first-cta').getAttribute('href'),/^\/resume-score\/\?utm_source=orbit_home/);
+        await t.page.locator('#resume-evaluation').waitFor({state:'visible'});
+        const frame=t.page.frameLocator('#resume-embed-frame');
+        await frame.locator('#resume-file').waitFor({state:'attached'});
+        assert.equal(await t.page.locator('.resume-first,.orbit-mobile-task').count(),0,'no introductory card or task builder');
+        assert.match(await t.page.locator('#resume-embed-frame').getAttribute('src'),/^\/resume-score\/\?embedded=1/);
+        assert.equal(await t.page.locator('#resume-evaluation').evaluate(el=>!!el.closest('.hero-copy')),true,'mobile embed replaces the setup task slot');
         assert.equal(await t.page.locator('#mobile-handoff-modal').isVisible(),false,'no forced email gate before free tool');
         assert.equal(await t.page.locator('main').evaluate(e=>e.inert),false,'landing page is usable');
         assert.equal(t.requests.some(r=>['cta_clicked_v2','email_started_v2'].includes(r.body?.stage)),false,'mere pageview is not form intent');
         noSend(t);
-        await t.page.locator('#orbit-mobile-task').waitFor({state:'visible'});
         assert.equal(await t.page.locator('#hero-demo').evaluate(e=>!!e.closest('.hero-copy')),true,'real demo remains in mobile hero');
         const nativeVideo=await t.page.locator('#hero-demo').evaluate(e=>({
           kind:e.tagName, muted:e.muted, autoplay:e.autoplay, loop:e.loop, playsInline:e.playsInline,
@@ -83,15 +99,25 @@ try {
         }
         noSend(t);await noOverflow(t.page,device);
         assert.equal(t.requests.some(r=>['cta_clicked_v2','email_started_v2'].includes(r.body?.stage)),false);
-        await t.page.locator('#orbit-task-school').fill('NYU');
-        await t.page.locator('#orbit-task-industry').selectOption('Investment Banking');
-        await t.page.locator('.orbit-task-submit').click();
+        if(device==='phone'){
+          await frame.locator('#resume-file').setInputFiles({
+            name:'resume.pdf',mimeType:'application/pdf',
+            buffer:Buffer.from('%PDF-1.7\\n'+'synthetic fixture only\\n'.repeat(60))
+          });
+          await frame.locator('#analyze-button:enabled').click();
+          await frame.locator('#gate-stage:not([hidden])').waitFor();
+          await frame.locator('#unlock-email').fill('fixture@example.test');
+          await frame.locator('#unlock-button').click();
+          await frame.locator('#result-stage:not([hidden])').waitFor();
+          assert.equal(await frame.locator('#overall-score').innerText(),'82');
+          await t.page.waitForFunction(()=>document.getElementById('resume-embed-frame').getBoundingClientRect().height>900);
+          assert.equal(t.requests.some(r=>r.path==='/api/marketing/subscribe'),false,'no marketing opt in');
+        }
+        await t.page.locator('#dl-btn').click();
         await t.page.locator('#mobile-handoff-modal.is-open').waitFor({state:'visible'});
         assert.equal(await t.page.locator('#mobile-handoff-form input').count(),1);
         assert.equal(await t.page.locator('#mobile-handoff-email').isVisible(),true);
-        assert.match(await t.page.locator('#mobile-prepared-task').innerText(),/NYU alumni in Investment Banking/);
-        await expectStage(t,'task_config_started_v3');
-        await expectStage(t,'task_previewed_v3');
+        assert.equal(await t.page.locator('#mobile-prepared-task').count(),0);
         noSend(t);
         await t.page.locator('#mobile-copy-before').click();noSend(t);
         const copied=new URL(await t.page.evaluate(()=>window.__copied));
@@ -117,12 +143,12 @@ try {
         assert.equal(calls[0].body.platform,'mobile');
         assert.equal(calls[0].body.funnelVersion,2);
         assert.equal(calls[0].body.firstName,undefined);
-        assert.match(calls[0].body.goal,/NYU alumni in Investment Banking/);
-        assert.match(calls[0].body.detail,/Do not send messages without my approval/);
+        assert.equal(calls[0].body.goal,undefined,'homepage does not pre-create networking tasks');
+        assert.equal(calls[0].body.detail,undefined);
         assert.equal(await t.page.locator('#mobile-handoff-copy').isVisible(),true);
         assert.deepEqual(t.errors,[]);
         await t.page.screenshot({path:`artifacts/production-review/${name}-${device}.png`});
-        await t.ctx.close();console.log(`PASS ${name} ${device}: resume-first page, real video, optional networking task + explicit handoff, mocked submit, layout`);
+        await t.ctx.close();console.log(`PASS ${name} ${device}: real inline resume upload/result, demo, explicit desktop handoff, mocked submit, layout`);
       }
       for(const status of ['accepted','failed','error']) {
         const t=await setup(browser,{status});await t.page.goto(server.base);
@@ -140,7 +166,10 @@ try {
         const t=await setup(browser,{ua,arch,touch:0,width:1280,height:800});await t.page.goto(server.base);
         await t.page.waitForFunction(()=>!['loading',undefined].includes(document.querySelector('#dl-btn').dataset.downloadState));
         for(const a of await t.page.locator('[data-orbit-download]').all()) assert.equal(await a.getAttribute('href'),expected);
-        assert.equal(await t.page.locator('#mobile-handoff-modal').isVisible(),false);noSend(t);await noOverflow(t.page,device);assert.deepEqual(t.errors,[]);await t.ctx.close();
+        assert.equal(await t.page.locator('#mobile-handoff-modal').isVisible(),false);
+        assert.equal(await t.page.locator('#resume-evaluation').isVisible(),true,'desktop has full inline evaluator');
+        assert.equal(await t.page.locator('#resume-evaluation').evaluate(el=>!!el.closest('.hero-copy')),false);
+        assert.equal(await t.page.locator('.resume-first').count(),0);noSend(t);await noOverflow(t.page,device);assert.deepEqual(t.errors,[]);await t.ctx.close();
         console.log(`PASS ${name} ${device}: installer routing and desktop isolation`);
       }
       const fallback=await setup(browser,{ua:UA.mac,arch:'arm',touch:0,releaseFailure:true});await fallback.page.goto(server.base);await fallback.page.waitForFunction(()=>document.querySelector('#dl-btn').dataset.downloadState==='fallback');assert.equal(await fallback.page.locator('#dl-btn').getAttribute('href'),'https://github.com/FutureWarren/recruiting-agent/releases');await fallback.ctx.close();

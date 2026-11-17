@@ -1,0 +1,13 @@
+/* Same Resume Evaluation product, presented directly in the homepage slot. */
+html.resume-embedded,html.resume-embedded body{margin:0;padding:0;background:transparent;min-height:0;overflow-x:hidden}
+html.resume-embedded .topbar,html.resume-embedded .rs-hero,
+html.resume-embedded .rs-footer,html.resume-embedded .site-footer,
+html.resume-embedded .site-skip{display:none!important}
+html.resume-embedded .rs-page{max-width:none;padding:0!important;margin:0 auto;width:100%;min-height:0}
+html.resume-embedded .rs-surface{margin:0;padding:clamp(19px,4vw,36px);border:1px solid rgba(190,179,247,.28);border-radius:19px;box-shadow:none;background:linear-gradient(130deg,#181923,#11131b)}
+html.resume-embedded .rs-step{margin-bottom:21px}
+html.resume-embedded .rs-drop{min-height:165px;margin:19px 0;padding:22px 14px}
+html.resume-embedded .rs-surface h2{font-size:clamp(23px,3.3vw,32px)}
+html.resume-embedded .rs-button{width:100%;min-height:51px}
+html.resume-embedded .rs-footnote{margin-top:14px}
+@media(max-width:760px){html.resume-embedded .rs-page{padding:0!important}html.resume-embedded .rs-surface{padding:21px 17px;border-radius:16px}html.resume-embedded .rs-drop{min-height:150px}html.resume-embedded .rs-step{gap:9px}}

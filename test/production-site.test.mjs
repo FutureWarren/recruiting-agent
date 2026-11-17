@@ -25,7 +25,7 @@ test('Production Resume Score uses Orbit brand master assets after the shared-pa
   assert.doesNotMatch(resume,/class="orbit-mark"/,'generic logo must not overwrite approved Orbit branding');
   assert.match(await read('dist/resume-score/orbit-mark.svg'),/fill="#5c5cf2"/);
 });
-test('Deployed Hero positions Orbit as a personal cold email agent without misrepresenting sending',()=>{
+test('Deployed Hero positions Orbit as a personal cold email agent without misrepresenting sending',async()=>{
   assert.match(html, /<title>Orbit — Your Personal AI for Cold Emailing<\/title>/);
   assert.match(html, /property="og:title" content="Orbit — Your Personal AI for Cold Emailing"/);
   assert.match(html, /name="twitter:title" content="Orbit — Your Personal AI for Cold Emailing"/);
@@ -39,8 +39,13 @@ test('Deployed Hero positions Orbit as a personal cold email agent without misre
   assert.match(html, /Cold emailing\.<br><span>Without the busywork\.<\/span>/);
   assert.match(html, /Your next cold email<br><span>starts here\.<\/span>/);
   assert.match(html, /id="dl-btn" data-orbit-download/);
-  assert.match(html,/class="resume-first-cta" href="\/resume-score\/\?utm_source=orbit_home&amp;utm_medium=hero&amp;utm_campaign=resume_first"/);
-  assert.match(html,/FREE RESUME EVALUATION/);
+  assert.doesNotMatch(html,/class="resume-first"/);
+  assert.match(html,/id="resume-evaluation"/);
+  assert.match(html,/id="resume-embed-frame"[^>]+src="\/resume-score\/\?embedded=1/);
+  assert.match(html,/01 \/ FREE RESUME EVALUATION/);
+  assert.ok(html.indexOf('id="demo"')<html.indexOf('id="resume-evaluation"'));
+  assert.ok(html.indexOf('id="resume-evaluation"')<html.indexOf('id="companies"'));
+  assert.match(await read('dist/resume-score/index.html'),/\/resume-score\/embed\.js/);
   assert.match(html, /id="hero-demo"/);
   assert.doesNotMatch(html, /Install the Orbit Chrome Extension|Run in your browser with no install/);
 });

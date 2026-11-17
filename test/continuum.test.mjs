@@ -21,9 +21,10 @@ test('Approved Hero positioning keeps the signature scene and product controls i
   const hero = html.match(/<header class="hero signature-hero">[\s\S]*?<\/header>/)?.[0];
   assert.ok(hero, 'Hero exists');
   assert.match(hero, /<h1>Your Personal AI<br><span>for Cold Emailing\.<\/span><\/h1>/);
-  for (const phrase of ['PERSONAL AI COLD EMAILING · BUILT FOR STUDENTS', 'personalized cold email drafts in Gmail', 'You review and approve before sending.', 'data-orbit-download', 'data-continuum-scene', 'FREE RESUME EVALUATION', 'Evaluate my resume']) assert.ok(hero.includes(phrase), phrase);
-  assert.match(hero,/href="\/resume-score\/\?utm_source=orbit_home&amp;utm_medium=hero&amp;utm_campaign=resume_first"/);
-  assert.match(await read('mobile.js'),/02 \/ NEXT: TRY NETWORKING/);
+  for (const phrase of ['PERSONAL AI COLD EMAILING · BUILT FOR STUDENTS', 'personalized cold email drafts in Gmail', 'You review and approve before sending.', 'data-orbit-download', 'data-continuum-scene']) assert.ok(hero.includes(phrase), phrase);
+  assert.doesNotMatch(hero,/resume-first|FREE RESUME EVALUATION/);
+  assert.match(await read('mobile.js'),/copy\.insertBefore\(resumeSection, copy\.querySelector\('\.actions'\)\)/);
+  assert.doesNotMatch(await read('mobile.js'),/orbit-task-school|orbit-mobile-task/);
   assert.match(await read('mobile.js'),/Value first: no automatic email sheet on landing/);
   assert.doesNotMatch(await read('mobile.css'),/orbit-mobile-pending #mobile-handoff-modal\[hidden\]/);
   assert.match(html, /<title>Orbit — Your Personal AI for Cold Emailing<\/title>/);
@@ -37,9 +38,16 @@ test('Approved Hero positioning keeps the signature scene and product controls i
     ['preview/signature/signature.css', '69d415d7157ab9252f73d2830226424f97ad50d08ba7022b892e91a661913ef3'],
   ]) assert.equal(sha(await read(file)), expected, file);
 });
-test('Hero/company strip goes directly to demo, then results and one email example', () => {
+test('Hero flows directly to Demo and the real inline Resume Evaluation', async () => {
   const ids = [...html.matchAll(/<section\b[^>]*id="([^"]+)"/g)].map(m => m[1]);
-  assert.deepEqual(ids, ['companies', 'demo', 'numbers', 'profile', 'download']);
+  assert.deepEqual(ids, ['demo', 'resume-evaluation', 'companies', 'numbers', 'profile', 'download']);
+  const heroIndex=html.indexOf('<header class="hero signature-hero">');
+  const demoIndex=html.indexOf('<section id="demo"');
+  const resumeIndex=html.indexOf('<section id="resume-evaluation"');
+  assert.ok(heroIndex<demoIndex&&demoIndex<resumeIndex,'Hero then Demo then inline Resume Evaluation');
+  assert.match(html,/id="resume-embed-frame"[^>]+src="\/preview\/continuum\/resume-score\/\?embedded=1/);
+  assert.doesNotMatch(html,/class="resume-first"|id="orbit-mobile-task"/);
+  assert.match(await read('resume-score/embed.js'),/orbit:resume-embed-height/);
   assert.doesNotMatch(html, /class="story"|id="security"|id="recruiting-resources"/);
   assert.equal((html.match(/class="stat motion-reveal"/g) || []).length, 2);
   assert.equal((html.match(/class="email-example"/g) || []).length, 1);
@@ -106,7 +114,7 @@ test('Dark product surfaces and contrasting white closing ring are present', asy
   assert.match(html, /class="closing-orbit closing-sculpture" aria-hidden="true"/);
   assert.match(html, /id="ceramic-face"/);
   assert.match(css, /\.continuum-dark \.closing-sculpture \{[^}]*border:0/);
-  assert.match(html, /<\/header>\s*<\/div><\/div><section class="company-section/);
+  assert.ok(html.indexOf('id="demo"') < html.indexOf('id="resume-evaluation"') && html.indexOf('id="resume-evaluation"') < html.indexOf('id="companies"'),'company examples sit after the direct product flow');
   assert.match(css, /\.ambient-orbit \{[^}]*pointer-events:none/);
 });
 test('Ambient model is lazy, desktop-only animated, capped and included in cleanup', async () => {
