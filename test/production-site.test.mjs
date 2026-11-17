@@ -26,10 +26,10 @@ test('Production Resume Score uses Orbit brand master assets after the shared-pa
   assert.match(await read('dist/resume-score/orbit-mark.svg'),/fill="#5c5cf2"/);
 });
 test('Deployed Hero positions Orbit as a personal cold email agent without misrepresenting sending',()=>{
-  assert.match(html, /<title>Orbit — Your Personal AI Cold Email Agent<\/title>/);
-  assert.match(html, /property="og:title" content="Orbit — Your Personal AI Cold Email Agent"/);
-  assert.match(html, /name="twitter:title" content="Orbit — Your Personal AI Cold Email Agent"/);
-  assert.match(html, /<h1>Your Personal AI<br><span>Cold Email Agent\.<\/span><\/h1>/);
+  assert.match(html, /<title>Orbit — Your Personal AI for Cold Emailing<\/title>/);
+  assert.match(html, /property="og:title" content="Orbit — Your Personal AI for Cold Emailing"/);
+  assert.match(html, /name="twitter:title" content="Orbit — Your Personal AI for Cold Emailing"/);
+  assert.match(html, /<h1>Your Personal AI<br><span>for Cold Emailing\.<\/span><\/h1>/);
   assert.match(html, /PERSONAL AI COLD EMAILING · BUILT FOR STUDENTS/);
   assert.match(html, /Find alumni and professionals, discover their work emails/);
   assert.match(html, /LinkedIn/);
