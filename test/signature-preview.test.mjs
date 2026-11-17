@@ -15,7 +15,8 @@ test('Hero and business copy remain intact around approved light-mode demo',()=>
     const end=html.indexOf('</details>',start);
     assert.ok(start>=0&&end>=0,'expected media+transcript block');
     return (html.slice(0,start)+'<APPROVED_DEMO>'+html.slice(end+'</details>'.length))
-      .replace('/mobile.js?v=resume-first-20261117','/mobile.js?v=mobile-first-20261013-1');
+      .replace(/<section id="resume-evaluation"[\s\S]*?<\/section>\n/, '')
+      .replace('/mobile.js?v=resume-inline-20261117','/mobile.js?v=mobile-first-20261013-1');
   };
   const normalized=normalize(after)
     .replace('<h2>The proof is in the browser.</h2>', '<h2>Watch Orbit get to work.</h2>')
@@ -26,12 +27,14 @@ test('Hero and business copy remain intact around approved light-mode demo',()=>
   assert.ok(!after.includes('share.descript.com'));
   assert.ok(after.includes('Sending requires your approval'));
 });
-test('Existing downloads, mobile handoff, and base styles are unchanged',async()=>{
+test('Existing download and mobile handoff entrypoints remain intact',async()=>{
   for(const file of ['home.js','mobile.js','home.css','mobile.css']) {
     const original=execFileSync('git',['show','HEAD:'+file],{encoding:'utf8'});
     assert.equal(await read(file),original,file);
   }
   assert.equal((after.match(/data-orbit-download/g)||[]).length,(before.match(/data-orbit-download/g)||[]).length);
+  assert.ok(after.includes('id="resume-embed-frame"'));
+  assert.ok(!after.includes('class="resume-first"'));
 });
 test('Preview is guarded against external writes and does not load the rejected theme',async()=>{
   assert.match(after,/src="\/preview\/guard.js"/);
