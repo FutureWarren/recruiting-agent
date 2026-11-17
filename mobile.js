@@ -70,110 +70,11 @@
   });
   video.addEventListener('play', () => { videoFallback.hidden = true; });
 
-  // The first visitor action is a free Resume Evaluation; optional networking task follows the demo.
-  const composer = document.createElement('section');
-  composer.id = 'orbit-mobile-task';
-  composer.className = 'orbit-mobile-task';
-  composer.setAttribute('aria-labelledby', 'orbit-mobile-task-title');
-  composer.innerHTML = [
-    '<div class="orbit-task-eyebrow">02 / NEXT: TRY NETWORKING</div>',
-    '<h2 id="orbit-mobile-task-title">Next, find alumni in your field.</h2>',
-    '<p>After your resume review, choose a school and an industry. Orbit will prepare a networking task to run on your computer.</p>',
-    '<form id="orbit-mobile-task-form" novalidate>',
-    '<div class="orbit-task-fields">',
-    '<label for="orbit-task-school">Your university<input id="orbit-task-school" name="school" type="text" placeholder="e.g. NYU" autocomplete="organization" maxlength="55" required></label>',
-    '<label for="orbit-task-industry">Target industry<select id="orbit-task-industry" name="industry"><option value="Investment Banking">Investment Banking</option><option value="Consulting">Consulting</option><option value="Private Equity">Private Equity</option><option value="Technology">Technology</option><option value="Asset Management">Asset Management</option><option value="Marketing">Marketing</option><option value="Other professional fields">Other</option></select></label>',
-    '</div>',
-    '<p class="orbit-task-error" id="orbit-task-error" role="alert" hidden></p>',
-    '<button type="submit" class="orbit-task-submit">Prepare my networking task <span aria-hidden="true">→</span></button>',
-    '</form>',
-    '<p class="orbit-task-fine">No LinkedIn or Gmail password on this website. You will review drafts before sending.</p>'
-  ].join('');
-  caption.after(composer);
-  const taskForm = composer.querySelector('#orbit-mobile-task-form');
-  const school = composer.querySelector('#orbit-task-school');
-  const industry = composer.querySelector('#orbit-task-industry');
-  const taskError = composer.querySelector('#orbit-task-error');
-  let preparedTask = null;
-  const markedStages = new Set();
-  const recordStage = stage => {
-    if (markedStages.has(stage) || typeof handoffApi !== 'function') return;
-    markedStages.add(stage);
-    void handoffApi('/api/handoff/event', {
-      visitorId: handoffVisitor(), stage, ...handoffAttribution()
-    }).catch(() => {});
-  };
-  window.orbitMobileTask = () => preparedTask ? {...preparedTask} : null;
-  const invalidate = () => { preparedTask = null; taskError.hidden = true; recordStage('task_config_started_v3'); };
-  school.addEventListener('input', invalidate);
-  industry.addEventListener('change', invalidate);
-  // Track a genuine play event; native HTML5 loop playback is observable.
-  video.addEventListener('play', () => recordStage('demo_played_v3'), {once:true});
-  full.addEventListener('click', () => recordStage('demo_opened_v3'), {once:true});
-  taskForm.addEventListener('submit', event => {
-    event.preventDefault();
-    const university = school.value.trim().replace(/\s+/g, ' ').slice(0, 55);
-    if (!university) {
-      taskError.textContent = 'Add your university so Orbit knows which alumni to look for.';
-      taskError.hidden = false;
-      school.focus();
-      return;
-    }
-    taskError.hidden = true;
-    const field = industry.value;
-    preparedTask = {
-      goal: 'Connect with ' + university + ' alumni in ' + field,
-      detail: 'Find up to 5 relevant alumni on LinkedIn, research their professional backgrounds, avoid duplicate contacts, look for available work emails, and prepare personalized networking email drafts for my review. Do not send messages without my approval.'
-    };
-    const title = document.getElementById('mobile-handoff-title');
-    const intro = document.querySelector('#mobile-handoff-form-state > p');
-    title.textContent = 'Your first task is ready.';
-    intro.textContent = 'Email this prepared task to yourself, then open it on your Mac or Windows computer.';
-    let summary = document.getElementById('mobile-prepared-task');
-    if (!summary) {
-      summary = document.createElement('p');
-      summary.id = 'mobile-prepared-task';
-      summary.className = 'mobile-prepared-task';
-      intro.after(summary);
-    }
-    summary.textContent = preparedTask.goal + '. ' + preparedTask.detail;
-    // This is intentionally an example, NOT a fabricated real AI result.
-    // Users still need the desktop app to discover verified people and produce drafts.
-    let preview = document.getElementById('mobile-illustrative-email');
-    if (!preview) {
-      preview = document.createElement('details');
-      preview.id = 'mobile-illustrative-email';
-      preview.className = 'mobile-illustrative-email';
-      const toggle = document.createElement('summary');
-      toggle.textContent = 'Preview an example email (illustrative only)';
-      const message = document.createElement('p');
-      message.className = 'mobile-example-message';
-      preview.append(toggle, message);
-      summary.after(preview);
-    }
-    preview.querySelector('.mobile-example-message').textContent =
-      'Subject: Fellow ' + university + ' student exploring ' + field +
-      '\n\nHi [Name], I’m a ' + university + ' student interested in ' + field +
-      '. I would love to learn about your experience and career path. Would you be open to a brief conversation?\n\n' +
-      'Example only: no person has been researched, and no email has been sent.';
-    recordStage('task_previewed_v3');
-    window.dispatchEvent(new Event('orbit:open-handoff'));
-  });
-  // Existing download links remain present for no-JS/desktop users. On phones,
-  // each call-to-action leads to the composer instead of a forced email modal.
-  document.querySelectorAll('[data-orbit-download]').forEach(button => {
-    button.addEventListener('click', event => {
-      if (button.dataset.downloadState !== 'handoff') return;
-      event.preventDefault();
-      event.stopImmediatePropagation();
-      recordStage('cta_clicked_v2');
-      if (preparedTask) {
-        window.dispatchEvent(new Event('orbit:open-handoff'));
-      } else {
-        composer.scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'center'});
-      }
-    }, {capture:true});
-  });
+  // On phones the real product video stays directly after the Hero copy;
+  // move the shared inline Resume Evaluation into the former task-builder slot.
+  const resumeSection = document.getElementById('resume-evaluation');
+  if (resumeSection) copy.insertBefore(resumeSection, copy.querySelector('.actions'));
+  // Network outreach is offered later from the actual resume results, not a setup form here.
   // Mobile-safe native playback: muted autoplay + playsinline + loop, no branding overlay.
   video.muted = true;
   video.autoplay = true;
@@ -297,7 +198,7 @@
   fitKeyboard();
   // home.js initializes the existing device routing first; only change phone labels afterward.
   document.addEventListener('DOMContentLoaded', () => {
-    document.querySelectorAll('[data-orbit-download]').forEach(button => { if (button.dataset.downloadState === 'handoff') button.textContent = 'Prepare networking task →'; });
+    document.querySelectorAll('[data-orbit-download]').forEach(button => { if (button.dataset.downloadState === 'handoff') button.textContent = 'Get Orbit →'; });
     document.getElementById('dl-meta').textContent = 'Mac (M1+) · Windows x64 beta · 100 free credits';
   }, {once:true});
 })();
