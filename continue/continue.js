@@ -88,7 +88,7 @@ function fail(message){document.body.classList.add('error');$('eyebrow').textCon
   }else if(supportsInstaller&&platform==='win'){
     $('download').textContent='Finding the latest Windows build…';
     try{const url=await installer('win');$('download').href=url;$('download').classList.remove('disabled');$('download').innerHTML='Download Orbit for Windows <b>↗</b>'}catch(_){$('download').href='https://github.com/'+REPO+'/releases';$('download').classList.remove('disabled');$('download').innerHTML='View Windows downloads <b>↗</b>'}
-    $('status').textContent='Windows x64 beta is currently unsigned, so SmartScreen may show an Unknown Publisher warning. After installing, return here and open Orbit to continue your saved setup.';
+    $('status').textContent='Windows x64 beta is currently unsigned, so SmartScreen may show an Unknown Publisher warning. The first install can take several minutes. Keep the installer window open until it finishes. After installing, return here and open Orbit to continue your saved setup.';
   }else{
     download.href='#';download.innerHTML='Copy / share desktop link <b>↗</b>';
     openApp.hidden=true;

@@ -36,14 +36,14 @@ async function initDownload(){
   const v=asset.name.match(/\d+\.\d+\.\d+/)?.[0]||String(release.tag_name||'').replace(/^v/,'');
   if(os==='win'){
    buttons.forEach(b=>{b.href=asset.browser_download_url;b.removeAttribute('aria-disabled');b.dataset.downloadState='ready';label(b,'Download for Windows (x64) ↗','Get Orbit ↗');b.setAttribute('aria-label','Download Orbit for Windows x64 beta')});
-   meta.textContent='Version '+v+' · '+Math.round(asset.size/1048576)+' MB · Windows x64 beta · '+allowance+' · unsigned installer (SmartScreen may warn)';
+   meta.textContent='Version '+v+' · '+Math.round(asset.size/1048576)+' MB · Windows x64 beta · '+allowance+' · unsigned installer (SmartScreen may warn) · first install can take several minutes, keep the installer open';
   }else{
    buttons.forEach(b=>{b.href=asset.browser_download_url;b.removeAttribute('aria-disabled');b.dataset.downloadState='ready';label(b,'Download for Mac (Apple Silicon) ↗','Get Orbit ↗');b.setAttribute('aria-label','Download Orbit for Apple Silicon Mac')});
    meta.textContent='Version '+v+' · '+Math.round(asset.size/1048576)+' MB · Apple Silicon Mac · '+allowance+(arch?'':' · check your Mac chip');
   }
  }catch(_){
   buttons.forEach(b=>{b.href='https://github.com/'+REPO+'/releases';b.removeAttribute('aria-disabled');b.dataset.downloadState='fallback';label(b,os==='win'?'View Windows downloads ↗':'View Mac downloads ↗','Get Orbit ↗')});
-  meta.textContent=(os==='win'?'Windows x64 beta · unsigned installer (SmartScreen may warn)':'Apple Silicon Mac')+' · '+allowance+' · open releases to choose the latest installer';
+  meta.textContent=(os==='win'?'Windows x64 beta · unsigned installer (SmartScreen may warn) · first install can take several minutes, keep the installer open':'Apple Silicon Mac')+' · '+allowance+' · open releases to choose the latest installer';
  }finally{clearTimeout(timer)}
 }
 
