@@ -16,6 +16,9 @@ try{
   if(req.url().endsWith('/resolve'))return route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({firstName:'',goal:'',detail:''})})
   return route.fulfill({status:204,body:''})
  })
+ // Embedded résumé can check availability, but the test must never reach a live provider.
+ await ctx.route('https://backend-production-2b40.up.railway.app/api/resume-score/**',
+   route=>route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({ready:true,captchaSiteKey:''})}))
  await page.goto(server.base+'/?source=nyu_library&utm_campaign=launch',{waitUntil:'domcontentloaded'})
  await page.waitForSelector('#resume-evaluation')
  assert.match(await page.locator('#resume-embed-frame').getAttribute('src'),/^\/resume-score\/\?embedded=1/)
