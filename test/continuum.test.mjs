@@ -20,9 +20,13 @@ test('Approved Hero positioning keeps the signature scene and product controls i
   const sha = value => createHash('sha256').update(value).digest('hex');
   const hero = html.match(/<header class="hero signature-hero">[\s\S]*?<\/header>/)?.[0];
   assert.ok(hero, 'Hero exists');
-  assert.match(hero, /<h1>No black-box outreach\.<br><span>No AI to babysit\.<\/span><\/h1>/);
-  for (const phrase of ['THE AI NETWORKING AGENT BUILT FOR STUDENTS', 'Watch it work in a real browser', 'You approve before sending.', 'data-orbit-download', 'data-continuum-scene']) assert.ok(hero.includes(phrase), phrase);
-  assert.match(html, /<title>Orbit — AI Networking Agent for Students<\/title>/);
+  assert.match(hero, /<h1>Your Personal AI<br><span>Cold Email Agent\.<\/span><\/h1>/);
+  for (const phrase of ['PERSONAL AI COLD EMAILING · BUILT FOR STUDENTS', 'personalized cold email drafts in Gmail', 'You review and approve before sending.', 'data-orbit-download', 'data-continuum-scene']) assert.ok(hero.includes(phrase), phrase);
+  assert.match(html, /<title>Orbit — Your Personal AI Cold Email Agent<\/title>/);
+  assert.match(html, /property="og:title" content="Orbit — Your Personal AI Cold Email Agent"/);
+  assert.match(html, /name="twitter:title" content="Orbit — Your Personal AI Cold Email Agent"/);
+  assert.match(html, /Cold emailing\.<br><span>Without the busywork\.<\/span>/);
+  assert.match(html, /Cold emails\.<br><span>Still personal\.<\/span>/);
   for (const [file, expected] of [
     ['src/continuum-scene.js', '4fea797545977a30b7b552bf6f87ec672d2f1fa336f8f408c532c21d11076c2a'],
     ['src/signature-model.js', '3579bee26cead425210c961655edc027149a1f111b485a6ba8b8c1ff28a367b7'],
