@@ -517,3 +517,27 @@ html.orbit-mobile .hero-copy video.demo-video {
   margin:11px auto 0;max-width:1120px;padding:0 4px;
   color:#8a8996;font-size:11px;line-height:1.5;text-align:center;
 }
+
+/* Value-first acquisition: invite free resume feedback before task setup. */
+.continuum .resume-first{
+  display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:18px;
+  width:min(790px,100%);margin:24px auto 20px;padding:18px 20px;
+  border-radius:18px;border:1px solid rgba(179,160,245,.36);
+  background:linear-gradient(115deg,rgba(134,109,224,.17),rgba(33,31,48,.8));
+  text-align:left;
+}
+.continuum .resume-first-copy{display:grid;gap:5px;min-width:0}
+.continuum .resume-first-kicker{font-size:10px;font-weight:750;letter-spacing:.13em;color:#beb2ff}
+.continuum .resume-first-copy strong{font-size:17px;line-height:1.3;letter-spacing:-.02em;color:#f7f5ff}
+.continuum .resume-first-copy>span:last-child{font-size:12px;line-height:1.5;color:#bdb8c9}
+.continuum .resume-first-cta{
+  display:inline-flex;align-items:center;justify-content:center;gap:9px;
+  padding:14px 17px;min-height:49px;border-radius:12px;white-space:nowrap;
+  background:#cbc4ff;color:#181429;text-decoration:none;font-size:13px;font-weight:750;
+}
+.continuum .resume-first-cta:hover{background:#e2dcff}
+.continuum .resume-first-cta:focus-visible{outline:3px solid #fff;outline-offset:3px}
+@media(max-width:700px){
+  .continuum .resume-first{grid-template-columns:1fr;padding:17px;gap:14px;margin:19px auto 15px}
+  .continuum .resume-first-cta{width:100%}
+}
