@@ -25,7 +25,7 @@ const icons = {
 const icon = name => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" aria-hidden="true">${icons[name]}</svg>`;
 
 export const personalDemo = `<section id="profile" class="personal-section concise-personal"><div class="shell">
-  <div class="personal-heading motion-reveal"><h2>A personal email.<br><span>Not a template.</span></h2><p>A little of you. A reason to connect.</p></div>
+  <div class="personal-heading motion-reveal"><h2>Cold emails.<br><span>Still personal.</span></h2><p>Your background. Their work. A real reason to connect.</p></div>
   <div class="personal-studio" data-email-story data-phase="3" aria-label="Illustrative personalized email walkthrough">
     <div class="source-stack" role="group" aria-label="Explore what shapes the draft">
       <button class="source-card" type="button" data-story-phase="0" aria-pressed="false" aria-controls="email-example-title"><span class="source-icon">${icon('resume')}</span><span class="source-content"><small>Your résumé</small><strong>Jamie Chen</strong><span>NYU · Finance</span><span class="source-evidence">Student healthcare fund</span></span><span class="source-arrow" aria-hidden="true">↗</span></button>
