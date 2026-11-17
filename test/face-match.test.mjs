@@ -126,10 +126,25 @@ test('Export is a 9:16 Orbit Story with original brand mark and offline URL QR',
  assert.match(js,/FACE_MATCH_QR_PACKED=/);
  assert.match(js,/function shareQR\(ctx,x,y,side\)/);
  assert.match(js,/ctx\.fillRect\(sx\+col\*unit,sy\+row\*unit,unit,unit\)/);
- assert.match(js,/c\.arc\(93,107,23/);
- assert.match(js,/c\.arc\(93,71,7/);
+ assert.match(js,/c\.arc\(95,1464,27\.3/);
+ assert.match(js,/c\.arc\(84\.3,1438\.9,8\.4/);
  assert.match(js,/async function blobForShare\(\)/);
  assert.doesNotMatch(js,/www\.google\.com\/s2\/favicons[^\n]*resultCanvas/);
+});
+
+
+test('Shared Story uses Orbit comic style without changing the original selfie or result',()=>{
+  const js=read('face-match/face-match.js');
+  assert.match(js,/function comicStoryHalftone\(ctx,x,y,w,h/);
+  assert.match(js,/function comicStoryBurst\(ctx,cx,cy/);
+  assert.match(js,/WHICH COMPANY/);
+  assert.match(js,/MATCHES YOUR FACE\?/);
+  assert.match(js,/#5B4CE6/);
+  assert.match(js,/shareCoverImage\(c,img,76,505,471,452,0\)/);
+  assert.match(js,/const ordered=\[\.\.\.\(report\?\.matches\|\|\[\]\)\]/);
+  assert.match(js,/const topBrand=allowedBrand\(report\?\.company\)/);
+  assert.match(js,/orbit-face-match-story\.png/);
+  assert.doesNotMatch(js,/https?:\/\/.*s2\/favicons/);
 });
 
 test('Every Face Match Story company domain has a local, self-contained vector logo',()=>{
@@ -144,7 +159,7 @@ test('Every Face Match Story company domain has a local, self-contained vector l
   }
   assert.match(js,/SHARE_BRAND_LOGOS=Object\.freeze/);
   assert.match(js,/function shareCompanyTile\(ctx,brand,logo/);
-  assert.match(js,/function shareHeroCompany\(ctx,brand,logo/);
+  assert.match(js,/function comicStoryPaper\(ctx,x,y,w,h/);
   assert.match(js,/function shareLogoImage\(brand\)/);
   assert.match(js,/const images=await shareImagesForReport\(report\)/);
   assert.match(js,/void shareImagesForReport\(data\)/);
@@ -159,11 +174,11 @@ test('Default Story always uses own-origin logo assets with fallback and no AI i
   assert.match(js,/function shareBrandForMatch\(data,match\)/);
   assert.match(js,/const brand=shareBrandForMatch\(report,match\)/);
   assert.match(js,/shareCompanyTile\(c,brand,images\.get\(brand\?\.domain\)/);
-  assert.match(js,/shareHeroCompany\(c,primary,images\.get\(primary\.domain\)/);
+  assert.match(js,/const topBrand=allowedBrand\(report\?\.company\)/);
   assert.match(js,/if\(logo\)\{/);
   assert.match(js,/ctx\.fillText\(label/);
   assert.doesNotMatch(js,/drawImage\([^)]*officialFaviconUrl/,'external favicons are never used for Canvas');
-  assert.match(js,/NOT AFFILIATED WITH SHOWN BRANDS/);
+  assert.match(js,/NO COMPANY AFFILIATION/);
 });
 
 test('Live Face Match results use the same all-15 local vector assets as Story export',()=>{
@@ -237,7 +252,7 @@ test('V4 persona presentation maintains five compatible match rows and social ca
   assert.match(js,/subtitle:'Warm & upbeat'/);
   assert.match(js,/function readableHeadline\(data\)/);
    assert.match(js,/\$\('result-title'\)\.textContent=report\.title/);
-  assert.match(js,/shareWordWrap\(c,report\?\.title\|\|'My Career Aura'/);
+  assert.match(js,/const headline=String\(report\?\.title\|\|'My photo style'\)/);
 });
 
 test('Balanced results retain 3 local brand icons and scoring is expanded by default',()=>{
@@ -247,6 +262,6 @@ test('Balanced results retain 3 local brand icons and scoring is expanded by def
  assert.match(html,/COMPANY STYLE EXAMPLES/);
  assert.match(js,/function illustrationForMatch\(data,match\)/);
  assert.match(js,/allowedBrand\(data\.company\)\?data\.company:illustrationForMatch\(data,ranked\[0\]\)/);
- assert.match(js,/COMPANY STYLE INSPIRATION/);
+ assert.match(js,/MY COMPANY-STYLE EXAMPLE:/);
  assert.match(js,/shareBrandForMatch\(report,ordered\[0\]\)/);
 });
