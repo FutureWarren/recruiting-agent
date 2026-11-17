@@ -25,15 +25,19 @@ test('Production Resume Score uses Orbit brand master assets after the shared-pa
   assert.doesNotMatch(resume,/class="orbit-mark"/,'generic logo must not overwrite approved Orbit branding');
   assert.match(await read('dist/resume-score/orbit-mark.svg'),/fill="#5c5cf2"/);
 });
-test('Deployed Hero differentiates transparent execution from generic DIY AI workflows',()=>{
-  assert.match(html, /<title>Orbit — AI Networking Agent for Students<\/title>/);
-  assert.match(html, /<h1>No black-box outreach\.<br><span>No AI to babysit\.<\/span><\/h1>/);
-  assert.match(html, /THE AI NETWORKING AGENT BUILT FOR STUDENTS/);
-  assert.match(html, /Watch it work in a real browser/);
+test('Deployed Hero positions Orbit as a personal cold email agent without misrepresenting sending',()=>{
+  assert.match(html, /<title>Orbit — Your Personal AI Cold Email Agent<\/title>/);
+  assert.match(html, /property="og:title" content="Orbit — Your Personal AI Cold Email Agent"/);
+  assert.match(html, /name="twitter:title" content="Orbit — Your Personal AI Cold Email Agent"/);
+  assert.match(html, /<h1>Your Personal AI<br><span>Cold Email Agent\.<\/span><\/h1>/);
+  assert.match(html, /PERSONAL AI COLD EMAILING · BUILT FOR STUDENTS/);
+  assert.match(html, /Find alumni and professionals, discover their work emails/);
   assert.match(html, /LinkedIn/);
-  assert.match(html, /personalized Gmail drafts/);
-  assert.match(html, /You approve before sending\./);
-  assert.match(html, /The proof is in the browser\./);
+  assert.match(html, /personalized cold email drafts in Gmail/);
+  assert.match(html, /You review and approve before sending\./);
+  assert.match(html, /Watch your cold email come together\./);
+  assert.match(html, /Cold emailing\.<br><span>Without the busywork\.<\/span>/);
+  assert.match(html, /Your next cold email<br><span>starts here\.<\/span>/);
   assert.match(html, /id="dl-btn" data-orbit-download/);
   assert.match(html, /id="hero-demo"/);
   assert.doesNotMatch(html, /Install the Orbit Chrome Extension|Run in your browser with no install/);
