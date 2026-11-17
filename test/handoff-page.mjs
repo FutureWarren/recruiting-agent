@@ -17,21 +17,18 @@ try{
   return route.fulfill({status:204,body:''})
  })
  await page.goto(server.base+'/?source=nyu_library&utm_campaign=launch',{waitUntil:'domcontentloaded'})
- await page.waitForSelector('.resume-first-cta')
- assert.match(await page.locator('.resume-first-cta').getAttribute('href'),/^\/resume-score\/\?utm_source=orbit_home/)
+ await page.waitForSelector('#resume-evaluation')
+ assert.match(await page.locator('#resume-embed-frame').getAttribute('src'),/^\/resume-score\/\?embedded=1/)
+ assert.equal(await page.frameLocator('#resume-embed-frame').locator('#resume-file').count(),1,'direct resume upload is available on homepage')
  assert.equal(await page.locator('#mobile-handoff-modal').isVisible(),false,'resume evaluation precedes email handoff')
  assert.equal(await page.evaluate(()=>document.activeElement?.id==='mobile-handoff-email'),false,'no automatic keyboard')
  assert.equal(requests.some(r=>['cta_clicked_v2','email_started_v2'].includes(JSON.parse(r.body||'{}').stage)),false,'pageview is not email intent')
- await page.locator('#orbit-task-school').waitFor({state:'visible'})
- assert.equal(await page.locator('#hero-demo').evaluate(el=>!!el.closest('.hero-copy')),true)
- await page.fill('#orbit-task-school','NYU')
- await page.locator('#orbit-task-industry').selectOption('Investment Banking')
- await page.click('.orbit-task-submit')
- await page.waitForSelector('#mobile-handoff-modal.is-open')
- assert.equal(await page.locator('#mobile-handoff-form input').count(),1,'save still only requests email')
- assert.equal(await page.locator('#mobile-handoff-email').isVisible(),true)
- assert.equal(await page.locator('input[type=file]').count(),0,'website must not ask for a resume')
- assert.match(await page.locator('#mobile-prepared-task').textContent(),/NYU alumni in Investment Banking/)
+ assert.equal(await page.locator('#orbit-mobile-task').count(),0);
+ assert.equal(await page.locator('#hero-demo').evaluate(el=>!!el.closest('.hero-copy')),true);
+ await page.locator('#dl-btn').click();
+ await page.waitForSelector('#mobile-handoff-modal.is-open');
+ assert.equal(await page.locator('#mobile-handoff-form input').count(),1);
+ assert.equal(await page.locator('#mobile-handoff-email').isVisible(),true);
  await page.fill('#mobile-handoff-email','student@example.com')
  await page.click('#mobile-handoff-submit')
  await page.waitForSelector('#mobile-handoff-success:not([hidden])')
@@ -41,7 +38,7 @@ try{
  const start=requests.find(r=>r.url.endsWith('/start'))
  assert.ok(start,'handoff start request missing')
  const body=JSON.parse(start.body)
- assert.equal(body.funnelVersion,2);assert.equal(body.platform,'mobile');assert.equal(body.firstName,undefined);assert.equal(body.email,'student@example.com');assert.match(body.goal,/NYU alumni in Investment Banking/);assert.match(body.detail,/personalized networking email drafts/);assert.equal(body.source,'nyu_library');assert.equal(body.utm_campaign,'launch')
+ assert.equal(body.funnelVersion,2);assert.equal(body.platform,'mobile');assert.equal(body.firstName,undefined);assert.equal(body.email,'student@example.com');assert.equal(body.goal,undefined);assert.equal(body.detail,undefined);assert.equal(body.source,'nyu_library');assert.equal(body.utm_campaign,'launch')
  assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false)
  const fallback=await ctx.newPage()
  await fallback.goto(server.base+'/start/?source=nyu_library')
@@ -136,5 +133,5 @@ try{
  assert.equal(await stalled.locator('#open-app').isVisible(),true)
  await stalled.close()
 
- console.log('PASS handoff: free-resume-first homepage, optional personalized task, portable signed link, platform-safe installers, bounded installer lookup and deep-link CTA.')
+ console.log('PASS handoff: inline resume-first homepage and explicit desktop handoff, portable signed link, platform-safe installers, bounded installer lookup and deep-link CTA.')
 }finally{await browser.close();await server.close()}
