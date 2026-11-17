@@ -17,12 +17,11 @@ try{
   return route.fulfill({status:204,body:''})
  })
  await page.goto(server.base+'/?source=nyu_library&utm_campaign=launch',{waitUntil:'domcontentloaded'})
- await page.waitForSelector('#mobile-handoff-modal.is-open')
- assert.equal(await page.locator('#mobile-handoff-email').isVisible(),true,'mobile visitors see email sheet immediately')
+ await page.waitForSelector('.resume-first-cta')
+ assert.match(await page.locator('.resume-first-cta').getAttribute('href'),/^\/resume-score\/\?utm_source=orbit_home/)
+ assert.equal(await page.locator('#mobile-handoff-modal').isVisible(),false,'resume evaluation precedes email handoff')
  assert.equal(await page.evaluate(()=>document.activeElement?.id==='mobile-handoff-email'),false,'no automatic keyboard')
- assert.equal(requests.some(r=>['cta_clicked_v2','email_started_v2'].includes(JSON.parse(r.body||'{}').stage)),false,'display is not a click or email start')
- await page.locator('.mobile-handoff-close').click()
- await page.locator('#mobile-handoff-modal').waitFor({state:'hidden'})
+ assert.equal(requests.some(r=>['cta_clicked_v2','email_started_v2'].includes(JSON.parse(r.body||'{}').stage)),false,'pageview is not email intent')
  await page.locator('#orbit-task-school').waitFor({state:'visible'})
  assert.equal(await page.locator('#hero-demo').evaluate(el=>!!el.closest('.hero-copy')),true)
  await page.fill('#orbit-task-school','NYU')
@@ -137,5 +136,5 @@ try{
  assert.equal(await stalled.locator('#open-app').isVisible(),true)
  await stalled.close()
 
- console.log('PASS handoff: email-first capture, optional personalized task, portable signed link, platform-safe installers, bounded installer lookup and deep-link CTA.')
+ console.log('PASS handoff: free-resume-first homepage, optional personalized task, portable signed link, platform-safe installers, bounded installer lookup and deep-link CTA.')
 }finally{await browser.close();await server.close()}

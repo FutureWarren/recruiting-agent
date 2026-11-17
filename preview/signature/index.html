@@ -24,7 +24,7 @@ body:has([data-orbit-download][data-download-state="handoff"]) .mobile-desktop-r
 </style>
 <!-- Mobile-only first-paint handoff. Desktop UA never receives this class. -->
 <script id="orbit-mobile-bootstrap">(()=>{const u=navigator.userAgent||'';if(/Android|iPhone|iPad|iPod/i.test(u)||(/Macintosh/.test(u)&&(navigator.maxTouchPoints||0)>1))document.documentElement.classList.add('orbit-mobile','orbit-mobile-pending')})();</script>
-<link rel="stylesheet" href="/mobile.css?v=email-first-20261109-1">
+<link rel="stylesheet" href="/mobile.css?v=resume-first-20261117-1">
 <script src="/preview/guard.js"></script>
 <link rel="stylesheet" href="/preview/signature/signature.css">
 </head>
@@ -42,6 +42,14 @@ body:has([data-orbit-download][data-download-state="handoff"]) .mobile-desktop-r
     <div class="signature-intro">PERSONAL AI COLD EMAILING · BUILT FOR STUDENTS</div>
     <h1>Your Personal AI<br><span>for Cold Emailing.</span></h1>
     <p class="signature-description">Find alumni and professionals, discover their work emails, and prepare personalized cold email drafts in Gmail. Orbit handles the research and writing. You review and approve before sending.</p>
+    <aside class="resume-first" aria-label="Free Resume Evaluation">
+      <div class="resume-first-copy">
+        <span class="resume-first-kicker">FREE RESUME EVALUATION</span>
+        <strong>Check your resume before your first cold email.</strong>
+        <span>Get AI feedback on strengths, gaps and next steps. Enter an email to unlock the full report.</span>
+      </div>
+      <a class="resume-first-cta" href="/resume-score/?utm_source=orbit_home&amp;utm_medium=hero&amp;utm_campaign=resume_first">Evaluate my resume <span aria-hidden="true">↗</span></a>
+    </aside>
     <div class="actions">
       <a class="btn" id="dl-btn" data-orbit-download href="https://github.com/FutureWarren/recruiting-agent/releases/latest">Download Orbit <span aria-hidden="true">↗</span></a>
       <a class="btn btn-secondary" href="#demo" data-watch-demo>Watch Orbit work <span aria-hidden="true">↗</span></a>
@@ -102,7 +110,7 @@ body:has([data-orbit-download][data-download-state="handoff"]) .mobile-desktop-r
 </div>
 <div class="cursor-aura" aria-hidden="true"></div>
 
-<script src="/mobile.js?v=email-first-20261109-1" defer></script>
+<script src="/mobile.js?v=resume-first-20261117" defer></script>
 <script src="/home.js?v=acquisition-v2-20261013" defer></script>
 <script type="module" src="/media/3d/orbit-signature.js"></script>
 </body>

@@ -39,6 +39,8 @@ test('Deployed Hero positions Orbit as a personal cold email agent without misre
   assert.match(html, /Cold emailing\.<br><span>Without the busywork\.<\/span>/);
   assert.match(html, /Your next cold email<br><span>starts here\.<\/span>/);
   assert.match(html, /id="dl-btn" data-orbit-download/);
+  assert.match(html,/class="resume-first-cta" href="\/resume-score\/\?utm_source=orbit_home&amp;utm_medium=hero&amp;utm_campaign=resume_first"/);
+  assert.match(html,/FREE RESUME EVALUATION/);
   assert.match(html, /id="hero-demo"/);
   assert.doesNotMatch(html, /Install the Orbit Chrome Extension|Run in your browser with no install/);
 });

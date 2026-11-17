@@ -36,10 +36,7 @@ html.orbit-mobile .footer-inner{display:block;font-size:10px}
 html.orbit-mobile .footer-links{display:flex;flex-wrap:wrap;gap:4px 16px;margin-top:6px}
 html.orbit-mobile .footer-links a{min-height:36px;display:inline-flex;align-items:center}
 html.orbit-mobile .footer-links a[href^='https://github.com']{display:none}
-/* Show one-field email capture at first paint, before deferred scripts finish.
-   The lower video/task flow remains available after closing the sheet. */
-html.orbit-mobile.orbit-mobile-pending body{overflow:hidden}
-html.orbit-mobile.orbit-mobile-pending #mobile-handoff-modal[hidden]{display:grid!important;opacity:1;pointer-events:auto}
+/* Resume-first entry remains visible at first paint. No forced email sheet. */
 html.orbit-mobile .mobile-handoff-modal{display:grid;place-items:end center;padding:0;inset:0;top:var(--orbit-vv-top,0px);bottom:auto;height:var(--orbit-vv-height,100dvh);width:100%;transition:opacity .15s ease}
 html.orbit-mobile .mobile-handoff-modal.is-open{display:grid!important;opacity:1;pointer-events:auto}
 html.orbit-mobile .mobile-handoff-modal[hidden]:not(.is-open){display:none!important}
@@ -76,7 +73,7 @@ html.orbit-mobile .mobile-handoff-again{min-height:40px;margin:6px auto 0;font-s
 }
 
 
-/* Task-first mobile conversion: real demo -> university/industry -> email handoff. */
+/* Value-first mobile conversion: Resume Evaluation -> demo -> optional networking task. */
 html.orbit-mobile .orbit-mobile-task{margin:14px 0 0;padding:20px 18px;border-radius:18px;background:#171923;border:1px solid rgba(175,171,255,.27);color:#f7f7fd;box-shadow:0 16px 36px rgba(3,4,12,.16)}
 html.orbit-mobile .orbit-task-eyebrow{font-size:10px;font-weight:760;letter-spacing:.14em;color:#a9a7ff;margin-bottom:9px}
 html.orbit-mobile .orbit-mobile-task h2{font-size:clamp(23px,6.8vw,30px);font-weight:700;letter-spacing:-.04em;line-height:1.15;color:#fff;margin:0 0 9px}
@@ -109,3 +106,9 @@ html.orbit-mobile .mobile-demo-play-fallback{
  font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;
 }
 html.orbit-mobile .mobile-demo-play-fallback:focus-visible{outline:3px solid #625cf5;outline-offset:2px}
+
+/* Mobile card is intentionally above the video and the optional task builder. */
+html.orbit-mobile .resume-first{margin:14px 0 17px;gap:13px;padding:17px 15px}
+html.orbit-mobile .resume-first-copy strong{font-size:16px}
+html.orbit-mobile .resume-first-copy>span:last-child{font-size:11px}
+html.orbit-mobile .resume-first-cta{font-size:14px;min-height:52px}

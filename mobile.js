@@ -70,15 +70,15 @@
   });
   video.addEventListener('play', () => { videoFallback.hidden = true; });
 
-  // The email link is captured first; the optional task builder remains below the demo.
+  // The first visitor action is a free Resume Evaluation; optional networking task follows the demo.
   const composer = document.createElement('section');
   composer.id = 'orbit-mobile-task';
   composer.className = 'orbit-mobile-task';
   composer.setAttribute('aria-labelledby', 'orbit-mobile-task-title');
   composer.innerHTML = [
-    '<div class="orbit-task-eyebrow">01 / PREPARE YOUR FIRST TASK</div>',
-    '<h2 id="orbit-mobile-task-title">Start with alumni who get your path.</h2>',
-    '<p>Tell Orbit where you study and what field interests you. We will prepare the task here, then run it on your computer.</p>',
+    '<div class="orbit-task-eyebrow">02 / NEXT: TRY NETWORKING</div>',
+    '<h2 id="orbit-mobile-task-title">Next, find alumni in your field.</h2>',
+    '<p>After your resume review, choose a school and an industry. Orbit will prepare a networking task to run on your computer.</p>',
     '<form id="orbit-mobile-task-form" novalidate>',
     '<div class="orbit-task-fields">',
     '<label for="orbit-task-school">Your university<input id="orbit-task-school" name="school" type="text" placeholder="e.g. NYU" autocomplete="organization" maxlength="55" required></label>',
@@ -244,13 +244,8 @@
     }
   });
 
-  // Phone QR visitors see the one-field email handoff sheet immediately.
-  // The sheet is dismissible and never focuses the input/opens the keyboard
-  // until the visitor explicitly taps it; displaying it is NOT a form start.
-  modal.hidden = false;
-  modal.setAttribute('aria-hidden', 'false');
-  modal.classList.add('is-open');
-  document.body.classList.add('handoff-modal-open');
+  // Value first: no automatic email sheet on landing. The existing handoff
+  // remains available only after an explicit networking task or Get Orbit action.
   root.classList.remove('orbit-mobile-pending');
   dialog.querySelector('.mobile-handoff-close')?.addEventListener('click', tryUserPlayback);
   dialog.tabIndex = -1;
@@ -302,7 +297,7 @@
   fitKeyboard();
   // home.js initializes the existing device routing first; only change phone labels afterward.
   document.addEventListener('DOMContentLoaded', () => {
-    document.querySelectorAll('[data-orbit-download]').forEach(button => { if (button.dataset.downloadState === 'handoff') button.textContent = 'Prepare my task →'; });
+    document.querySelectorAll('[data-orbit-download]').forEach(button => { if (button.dataset.downloadState === 'handoff') button.textContent = 'Prepare networking task →'; });
     document.getElementById('dl-meta').textContent = 'Mac (M1+) · Windows x64 beta · 100 free credits';
   }, {once:true});
 })();
