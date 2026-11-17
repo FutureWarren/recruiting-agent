@@ -26,7 +26,7 @@ html = html.replace('<body>', '<body class="continuum continuum-dark"><div class
 html = html.replace('</div><section class="company-section hero-companies"', '</div></div><section class="company-section hero-companies"')
   .replace('</p></div></section></div>\n<section id="demo"', '</p></div></section>\n<section id="demo"');
 // Preserve the company examples, but keep Hero → Demo → Resume Evaluation contiguous.
-const companyStrip = html.match(/<section class="company-section hero-companies"[\\s\\S]*?<\\/section>/)?.[0];
+const companyStrip = html.match(/<section class="company-section hero-companies"[\s\S]*?<\/section>/)?.[0];
 if (!companyStrip) throw Error('Company strip missing during Resume Evaluation layout');
 html = html.replace(companyStrip,'');
 html = html.replace('</section>\n<section id="how" class="story">','</section>\n'+companyStrip+'\n<section id="how" class="story">');
