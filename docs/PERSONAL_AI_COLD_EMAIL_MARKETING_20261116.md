@@ -1,8 +1,8 @@
-# Orbit — Personal AI Cold Email Agent
+# Orbit — Personal AI for Cold Emailing
 ## Approved positioning and promotional copy · 2026-11-16
 
 ### Master positioning
-**Orbit — Your Personal AI Cold Email Agent.**
+**Orbit — Your Personal AI for Cold Emailing.**
 
 **One-liner:** Find alumni and professionals, discover their work emails, and prepare personalized cold email drafts in Gmail. You review and approve before sending.
 
@@ -13,7 +13,7 @@
 ### Website (approved copy)
 **Eyebrow:** PERSONAL AI COLD EMAILING · BUILT FOR STUDENTS
 
-**H1:** Your Personal AI / Cold Email Agent.
+**H1:** Your Personal AI / for Cold Emailing.
 
 **Hero body:** Find alumni and professionals, discover their work emails, and prepare personalized cold email drafts in Gmail. Orbit handles the research and writing. You review and approve before sending.
 
@@ -38,7 +38,7 @@ Tired of opening 10 tabs just to write one cold email? Meet Orbit — your perso
 We're building Orbit, a personal AI cold email agent for students. Instead of juggling search tabs, email finders and generic templates, students can ask Orbit to research people and prepare grounded, personalized Gmail drafts. Students review before sending. We're starting with networking because a thoughtful introduction can open a meaningful conversation. Try Orbit at orbit-reaches.com.
 
 **Very short (X / banners):**
-Your Personal AI Cold Email Agent. Find people. Research emails. Prepare personalized drafts. You approve before sending. orbit-reaches.com
+Your Personal AI for Cold Emailing. Find people. Research emails. Prepare personalized drafts. You approve before sending. orbit-reaches.com
 
 ### 中文推广
 **朋友圈 / 校园群：**
