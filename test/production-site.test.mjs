@@ -25,7 +25,7 @@ test('Production Resume Score uses Orbit brand master assets after the shared-pa
   assert.doesNotMatch(resume,/class="orbit-mark"/,'generic logo must not overwrite approved Orbit branding');
   assert.match(await read('dist/resume-score/orbit-mark.svg'),/fill="#5c5cf2"/);
 });
-test('Deployed Hero positions Orbit as a personal cold email agent without misrepresenting sending',()=>{
+test('Deployed Hero positions Orbit as a personal cold email agent without misrepresenting sending',async()=>{
   assert.match(html, /<title>Orbit — Your Personal AI for Cold Emailing<\/title>/);
   assert.match(html, /property="og:title" content="Orbit — Your Personal AI for Cold Emailing"/);
   assert.match(html, /name="twitter:title" content="Orbit — Your Personal AI for Cold Emailing"/);
