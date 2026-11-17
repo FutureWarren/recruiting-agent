@@ -53,14 +53,12 @@ try {
       for(const [device,width,height,ua,touch] of [['phone',390,844,UA.phone,1],['small-phone',320,568,UA.phone,1],['android',360,740,UA.android,1],['ipad',1024,768,UA.mac,5]]) {
         const t=await setup(browser,{ua,width,height,touch});
         await t.page.goto(server.base+'/?source=internal_test&utm_campaign=approved_design');
-        await t.page.locator('#mobile-handoff-modal.is-open').waitFor({state:'visible'});
-        assert.equal(await t.page.locator('#mobile-handoff-form input').count(),1,'only one email input before task setup');
-        assert.equal(await t.page.locator('#mobile-handoff-email').isVisible(),true,'email capture must show on entry');
-        assert.equal(await t.page.evaluate(()=>document.activeElement?.id==='mobile-handoff-email'),false,'never automatically open iOS keyboard');
-        assert.equal(t.requests.some(r=>['cta_clicked_v2','email_started_v2'].includes(r.body?.stage)),false,'display is not deliberate form intent');
+        await t.page.locator('.resume-first-cta').waitFor({state:'visible'});
+        assert.match(await t.page.locator('.resume-first-cta').getAttribute('href'),/^\/resume-score\/\?utm_source=orbit_home/);
+        assert.equal(await t.page.locator('#mobile-handoff-modal').isVisible(),false,'no forced email gate before free tool');
+        assert.equal(await t.page.locator('main').evaluate(e=>e.inert),false,'landing page is usable');
+        assert.equal(t.requests.some(r=>['cta_clicked_v2','email_started_v2'].includes(r.body?.stage)),false,'mere pageview is not form intent');
         noSend(t);
-        await t.page.locator('.mobile-handoff-close').click();
-        await t.page.locator('#mobile-handoff-modal').waitFor({state:'hidden'});
         await t.page.locator('#orbit-mobile-task').waitFor({state:'visible'});
         assert.equal(await t.page.locator('#hero-demo').evaluate(e=>!!e.closest('.hero-copy')),true,'real demo remains in mobile hero');
         const nativeVideo=await t.page.locator('#hero-demo').evaluate(e=>({
@@ -124,12 +122,14 @@ try {
         assert.equal(await t.page.locator('#mobile-handoff-copy').isVisible(),true);
         assert.deepEqual(t.errors,[]);
         await t.page.screenshot({path:`artifacts/production-review/${name}-${device}.png`});
-        await t.ctx.close();console.log(`PASS ${name} ${device}: auto email-first sheet, real video, optional task + saved handoff, mocked submit, layout`);
+        await t.ctx.close();console.log(`PASS ${name} ${device}: resume-first page, real video, optional networking task + explicit handoff, mocked submit, layout`);
       }
       for(const status of ['accepted','failed','error']) {
         const t=await setup(browser,{status});await t.page.goto(server.base);
+        assert.equal(await t.page.locator('#mobile-handoff-modal').isVisible(),false);
+        // Explicit direct email handoff remains possible without a prepared task.
+        await t.page.evaluate(()=>window.dispatchEvent(new Event('orbit:open-handoff')));
         await t.page.locator('#mobile-handoff-modal.is-open').waitFor({state:'visible'});
-        // Direct email capture must still work without a prepared task.
         await t.page.locator('#mobile-handoff-email').fill('fixture@example.test');
         await t.page.locator('#mobile-handoff-submit').click();
         if(status==='error') {await t.page.locator('#mobile-handoff-error').waitFor({state:'visible'});assert.equal(await t.page.locator('#mobile-copy-before').isVisible(),true);}
