@@ -730,7 +730,7 @@ function shareQR(ctx,x,y,side){
   const unit=Math.floor(side/FACE_MATCH_QR_SIZE);
   const actual=unit*FACE_MATCH_QR_SIZE;
   const sx=x+Math.floor((side-actual)/2),sy=y+Math.floor((side-actual)/2);
-  shareRoundedRect(ctx,x-10,y-10,side+20,side+20,20,'#ffffff',null);
+  shareRoundedRect(ctx,x-28,y-28,side+56,side+56,15,'#ffffff',null);
   ctx.fillStyle='#111018';
   for(let i=0;i<FACE_MATCH_QR_SIZE*FACE_MATCH_QR_SIZE;i++){
     if(bits[i>>3]&(1<<(7-(i&7)))){
@@ -739,91 +739,138 @@ function shareQR(ctx,x,y,side){
     }
   }
 }
+/* Client-side Story artwork: Orbit's black/white + #5B4CE6 comic language.
+ * The actual selfie and whitelisted company SVGs stay intact; the graphics
+ * around them are purely decorative. No image or result is sent elsewhere.
+ */
+function comicStoryPaper(ctx,x,y,w,h,color='#faf9f4'){
+  const step=24,zig=(n)=>[9,1,13,5,12,2][n%6];
+  ctx.beginPath();ctx.moveTo(x+8,y+9);
+  for(let n=0,pos=0;pos<=w;n++,pos+=step)
+    ctx.lineTo(x+Math.min(pos,w),y+zig(n));
+  for(let n=0,pos=0;pos<=h;n++,pos+=step)
+    ctx.lineTo(x+w-zig(n+2),y+Math.min(pos,h));
+  for(let n=0,pos=0;pos<=w;n++,pos+=step)
+    ctx.lineTo(x+w-Math.min(pos,w),y+h-zig(n+3));
+  for(let n=0,pos=0;pos<=h;n++,pos+=step)
+    ctx.lineTo(x+zig(n+1),y+h-Math.min(pos,h));
+  ctx.closePath();ctx.fillStyle=color;ctx.fill();
+  ctx.strokeStyle='#111111';ctx.lineWidth=5;ctx.stroke();
+}
+function comicStoryFitText(ctx,label,x,y,maxWidth,size,color='#111111'){
+  const value=String(label||'');
+  ctx.textAlign='left';ctx.fillStyle=color;
+  let current=size;
+  do{
+    ctx.font='900 '+current+'px Impact, "Arial Black", Inter, sans-serif';
+    if(ctx.measureText(value).width<=maxWidth||current<=22)break;
+    current-=2;
+  }while(current>22);
+  ctx.fillText(value,x,y,maxWidth);
+}
+function comicStoryHalftone(ctx,x,y,w,h,step=21,radius=2.8,color='#6f6f6f'){
+  ctx.fillStyle=color;
+  for(let row=0;row<h;row+=step){
+    for(let col=0;col<w;col+=step){
+      ctx.beginPath();ctx.arc(x+col+(Math.floor(row/step)%2)*step/2,y+row,radius,0,Math.PI*2);ctx.fill();
+    }
+  }
+}
+function comicStoryBurst(ctx,cx,cy,r0,r1,count=38){
+  ctx.save();ctx.strokeStyle='#faf9f4';ctx.lineWidth=5;
+  for(let i=0;i<count;i++){
+    const a=i*Math.PI*2/count,inside=r0+(i%3)*11,outside=r1-(i%4)*27;
+    ctx.beginPath();ctx.moveTo(cx+inside*Math.cos(a),cy+inside*Math.sin(a));
+    ctx.lineTo(cx+outside*Math.cos(a),cy+outside*Math.sin(a));ctx.stroke();
+  }
+  ctx.restore();
+}
 async function resultCanvas(){
   const images=await shareImagesForReport(report);
   const canvas=document.createElement('canvas');canvas.width=1080;canvas.height=1920;
   const c=canvas.getContext('2d');
-  const W=canvas.width,H=canvas.height;
-  const bg=c.createLinearGradient(0,0,W,H);
-  bg.addColorStop(0,'#19142e');bg.addColorStop(.25,'#0c0b14');
-  bg.addColorStop(.75,'#0c0b15');bg.addColorStop(1,'#21183a');
-  c.fillStyle=bg;c.fillRect(0,0,W,H);
-  // Understated orbital grid and a single satellite dot from Orbit's visual system.
-  c.save();c.strokeStyle='rgba(176,154,250,.12)';c.lineWidth=1;
-  for(let y=195;y<1850;y+=122){c.beginPath();c.moveTo(0,y);c.lineTo(W,y);c.stroke();}
-  for(let x=95;x<W;x+=125){c.beginPath();c.moveTo(x,0);c.lineTo(x,H);c.stroke();}
-  c.beginPath();c.ellipse(520,590,850,520,-.48,2.68,6.08);c.strokeStyle='rgba(167,130,249,.32)';c.lineWidth=2;c.stroke();
-  c.fillStyle='#8f75ff';c.beginPath();c.arc(918,111,12,0,Math.PI*2);c.fill();
-  c.restore();
-  // Brand is based on Orbit's actual mark: one open ring plus satellite at 12 o'clock.
-  c.strokeStyle='#f2f2f5';c.lineWidth=6;c.beginPath();c.arc(93,107,23,0,Math.PI*2);c.stroke();
-  c.fillStyle='#5c5cf2';c.beginPath();c.arc(93,71,7,0,Math.PI*2);c.fill();
-  c.fillStyle='#f2f2f5';c.font='650 48px Inter, -apple-system, sans-serif';c.fillText('Orbit',132,125);
-  c.fillStyle='rgba(207,198,230,.5)';c.fillRect(307,82,2,49);
-  c.fillStyle='#c8beeb';c.font='500 31px Inter, -apple-system, sans-serif';c.fillText('FACE MATCH',331,121);
-  c.fillStyle='#b8aaff';c.font='500 22px Inter, -apple-system, sans-serif';c.fillText('001',952,122);
-  c.strokeStyle='rgba(209,202,233,.4)';c.lineWidth=1;c.beginPath();c.moveTo(65,166);c.lineTo(1015,166);c.stroke();
-  c.fillStyle='#b3a4f6';c.font='600 21px Inter, -apple-system, sans-serif';c.fillText('YOUR CAREER AURA',67,215);
-  c.fillStyle='#a6a0b9';c.font='500 15px Inter, -apple-system, sans-serif';c.textAlign='right';
-  c.fillText('ORBIT LABS  /  JUST FOR FUN',1015,212);c.textAlign='left';
+  if(!c)throw new Error('Story image unavailable');
+  const INK='#111111',PAPER='#faf9f4',PURPLE='#5B4CE6';
+  const ordered=[...(report?.matches||[])].sort((a,b)=>b.score-a.score).slice(0,3);
+  // Black photocopied-paper background, manga speed lines, halftone texture.
+  c.fillStyle=INK;c.fillRect(0,0,1080,1920);
+  comicStoryHalftone(c,16,16,300,124,20,2,'#6d6d6d');
+  comicStoryHalftone(c,890,355,175,565,20,2,'#4c4c4c');
+  comicStoryHalftone(c,12,1398,150,420,18,2,'#454545');
+  comicStoryBurst(c,315,710,345,755,49);
+  c.fillStyle=PAPER;c.font='750 26px Inter, sans-serif';
+  c.fillText('ORBIT LABS  /  FACE MATCH',64,56);
+  c.textAlign='right';c.fillText('FREE  •  NO SIGNUP',1018,56);c.textAlign='left';
+  // One-second-to-understand headline, not "career aura" jargon.
+  comicStoryPaper(c,35,75,1010,294);
+  comicStoryFitText(c,'WHICH COMPANY',81,193,912,105,INK);
+  comicStoryFitText(c,'MATCHES YOUR FACE?',73,303,936,102,PURPLE);
+  c.strokeStyle=PURPLE;c.lineWidth=8;c.beginPath();c.moveTo(177,331);c.lineTo(954,334);c.stroke();
+  comicStoryPaper(c,141,377,805,88);
+  comicStoryFitText(c,'TAKE A SELFIE. FIND YOUR MATCH.',177,436,730,49,INK);
+  // Decorative aura behind the user's actual photo. The face is never
+  // algorithmically restyled, blurred, recolored or altered in the export.
+  c.fillStyle=PURPLE;c.beginPath();c.arc(321,712,276,0,Math.PI*2);c.fill();
+  comicStoryHalftone(c,80,502,460,433,20,2.5,'#201a36');
+  c.fillStyle=INK;c.fillRect(69,498,513,497);
+  c.fillStyle=PAPER;c.fillRect(55,484,513,497);
   const img=$('result-photo');
   try{if(img?.decode)await img.decode();}catch{}
-  shareRoundedRect(c,64,246,468,662,27,'#17141e','rgba(199,177,255,.72)');
-  shareCoverImage(c,img,67,249,462,656,25);
-  // Poster title: editorial, not generic AI-glow typography.
-  c.fillStyle='#bdaeff';c.font='600 18px Inter, -apple-system, sans-serif';c.fillText('THE RESULTS',567,284);
-  c.fillStyle='#f4f1fa';c.font='650 73px Inter, -apple-system, sans-serif';
-  const headline=shareWordWrap(c,report?.title||'My Career Aura',430,3);
-  headline.forEach((line,i)=>c.fillText(line,565,366+i*84));
-  c.fillStyle='#5c5cf2';c.fillRect(566,624,91,5);
-  c.font='600 20px Inter, -apple-system, sans-serif';c.fillStyle='#dbd4f3';
-  const tags=(report?.tags||[]).slice(0,2);
-  tags.forEach((tag,i)=>c.fillText(String(tag).toUpperCase().slice(0,23),566,689+i*37));
-  c.fillStyle='#aaa1ba';c.font='500 15px Inter, -apple-system, sans-serif';
-  c.fillText('ONE SELFIE  /  YOUR OWN VIBE',566,850);
-  // Three top matches with recognizable real-company wordmarks rendered as text,
-  // so export stays offline-safe and doesn't invent a corporate logo graphic.
-  shareRoundedRect(c,65,949,1015-65,401,25,'#14131d','rgba(190,174,225,.48)');
-  c.fillStyle='#f3f2f8';c.font='650 31px Inter, -apple-system, sans-serif';c.fillText('TOP MATCHES',92,1000);
-  c.fillStyle='#b2a4e1';c.font='500 15px Inter, -apple-system, sans-serif';
-  c.textAlign='right';c.fillText('STYLE ALIGNMENT',987,994);c.textAlign='left';
-  const ordered=[...(report?.matches||[])].sort((a,b)=>b.score-a.score).slice(0,3);
+  if(img?.naturalWidth&&img?.naturalHeight)shareCoverImage(c,img,76,505,471,452,0);
+  else{
+    c.fillStyle='#d6d4dc';c.fillRect(76,505,471,452);
+    comicStoryFitText(c,'YOUR SELFIE',128,733,360,65,INK);
+  }
+  c.fillStyle=INK;c.fillRect(78,901,354,68);
+  comicStoryFitText(c,'YOUR SELFIE / 001',97,949,319,45,PAPER);
+  // Comic speech bubble reacts to the actual result's category rather than
+  // implying a company has offered anyone a job.
+  comicStoryPaper(c,587,530,435,295,PAPER);
+  comicStoryFitText(c,'WAIT...',630,625,345,83,INK);
+  comicStoryFitText(c,"THAT'S MY",627,706,352,68,INK);
+  comicStoryFitText(c,'VIBE?!',628,794,340,97,PURPLE);
+  const headline=String(report?.title||'My photo style').toUpperCase();
+  comicStoryPaper(c,604,842,405,109,PAPER);
+  comicStoryFitText(c,headline,629,915,356,58,INK);
+  const tag=(report?.tags||[]).find(t=>String(t).trim());
+  if(tag){
+    comicStoryFitText(c,'#'+String(tag).toUpperCase().replace(/\s+/g,''),610,973,398,32,PAPER);
+  }
+  // The top three come directly from the backend response. Logos are sourced
+  // only from the verified, same-origin allowlist already used on the site.
+  c.fillStyle=PURPLE;c.fillRect(72,978,583,65);
+  comicStoryFitText(c,'MY TOP 3 PHOTO VIBES',91,1025,547,52,PAPER);
   ordered.forEach((match,i)=>{
-    const y=1043+i*97;
-    if(i){c.strokeStyle='rgba(155,145,178,.24)';c.beginPath();c.moveTo(94,y-5);c.lineTo(985,y-5);c.stroke();}
-    const brand=shareBrandForMatch(report,match);
-    shareCompanyTile(c,brand,images.get(brand?.domain),92,y+13,199,62);
-    const name=archetypes.find(a=>a.id===match.id)?.title||match.id;
-    c.fillStyle='#e7e3f1';c.font='650 17px Inter, -apple-system, sans-serif';c.fillText(name.toUpperCase(),308,y+49);
-    shareRoundedRect(c,536,y+36,311,13,7,'#524b67',null);
-    const value=Math.max(0,Math.min(100,Number(match.score)||0));
-    shareRoundedRect(c,536,y+36,Math.max(7,Math.round(311*value/100)),13,7,'#6554e4',null);
-    c.fillStyle='#c2b2ff';c.font='650 38px Inter, -apple-system, sans-serif';
-    c.textAlign='right';c.fillText(String(value),982,y+59);c.textAlign='left';
+    const y=1052+i*109,brand=shareBrandForMatch(report,match);
+    comicStoryPaper(c,65,y,952,103,PAPER);
+    comicStoryFitText(c,String(i+1).padStart(2,'0'),82,y+64,60,48,PURPLE);
+    shareCompanyTile(c,brand,images.get(brand?.domain),144,y+20,248,64);
+    const category=archetypes.find(a=>a.id===match.id)?.title||match.id;
+    comicStoryFitText(c,String(category).toUpperCase(),418,y+60,330,38,INK);
+    c.fillStyle=PURPLE;c.fillRect(822,y+15,159,73);
+    c.fillStyle=PAPER;c.font='650 18px Inter, sans-serif';c.fillText('STYLE',848,y+39);
+    comicStoryFitText(c,String(Math.max(0,Math.min(100,match.score||0))),850,y+78,113,46,PAPER);
   });
-  // Bottom action region: real QR rather than a decorative fake square.
-  shareRoundedRect(c,65,1391,950,458,27,'#14131d','rgba(190,174,225,.45)');
-  c.fillStyle='#b9a7f4';c.font='500 18px Inter, -apple-system, sans-serif';
-  c.fillText('COMPANY STYLE INSPIRATION',94,1434);
-  const primary=report?.company?.name
-    ?{name:report.company.name,domain:report.company.domain}
-    :shareBrandForMatch(report,ordered[0])||{name:'Photo-style example',domain:''};
-  shareHeroCompany(c,primary,images.get(primary.domain));
-  c.fillStyle='#a9a2b9';c.font='500 15px Inter, -apple-system, sans-serif';
-  c.fillText('A CREATIVE MOODBOARD, NOT A HIRING PREDICTION',95,1589);
-  c.strokeStyle='rgba(165,149,195,.38)';c.beginPath();c.moveTo(95,1609);c.lineTo(681,1609);c.stroke();
-  c.fillStyle='#f2eff9';c.font='500 23px Inter, -apple-system, sans-serif';c.fillText("WHAT'S YOUR",95,1666);
-  c.fillStyle='#c0b0ff';c.font='750 41px Inter, -apple-system, sans-serif';c.fillText('CAREER AURA?',94,1711);
-  c.fillStyle='#f0ebf8';c.font='500 21px Inter, -apple-system, sans-serif';c.fillText('Scan to try Face Match.',94,1777);
-  c.fillStyle='#beb7ce';c.font='500 18px Inter, -apple-system, sans-serif';
-  c.fillText('orbit-reaches.com/face-match/',94,1821);
+  // Torn CTA card: big, legible company example + a real QR with quiet zone.
+  comicStoryPaper(c,49,1403,985,451,PAPER);
+  c.strokeStyle=INK;c.lineWidth=5;c.beginPath();c.arc(95,1464,27.3,0,Math.PI*2);c.stroke();
+  c.fillStyle=PURPLE;c.beginPath();c.arc(84.3,1438.9,8.4,0,Math.PI*2);c.fill();
+  c.fillStyle=INK;c.font='750 53px Inter, sans-serif';c.fillText('Orbit',145,1482);
+  comicStoryFitText(c,'MY COMPANY-STYLE EXAMPLE:',91,1538,579,39,INK);
+  const topBrand=allowedBrand(report?.company)
+    ?report.company
+    :shareBrandForMatch(report,ordered[0])||{name:'Photo style example',domain:''};
+  comicStoryFitText(c,String(topBrand.name).toUpperCase(),90,1619,567,67,PURPLE);
+  c.fillStyle=INK;c.font='550 21px Inter, sans-serif';
+  c.fillText('JUST FOR FUN  /  NOT A HIRING PREDICTION',94,1657,580);
+  c.fillStyle=PURPLE;c.fillRect(82,1690,597,75);
+  comicStoryFitText(c,'SCAN TO TRY YOUR MATCH!',97,1746,562,54,PAPER);
+  c.fillStyle=INK;c.font='650 25px Inter, sans-serif';
+  c.fillText('orbit-reaches.com/face-match/',92,1808);
   shareQR(c,726,1527,263);
-  c.fillStyle='#c5b9f7';c.font='600 14px Inter, -apple-system, sans-serif';
-  c.textAlign='center';c.fillText('SCAN ME',859,1834);c.textAlign='left';
-  c.fillStyle='#ada6c4';c.font='500 15px Inter, -apple-system, sans-serif';
-  c.fillText('ORBIT  /  FIND YOUR NEXT CONNECTION',66,1892);
-  c.fillStyle='#938ba9';c.font='500 13px Inter, -apple-system, sans-serif';
-  c.textAlign='right';c.fillText('NOT AFFILIATED WITH SHOWN BRANDS',1013,1892);c.textAlign='left';
+  comicStoryFitText(c,'SCAN ME!',777,1842,195,38,INK);
+  c.fillStyle=PAPER;c.font='550 17px Inter, sans-serif';
+  c.fillText('PLAYFUL PHOTO-STYLE MATCHES  •  NOT HIRING ODDS  •  NO COMPANY AFFILIATION',55,1890,970);
   return canvas;
 }
 async function blobForShare(){
@@ -832,15 +879,15 @@ async function blobForShare(){
 }
 $('save').addEventListener('click',async()=>{
   if(!report)return;const blob=await blobForShare();if(!blob)return;
-  const url=URL.createObjectURL(blob),link=document.createElement('a');link.href=url;link.download='orbit-career-aura.png';link.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
+  const url=URL.createObjectURL(blob),link=document.createElement('a');link.href=url;link.download='orbit-face-match-story.png';link.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
   $('share-status').textContent='Share card saved to your device.';
 });
 $('share').addEventListener('click',async()=>{
   if(!report)return;
   networkingBridge?.track('face-match','share_clicked',networkingVariant);const blob=await blobForShare();if(!blob)return;
-  const file=new File([blob],'orbit-career-aura.png',{type:'image/png'});
-  if(navigator.canShare?.({files:[file]})){try{await navigator.share({files:[file],title:'My Career Aura',text:'What is your career aura?'});return;}catch(e){if(e.name==='AbortError')return;}}
-  if(navigator.share){try{await navigator.share({title:'My Career Aura',url:'https://orbit-reaches.com/face-match/'});return;}catch(e){if(e.name==='AbortError')return;}}
+  const file=new File([blob],'orbit-face-match-story.png',{type:'image/png'});
+  if(navigator.canShare?.({files:[file]})){try{await navigator.share({files:[file],title:'Which company matches your face?',text:'I tried Orbit Face Match. Which company matches your face?'});return;}catch(e){if(e.name==='AbortError')return;}}
+  if(navigator.share){try{await navigator.share({title:'Which company matches your face?',url:'https://orbit-reaches.com/face-match/'});return;}catch(e){if(e.name==='AbortError')return;}}
   $('save').click();
 });
 $('reset').addEventListener('click',()=>{if(controller)controller.abort();report=null;clearPhoto();$('consent').checked=false;enable();show('capture');});
