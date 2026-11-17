@@ -25,6 +25,14 @@ html = html.replace('<body>', '<body class="continuum continuum-dark"><div class
 // approved sharper networking positioning. Company examples follow the Hero.
 html = html.replace('</div><section class="company-section hero-companies"', '</div></div><section class="company-section hero-companies"')
   .replace('</p></div></section></div>\n<section id="demo"', '</p></div></section>\n<section id="demo"');
+// Preserve the company examples, but keep Hero → Demo → Resume Evaluation contiguous.
+const companyStrip = html.match(/<section class="company-section hero-companies"[\\s\\S]*?<\\/section>/)?.[0];
+if (!companyStrip) throw Error('Company strip missing during Resume Evaluation layout');
+html = html.replace(companyStrip,'');
+html = html.replace('</section>\n<section id="how" class="story">','</section>\n'+companyStrip+'\n<section id="how" class="story">');
+// On the local preview, the embedded form inherits the write-blocking preview guard.
+// The production build restores /resume-score/ as the public route.
+html = html.replace('src="/resume-score/?embedded=1','src="/preview/continuum/resume-score/?embedded=1');
 html = html.replace(/<section id="how"[\s\S]*?<\/section>/, '');
 html = html.replace(/<section class="stats"[\s\S]*?<\/section>/, `<section class="stats concise-results" id="numbers"><div class="shell">
   <div class="results-heading motion-reveal"><h2>Cold emailing.<br><span>Without the busywork.</span></h2><p>Find people, discover work emails, and prepare a personal cold email draft.<br>One task, instead of a dozen tabs.</p></div>
