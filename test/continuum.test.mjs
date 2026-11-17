@@ -114,7 +114,7 @@ test('Dark product surfaces and contrasting white closing ring are present', asy
   assert.match(html, /class="closing-orbit closing-sculpture" aria-hidden="true"/);
   assert.match(html, /id="ceramic-face"/);
   assert.match(css, /\.continuum-dark \.closing-sculpture \{[^}]*border:0/);
-  assert.match(html, /<\/header>\s*<\/div><\/div><section class="company-section/);
+  assert.ok(html.indexOf('id="demo"') < html.indexOf('id="resume-evaluation"') && html.indexOf('id="resume-evaluation"') < html.indexOf('id="companies"'),'company examples sit after the direct product flow');
   assert.match(css, /\.ambient-orbit \{[^}]*pointer-events:none/);
 });
 test('Ambient model is lazy, desktop-only animated, capped and included in cleanup', async () => {
