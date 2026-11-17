@@ -38,7 +38,7 @@ test('Approved Hero positioning keeps the signature scene and product controls i
     ['preview/signature/signature.css', '69d415d7157ab9252f73d2830226424f97ad50d08ba7022b892e91a661913ef3'],
   ]) assert.equal(sha(await read(file)), expected, file);
 });
-test('Hero/company strip goes directly to demo, then results and one email example', () => {
+test('Hero flows directly to Demo and the real inline Resume Evaluation', async () => {
   const ids = [...html.matchAll(/<section\b[^>]*id="([^"]+)"/g)].map(m => m[1]);
   assert.deepEqual(ids, ['demo', 'resume-evaluation', 'companies', 'numbers', 'profile', 'download']);
   const heroIndex=html.indexOf('<header class="hero signature-hero">');
