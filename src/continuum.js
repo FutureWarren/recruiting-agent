@@ -198,3 +198,23 @@ import('./continuum-scene.js').then(({ createScene }) => {
   if (disposed) return;
   sceneFactory = createScene; scene = createScene(art, schedule); dirty = true; schedule();
 }).catch(() => { art.dataset.renderState = 'fallback'; });
+
+// A single shared Resume Evaluation iframe spans upload, analysis, email unlock and results.
+const resumeEmbed = document.getElementById('resume-embed-frame');
+if (resumeEmbed) {
+  const setHeight = height => {
+    if (!Number.isFinite(height) || height < 100 || height > 16000) return;
+    resumeEmbed.style.height = Math.max(480,Math.ceil(height)) + 'px';
+  };
+  listen(window,'message',event => {
+    if (event.origin !== location.origin || event.source !== resumeEmbed.contentWindow) return;
+    if (event.data?.type !== 'orbit:resume-embed-height') return;
+    setHeight(event.data.height);
+  });
+  listen(resumeEmbed,'load',() => {
+    try {
+      const page = resumeEmbed.contentDocument?.getElementById('page-content');
+      if (page) setHeight(page.getBoundingClientRect().height + 6);
+    } catch { /* Keep an independently scrollable iframe when embedding is blocked. */ }
+  });
+}
