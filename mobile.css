@@ -73,29 +73,8 @@ html.orbit-mobile .mobile-handoff-again{min-height:40px;margin:6px auto 0;font-s
 }
 
 
-/* Value-first mobile conversion: Resume Evaluation -> demo -> optional networking task. */
-html.orbit-mobile .orbit-mobile-task{margin:14px 0 0;padding:20px 18px;border-radius:18px;background:#171923;border:1px solid rgba(175,171,255,.27);color:#f7f7fd;box-shadow:0 16px 36px rgba(3,4,12,.16)}
-html.orbit-mobile .orbit-task-eyebrow{font-size:10px;font-weight:760;letter-spacing:.14em;color:#a9a7ff;margin-bottom:9px}
-html.orbit-mobile .orbit-mobile-task h2{font-size:clamp(23px,6.8vw,30px);font-weight:700;letter-spacing:-.04em;line-height:1.15;color:#fff;margin:0 0 9px}
-html.orbit-mobile .orbit-mobile-task>p:not(.orbit-task-fine){font-size:13px;line-height:1.55;color:#c5c6d2;margin:0 0 17px}
-html.orbit-mobile .orbit-task-fields{display:grid;gap:11px}
-html.orbit-mobile .orbit-task-fields label{display:grid;gap:6px;color:#e3e4f3;font-size:12px;font-weight:630}
-html.orbit-mobile .orbit-task-fields input,html.orbit-mobile .orbit-task-fields select{display:block;width:100%;min-height:47px;max-width:100%;padding:10px 12px;color:#191b25;font-size:16px;font-weight:500;font-family:inherit;background:#fff;border:1px solid #cccce0;border-radius:10px;box-shadow:none}
-html.orbit-mobile .orbit-task-fields input:focus-visible,html.orbit-mobile .orbit-task-fields select:focus-visible{outline:3px solid #a8a7ff;outline-offset:2px}
-html.orbit-mobile .orbit-task-submit{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;min-height:52px;padding:12px 13px;margin:14px 0 0;color:#11121a;background:#d4d0ff;border:0;border-radius:12px;font-family:inherit;font-size:14px;font-weight:700;line-height:1.35;cursor:pointer;box-shadow:none}
-html.orbit-mobile .orbit-task-submit:focus-visible{outline:3px solid #fff;outline-offset:2px}
-html.orbit-mobile .orbit-task-fine{color:#b9b9c7!important;font-size:10px!important;line-height:1.5!important;margin:11px 0 0!important}
-html.orbit-mobile .orbit-task-error{color:#ffb9b9;font-size:12px;line-height:1.4;margin:8px 0 0}
-html.orbit-mobile .mobile-prepared-task{padding:12px 13px!important;margin:10px 0 12px!important;border:1px solid #ddd9fa;border-radius:11px;background:#f3f1ff;color:#28253b!important;font-size:12px!important;line-height:1.6!important;max-height:125px;overflow:auto}
-@media(min-width:520px){html.orbit-mobile .orbit-task-fields{grid-template-columns:1fr 1fr}}
-@media(prefers-reduced-motion:reduce){html.orbit-mobile .orbit-task-submit{transition:none}}
-
 /* Safari may include off-canvas 3D decoration in scrollWidth on narrow phones. */
 html.orbit-mobile, html.orbit-mobile body { max-width:100%;overflow-x:clip; }
-html.orbit-mobile .mobile-illustrative-email{margin:8px 0 12px;padding:10px 12px;border:1px solid #dfdcf3;border-radius:10px;background:#fff}
-html.orbit-mobile .mobile-illustrative-email summary{cursor:pointer;font-size:12px;font-weight:650;line-height:1.5;color:#332c66;min-height:25px}
-html.orbit-mobile .mobile-example-message{margin:8px 0 0!important;font-size:12px!important;line-height:1.6!important;white-space:pre-line;color:#383444!important}
-
 /* Only appears when the browser itself rejects muted autoplay (iOS Low Power
    Mode, reduced-motion/data preferences, or a platform-specific restriction). */
 html.orbit-mobile .mobile-demo-play-fallback[hidden]{display:none!important}
@@ -107,8 +86,9 @@ html.orbit-mobile .mobile-demo-play-fallback{
 }
 html.orbit-mobile .mobile-demo-play-fallback:focus-visible{outline:3px solid #625cf5;outline-offset:2px}
 
-/* Mobile card is intentionally above the video and the optional task builder. */
-html.orbit-mobile .resume-first{margin:14px 0 17px;gap:13px;padding:17px 15px}
-html.orbit-mobile .resume-first-copy strong{font-size:16px}
-html.orbit-mobile .resume-first-copy>span:last-child{font-size:11px}
-html.orbit-mobile .resume-first-cta{font-size:14px;min-height:52px}
+/* Use the full-width mobile section immediately after the real demo. */
+html.orbit-mobile .home-resume{width:100%;margin:18px 0 8px;padding:0;box-shadow:none}
+html.orbit-mobile .home-resume-inner{padding:0;max-width:none}
+html.orbit-mobile .home-resume h2{font-size:clamp(25px,6.6vw,34px);line-height:1.12}
+html.orbit-mobile .home-resume-intro{font-size:13px;line-height:1.55}
+html.orbit-mobile .home-resume-frame{border-radius:18px}
