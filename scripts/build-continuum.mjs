@@ -45,6 +45,21 @@ html = html.replace(/<section class="stats"[\s\S]*?<\/section>/, `<section class
 html = html.replace(/<section id="profile"[\s\S]*?<\/section>/, personalDemo);
 html = html.replace(/<section id="security"[\s\S]*?<\/section>/, '');
 html = html.replace(/<section id="recruiting-resources"[\s\S]*?<\/section>/, '');
+
+// Chrome-first acquisition lives in the approved Continuum build. Preserve
+// the existing Desktop download CTA, installer routing and phone handoff.
+const heroActions = [
+  '    <div class="actions">',
+  '      <a class="btn" id="dl-btn"'
+].join('\n');
+if (!html.includes(heroActions)) throw Error('Expected Orbit Hero action structure changed');
+html = html.replace(heroActions,
+  '    <div class="actions">\n' +
+  '      <a class="btn chrome-entry" href="/chrome/">Start with Chrome <span aria-hidden="true">↗</span></a>\n' +
+  '      <a class="btn btn-secondary" id="dl-btn"');
+html = html.replace('<a class="nav-download" id="nav-download"',
+  '<a class="nav-chrome" href="/chrome/">Chrome Beta</a><a class="nav-download" id="nav-download"');
+
 html = html.replace('<div class="footer-links">', '<div class="footer-links"><a href="/resume-score/">Resume Evaluation</a><a href="/face-match/">Face Match</a><a href="/recruiting-guide/">Recruiting guide</a><a href="/recruiting-news/">News</a>');
 await mkdir('preview/continuum/assets', { recursive: true });
 await buildCompanionPages();

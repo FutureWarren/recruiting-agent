@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#090a0e">
+<meta name="description" content="Use Orbit in Chrome. Your recruiting agent runs in the cloud while you control approved LinkedIn and Gmail browser tabs.">
+<title>Orbit for Chrome · Your recruiting workspace</title>
+<link rel="canonical" href="https://orbit-reaches.com/chrome/">
+<meta property="og:title" content="Orbit for Chrome · Your recruiting workspace">
+<meta property="og:description" content="One Google sign-in. Your browser, your control. Cloud-powered research and Gmail drafts.">
+<link rel="icon" type="image/svg+xml" href="/resume-score/orbit-mark.svg">
+<link rel="stylesheet" href="/site.css">
+<link rel="stylesheet" href="/chrome/chrome.css">
+<script src="/chrome/config.js" defer></script>
+<script src="/chrome/chrome.js" defer></script>
+</head>
+<body>
+<a class="site-skip" href="#page-content">Skip to content</a>
+<header class="shell topbar">
+  <a class="brand" href="/" aria-label="Orbit home"><img class="rs-brand-icon" src="/resume-score/orbit-mark.svg" width="30" height="30" alt="">Orbit</a>
+  <nav class="nav" aria-label="Primary navigation"><a href="/">Home</a><a href="/pricing/">Pricing</a><a href="/support/">Support</a><a class="primary" href="/#download">Get Orbit Desktop</a></nav>
+</header>
+<main id="page-content" tabindex="-1" class="shell chrome-page">
+  <section class="chrome-hero">
+    <div class="hero-copy">
+      <span class="eyebrow"><span class="live-pip"></span> ORBIT FOR CHROME · PRIVATE BETA</span>
+      <h1>Your browser.<br><span>Your AI agent.</span></h1>
+      <p class="intro">Start a networking task on Orbit. Our cloud Agent handles research and writing while the Chrome Extension operates only the LinkedIn and Gmail tabs you authorize.</p>
+      <div class="hero-actions">
+        <a id="workspace-link" class="cta main-cta" href="https://extension-beta-backend-staging.up.railway.app/extension-beta">Continue to Private Beta <span aria-hidden="true">↗</span></a>
+        <a class="cta secondary-cta" href="/#download">Use the desktop app</a>
+      </div>
+      <p id="availability" class="micro" role="status" aria-live="polite">Private beta access requires an approved testing account. The Chrome Web Store listing is not public yet.</p>
+    </div>
+    <div class="browser-visual" aria-hidden="true">
+      <div class="visual-glow"></div>
+      <div class="browser-chrome"><span class="browser-dots"><i></i><i></i><i></i></span><span>Orbit / Workspace</span><span class="browser-capsule">CLOUD AGENT</span></div>
+      <div class="visual-inner">
+        <div class="visual-heading">Research, then draft.</div>
+        <div class="visual-row"><span class="step-circle">01</span><span>Find the right people</span><span class="step-ready">Research</span></div>
+        <div class="visual-row"><span class="step-circle">02</span><span>Read relevant profiles</span><span class="step-ready">LinkedIn</span></div>
+        <div class="visual-row"><span class="step-circle">03</span><span>Prepare an introduction</span><span class="step-ready">Gmail Draft</span></div>
+        <div class="visual-foot"><span class="mini-dot"></span> You decide when Orbit starts and stops.</div>
+      </div>
+    </div>
+  </section>
+  <section class="setup-section" id="connect">
+    <div class="section-intro">
+      <span class="eyebrow">GET CONNECTED</span>
+      <h2>Three steps.<br><span>No local AI setup.</span></h2>
+      <p>The extension is a lightweight bridge to Chrome. The AI Agent, queue and recovery logic run in Orbit Cloud, not on your computer.</p>
+    </div>
+    <div class="setup-grid">
+      <article class="setup-card">
+        <span class="step-index">01 / INSTALL</span>
+        <h3>Add Orbit to Chrome</h3>
+        <p>Install from the official Chrome Web Store once the private listing is available. Chrome will ask you to approve browser-control permissions.</p>
+        <a id="store-link" class="card-link" hidden rel="noopener noreferrer">Open Chrome Web Store ↗</a>
+        <span id="store-pending" class="small-pill">Private listing being prepared</span>
+      </article>
+      <article class="setup-card" id="installed-step">
+        <span class="step-index">02 / SIGN IN</span>
+        <h3>Connect your Orbit account</h3>
+        <p>Sign in with Google on the Orbit workspace. Your session is paired with this Chrome installation automatically; no Gateway URL or pairing code.</p>
+        <div class="setup-state"><span id="install-indicator" class="indicator"></span><span id="install-status">Checking for Orbit Extension…</span></div>
+        <button type="button" id="check-extension" class="plain-button">Check again</button>
+      </article>
+      <article class="setup-card">
+        <span class="step-index">03 / AUTHORIZE</span>
+        <h3>Give access only when needed</h3>
+        <p>Authorize the LinkedIn and Gmail tabs you want Orbit to use. Review the task and start it from the workspace. Nothing is emailed without approval.</p>
+        <a id="setup-link" href="https://extension-beta-backend-staging.up.railway.app/extension-beta" class="card-link">Open Orbit Workspace ↗</a>
+      </article>
+    </div>
+  </section>
+  <section class="trust-panel" aria-labelledby="trust-heading">
+    <div>
+      <span class="eyebrow">YOU KEEP CONTROL</span>
+      <h2 id="trust-heading">Powerful when you want it.<br><span>Quiet when you don't.</span></h2>
+      <p>Orbit works only in explicitly authorized browser tabs. Stop disconnects browser control; an unexpected disconnection pauses work. If Chrome asks for LinkedIn verification, you complete it yourself.</p>
+      <p class="micro">Chrome shows a browser-control / debugging banner while Orbit is controlling a tab. The extension never needs your Google or LinkedIn password.</p>
+    </div>
+    <div class="trust-list">
+      <div><span class="check">✓</span><span>Cloud Agent runs on Orbit servers</span></div>
+      <div><span class="check">✓</span><span>Task state persists beyond the website tab</span></div>
+      <div><span class="check">✓</span><span>Only authorized LinkedIn &amp; Gmail tabs</span></div>
+      <div><span class="check">✓</span><span>Draft only in the current private beta</span></div>
+    </div>
+  </section>
+  <section class="faq-section">
+    <h2>Good to know.</h2>
+    <details><summary>Do I need to install OpenClaw, Node.js or an AI model?</summary><p>No. Orbit's AI execution stays on our server. Your Chrome Extension only connects the tabs you approve.</p></details>
+    <details><summary>Can I close the Orbit website during a Run?</summary><p>Yes, once a task has been submitted the cloud queue owns its state. Keep Chrome and the authorized LinkedIn/Gmail tabs open while browser actions are needed. Closing those tabs or putting your computer to sleep can pause the task.</p></details>
+    <details><summary>What if Chrome shows a browser debugging warning?</summary><p>That warning is issued by Chrome whenever the Extension controls an authorized tab. You can stop Orbit from the Extension or click Chrome's Cancel control.</p></details>
+    <details><summary>What is the difference between Chrome and Desktop?</summary><p>Chrome uses a small Extension plus the cloud Agent. Desktop is a separate downloadable app. Both should share your Orbit account and tasks as product integration is completed.</p></details>
+  </section>
+</main>
+<footer class="site-footer"><div class="shell footer-inner"><a class="brand" href="/">Orbit</a><div class="footer-links"><a href="/pricing/">Pricing</a><a href="/privacy/">Privacy</a><a href="/terms/">Terms</a><a href="/support/">Support</a><a href="/#download">Desktop</a></div></div><div class="shell copyright">© 2026 Orbit · Operated by Angelic</div></footer>
+</body>
+</html>
