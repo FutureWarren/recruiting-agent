@@ -528,3 +528,10 @@ html.orbit-mobile .hero-copy video.demo-video {
 .home-resume-frame:focus-visible{outline:3px solid #c5b8ff;outline-offset:4px}
 @media(max-width:760px){.home-resume{padding:18px 16px 30px}.home-resume-frame{border-radius:17px}}
 @media(prefers-reduced-motion:reduce){.home-resume-frame{transition:none}}
+
+/* Chrome is a separate execution option, not a replacement for Desktop. */
+.continuum-dark .signature-copy .actions .chrome-entry{background:#f2f0f6;color:#121218;border-color:#f2f0f6}
+.continuum-dark .signature-copy .actions .chrome-entry:hover{background:#fff;box-shadow:0 14px 36px #a79bff1c}
+.continuum-dark .nav-links .nav-chrome{color:#c8bdff;font-weight:600;text-decoration:none}
+.continuum-dark .nav-links .nav-chrome:hover{color:#fff}
+@media(max-width:760px){.continuum-dark .nav-links .nav-chrome{display:none}}
