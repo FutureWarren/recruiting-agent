@@ -20,16 +20,17 @@ test('Approved Hero positioning keeps the signature scene and product controls i
   const sha = value => createHash('sha256').update(value).digest('hex');
   const hero = html.match(/<header class="hero signature-hero">[\s\S]*?<\/header>/)?.[0];
   assert.ok(hero, 'Hero exists');
-  assert.match(hero, /<h1>Your Personal AI<br><span>for Cold Emailing\.<\/span><\/h1>/);
-  for (const phrase of ['PERSONAL AI COLD EMAILING · BUILT FOR STUDENTS', 'personalized cold email drafts in Gmail', 'You review and approve before sending.', 'data-orbit-download', 'data-continuum-scene']) assert.ok(hero.includes(phrase), phrase);
+  assert.match(hero, /<h1>Your Personal AI<br><span>Recruiting Agent\.<\/span><\/h1>/);
+  for (const phrase of ['PERSONAL AI RECRUITING AGENT · BUILT FOR STUDENTS', 'track replies, and follow up', 'You review and approve before anything is sent.', 'data-orbit-download', 'data-continuum-scene']) assert.ok(hero.includes(phrase), phrase);
   assert.doesNotMatch(hero,/resume-first|FREE RESUME EVALUATION/);
   assert.match(await read('mobile.js'),/copy\.insertBefore\(resumeSection, copy\.querySelector\('\.actions'\)\)/);
   assert.doesNotMatch(await read('mobile.js'),/orbit-task-school|orbit-mobile-task/);
   assert.match(await read('mobile.js'),/Value first: no automatic email sheet on landing/);
   assert.doesNotMatch(await read('mobile.css'),/orbit-mobile-pending #mobile-handoff-modal\[hidden\]/);
-  assert.match(html, /<title>Orbit — Your Personal AI for Cold Emailing<\/title>/);
-  assert.match(html, /property="og:title" content="Orbit — Your Personal AI for Cold Emailing"/);
-  assert.match(html, /name="twitter:title" content="Orbit — Your Personal AI for Cold Emailing"/);
+  assert.match(html, /<title>Orbit — Your Personal AI Recruiting Agent<\/title>/);
+  assert.match(html, /property="og:title" content="Orbit — Your Personal AI Recruiting Agent"/);
+  assert.match(html, /name="twitter:title" content="Orbit — Your Personal AI Recruiting Agent"/);
+  assert.match(html, /name="twitter:image" content="https:\/\/orbit-reaches\.com\/media\/orbit-demo-hd-poster\.jpg"/);
   assert.match(html, /Cold emailing\.<br><span>Without the busywork\.<\/span>/);
   assert.match(html, /Cold emails\.<br><span>Still personal\.<\/span>/);
   for (const [file, expected] of [

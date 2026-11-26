@@ -18,7 +18,7 @@ html = html.replace('<body>', '<body class="continuum continuum-dark"><div class
   .replace('or explore the workflow above.', 'or read the email example below.')
   .replace('<div class="kicker">Think beyond your circle</div>', '')
   .replace('<section class="final" id="download">', '<section class="final closing-section" id="download">')
-  .replace('<span class="orbit-mark" aria-hidden="true"></span><h2>Put Orbit to work.</h2>', `${closingMark}<h2>Your next cold email<br><span>starts here.</span></h2>`)
+  .replace('<span class="orbit-mark" aria-hidden="true"></span><h2>Put Orbit to work.</h2>', `${closingMark}<h2>Your recruiting workflow<br><span>starts here.</span></h2>`)
   .replace('A little more time for everything else.', 'Mac + Windows. 100 free Orbit Credits to start.');
 
 // Keep the signature Hero composition and 3D scene; the source now carries the

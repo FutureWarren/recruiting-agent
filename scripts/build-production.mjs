@@ -56,8 +56,9 @@ try {
     // preferences pages. Never publish the preview's blanket noindex,nofollow.
     html = html.replace(/<meta name="robots"[^>]*>/g, '');
     const robots = original.match(/<meta name="robots"[^>]*>/g) || [];
+    const noindex = robots.some(tag => /\bnoindex\b/i.test(tag));
     html = html.replace('</head>', robots.join('\n') + '</head>');
-    if (!html.includes('rel="canonical"')) html = html.replace('</head>', `<link rel="canonical" href="https://orbit-reaches.com/${page}/"></head>`);
+    if (!noindex && !html.includes('rel="canonical"')) html = html.replace('</head>', `<link rel="canonical" href="https://orbit-reaches.com/${page}/"></head>`);
     await writeFile(join(staging, page, 'index.html'), await versionAssets(html));
   }
   const files = [];
