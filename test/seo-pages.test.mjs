@@ -10,8 +10,9 @@ test('sitemap publishes only canonical discoverable pages', () => {
   }
   assert.ok(xml.includes('https://orbit-reaches.com/recruiting-news/</loc>'))
   assert.ok(!xml.includes('/unsubscribe/'))
-
+  assert.ok(!xml.includes('/start/'))
   assert.ok(!xml.includes('/continue/'))
+  assert.ok(!xml.includes('/admin/'))
 })
 test('robots points crawlers at sitemap', () => {
   assert.match(file('robots.txt'), /Sitemap: https:\/\/orbit-reaches\.com\/sitemap\.xml/)
@@ -41,4 +42,22 @@ test('every sitemap destination exists and is not noindex', () => {
     assert.doesNotMatch(html, /<meta[^>]+noindex/i)
   }
   assert.match(file('continue/index.html'), /name="robots" content="noindex,nofollow"/)
+  assert.match(file('unsubscribe/index.html'), /name="robots" content="noindex,nofollow"/)
+  assert.match(file('start/index.html'), /name="robots" content="noindex,follow,noarchive"/)
+  assert.match(file('admin/index.html'), /name="robots" content="noindex, nofollow, noarchive"/)
+})
+test('homepage metadata uses the current recruiting-agent positioning', () => {
+  const html=file('preview/signature/index.html')
+  assert.match(html, /<title>Orbit — Your Personal AI Recruiting Agent<\/title>/)
+  assert.match(html, /<h1>Your Personal AI<br><span>Recruiting Agent\.<\/span><\/h1>/)
+  assert.match(html, /property="og:image" content="https:\/\/orbit-reaches\.com\/media\/orbit-demo-hd-poster\.jpg"/)
+})
+test('public tools expose clean canonicals, social previews and structured data', () => {
+  for (const path of ['resume-score','face-match']) {
+    const html=file(path + '/index.html')
+    assert.match(html, new RegExp(`rel="canonical" href="https://orbit-reaches\\.com/${path}/"`))
+    assert.match(html, /property="og:title"/)
+    assert.match(html, /name="twitter:card" content="summary_large_image"/)
+    assert.match(html, /"@type":"WebApplication"/)
+  }
 })

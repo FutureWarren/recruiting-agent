@@ -1,9 +1,9 @@
 # Orbit
 
-**Orbit is your personal AI cold email agent, built for students.** It researches
-relevant alumni and professionals, finds work emails, and prepares personalized
-Gmail drafts based on your real background. You review and approve before
-sending, with the ability to watch, pause, or stop the browser task.
+**Orbit is your personal AI recruiting agent, built for students.** It researches
+relevant professionals, finds work emails, prepares personalized outreach,
+tracks replies, and helps with follow-up workflows. You review and approve
+before sending, with the ability to watch, pause, or stop the browser task.
 
 ### [→ Download Orbit for Apple Silicon Mac](https://orbit-reaches.com/)
 

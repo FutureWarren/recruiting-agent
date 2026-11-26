@@ -45,8 +45,8 @@ test('Preview is guarded against external writes and does not load the rejected 
 });
 test('Original ring and satellite identity, with no unrequested typewriter or orange palette',async()=>{
   assert.match(after,/class="orbit-mark"/);
-  assert.match(after, /<h1>Your Personal AI<br><span>for Cold Emailing\.<\/span><\/h1>/);
-  assert.match(after, /PERSONAL AI COLD EMAILING · BUILT FOR STUDENTS/);
+  assert.match(after, /<h1>Your Personal AI<br><span>Recruiting Agent\.<\/span><\/h1>/);
+  assert.match(after, /PERSONAL AI RECRUITING AGENT · BUILT FOR STUDENTS/);
   const model=await read('src/signature-model.js');
   assert.match(model,/#5c5cf2/);
   assert.match(model,/Orbit brand satellite/);

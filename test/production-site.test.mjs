@@ -13,7 +13,8 @@ test('Production ships the approved design, not the old prototype or disabled pr
   for(const page of ['',...pages]) {
     const value=await read(`dist/${page?page+'/':''}index.html`);
     assert.doesNotMatch(value,/\/preview\/|127\.0\.0\.1|localhost|guard\.js|design preview/i);
-    assert.match(value,/<link rel="canonical"/);
+    if (['unsubscribe','start','continue'].includes(page)) assert.doesNotMatch(value,/<link rel="canonical"/);
+    else assert.match(value,/<link rel="canonical"/);
   }
   assert.match(html,/\/assets\/orbit\/continuum.js\?v=[0-9a-f]{12}/);
 });
@@ -25,19 +26,20 @@ test('Production Resume Score uses Orbit brand master assets after the shared-pa
   assert.doesNotMatch(resume,/class="orbit-mark"/,'generic logo must not overwrite approved Orbit branding');
   assert.match(await read('dist/resume-score/orbit-mark.svg'),/fill="#5c5cf2"/);
 });
-test('Deployed Hero positions Orbit as a personal cold email agent without misrepresenting sending',async()=>{
-  assert.match(html, /<title>Orbit — Your Personal AI for Cold Emailing<\/title>/);
-  assert.match(html, /property="og:title" content="Orbit — Your Personal AI for Cold Emailing"/);
-  assert.match(html, /name="twitter:title" content="Orbit — Your Personal AI for Cold Emailing"/);
-  assert.match(html, /<h1>Your Personal AI<br><span>for Cold Emailing\.<\/span><\/h1>/);
-  assert.match(html, /PERSONAL AI COLD EMAILING · BUILT FOR STUDENTS/);
-  assert.match(html, /Find alumni and professionals, discover their work emails/);
+test('Deployed Hero positions Orbit as a personal AI recruiting agent without misrepresenting sending',async()=>{
+  assert.match(html, /<title>Orbit — Your Personal AI Recruiting Agent<\/title>/);
+  assert.match(html, /property="og:title" content="Orbit — Your Personal AI Recruiting Agent"/);
+  assert.match(html, /name="twitter:title" content="Orbit — Your Personal AI Recruiting Agent"/);
+  assert.match(html, /property="og:image" content="https:\/\/orbit-reaches\.com\/media\/orbit-demo-hd-poster\.jpg"/);
+  assert.match(html, /<h1>Your Personal AI<br><span>Recruiting Agent\.<\/span><\/h1>/);
+  assert.match(html, /PERSONAL AI RECRUITING AGENT · BUILT FOR STUDENTS/);
+  assert.match(html, /Research relevant professionals, find work emails/);
+  assert.match(html, /track replies, and follow up/);
   assert.match(html, /LinkedIn/);
-  assert.match(html, /personalized cold email drafts in Gmail/);
-  assert.match(html, /You review and approve before sending\./);
+  assert.match(html, /You review and approve before anything is sent\./);
   assert.match(html, /Watch your cold email come together\./);
   assert.match(html, /Cold emailing\.<br><span>Without the busywork\.<\/span>/);
-  assert.match(html, /Your next cold email<br><span>starts here\.<\/span>/);
+  assert.match(html, /Your recruiting workflow<br><span>starts here\.<\/span>/);
   assert.match(html, /id="dl-btn" data-orbit-download/);
   assert.doesNotMatch(html,/class="resume-first"/);
   assert.match(html,/id="resume-evaluation"/);
@@ -65,6 +67,14 @@ test('Public indexing restored while token and preference routes retain their po
     assert.deepEqual(robots(await read(`dist/${page}/index.html`)),robots(await read(`${page}/index.html`)),page);
   }
   for(const [,url] of (await read('dist/sitemap.xml')).matchAll(/<loc>([^<]+)<\/loc>/g)) assert.doesNotMatch(await read('dist'+new URL(url).pathname+'index.html'),/<meta[^>]+noindex/i);
+  const sitemap=await read('dist/sitemap.xml');
+  for(const page of ['unsubscribe','start','continue']) {
+    const value=await read(`dist/${page}/index.html`);
+    assert.match(value,/<meta[^>]+noindex/i,page);
+    assert.doesNotMatch(value,/<link[^>]+rel="canonical"/i,page);
+    assert.ok(!sitemap.includes(`/${page}/`),page);
+  }
+  assert.match(await read('dist/admin/index.html'),/name="robots" content="noindex, nofollow, noarchive"/);
   assert.equal((await read('dist/CNAME')).trim(),'orbit-reaches.com');
 });
 test('Production page links and assets all resolve inside the published artifact',async()=>{
